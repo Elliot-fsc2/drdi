@@ -1,0 +1,130 @@
+<?php
+
+use App\Services\Auth\Login;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
+use Livewire\Attributes\Validate;
+use Livewire\Component;
+
+new #[Layout('layouts::guest')]
+    #[Title('Login')]
+    class extends Component {
+
+    #[Validate('required|string')]
+    public string $email = '';
+
+    #[Validate('required|string')]
+    public string $password = '';
+
+    public bool $remember = false;
+
+    public function login(Login $loginService)
+    {
+        $this->validate();
+
+        $loginService->attempt($this->email, $this->password, $this->remember);
+
+        $this->reset(['password']);
+    }
+};
+?>
+
+<div class="h-screen flex overflow-hidden">
+    <!-- Left Side - Welcome Section -->
+    <div
+        class="hidden lg:flex lg:w-1/2 bg-linear-to-br from-orange-400 via-pink-300 to-purple-400 relative overflow-hidden">
+        <div class="absolute inset-0 bg-linear-to-br from-orange-500/80 via-pink-400/60 to-purple-500/80"></div>
+
+        <!-- Decorative Elements -->
+        <div class="absolute top-10 left-10 w-32 h-32 bg-white/20 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-20 right-20 w-40 h-40 bg-purple-300/30 rounded-full blur-3xl"></div>
+        <div class="absolute top-1/2 left-1/4 w-24 h-24 bg-pink-200/20 rounded-full blur-2xl"></div>
+
+        <!-- Content -->
+        <div class="relative z-10 flex flex-col justify-center items-center px-8 xl:px-16 text-white w-full py-8">
+            <!-- Illustration Placeholder -->
+            <div class="mb-6 text-center">
+                <div
+                    class="w-64 h-64 xl:w-80 xl:h-80 bg-white/10 rounded-3xl backdrop-blur-sm flex items-center justify-center mb-6 shadow-2xl">
+                    <svg class="w-32 h-32 xl:w-40 xl:h-40 text-white/80" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                </div>
+            </div>
+
+            <h1 class="text-2xl xl:text-4xl font-bold mb-3 text-center drop-shadow-lg">
+                Welcome to DRDI NCST
+            </h1>
+            <p class="text-base xl:text-lg text-center max-w-md text-white/90 drop-shadow">
+                Defense Research and Development Institute - National College of Science and Technology
+            </p>
+
+            <!-- Carousel Indicators -->
+            <div class="flex gap-2 mt-8">
+                <div class="w-2 h-2 bg-white rounded-full"></div>
+                <div class="w-2 h-2 bg-white/40 rounded-full"></div>
+                <div class="w-2 h-2 bg-white/40 rounded-full"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Side - Login Form -->
+    <div class="flex-1 flex items-center justify-center px-6 lg:px-12 xl:px-16 bg-gray-50 overflow-y-auto">
+        <div class="w-full max-w-md py-8">
+            <div class="bg-white rounded-2xl shadow-xl p-8 xl:p-10">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-2">Login</h2>
+                    <p class="text-sm text-gray-500">Access your DRDI NCST account</p>
+                </div>
+
+                <form wire:submit="login" class="space-y-6">
+                    <!-- Email or Username -->
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                            Email or Username
+                        </label>
+                        <input type="text" id="email" wire:model="email" placeholder="Enter Email or Username"
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                            required>
+                        @error('email')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Password -->
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                            Password
+                        </label>
+                        <input type="password" id="password" wire:model="password" placeholder="Enter Password"
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                            required>
+                        @error('password')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Remember Me & Forgot Password -->
+                    <div class="flex items-center justify-between">
+                        <label class="flex items-center">
+                            <input type="checkbox" wire:model="remember"
+                                class="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                            <span class="ml-2 text-sm text-gray-700">Remember Me</span>
+                        </label>
+                        <a href="#" class="text-sm text-purple-600 hover:text-purple-700 font-medium">
+                            Forget Password ?
+                        </a>
+                    </div>
+
+                    <!-- Login Button -->
+                    <button type="submit"
+                        class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl">
+                        Login
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
