@@ -46,6 +46,8 @@ Route::middleware(['auth', 'instructor'])
     ->as('instructor.')
     ->group(function () {
         Route::livewire('/home', 'instructor::home')->name('home');
+        Route::livewire('/classes', 'instructor::my-classes')->name('classes');
+        Route::livewire('/classes/{section}', 'instructor::my-classes.view')->name('classes.view');
     });
 
 Route::middleware(['auth', 'student'])

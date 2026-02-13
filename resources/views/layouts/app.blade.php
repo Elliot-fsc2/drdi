@@ -64,6 +64,7 @@
     }
   </style>
 
+  @filamentStyles
   @livewireStyles
 </head>
 
@@ -108,38 +109,44 @@
 
       <!-- Mobile Navigation -->
       <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-        <a href="#"
-          class="flex items-center gap-3 px-4 py-3 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+        <a href="{{ route('instructor.home') }}" @class([
+          'flex items-center gap-3 px-4 py-3 rounded-xl transition-all',
+          'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('instructor.home'),
+          'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('instructor.home'),
+        ])>
           <x-heroicon-o-home class="w-6 h-6 flex-shrink-0" />
           <span class="font-medium">Dashboard</span>
         </a>
-        <a href="#"
-          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50">
-          <x-heroicon-o-beaker class="w-6 h-6 flex-shrink-0" />
-          <span class="font-medium">Research</span>
+        <a href="{{ route('instructor.classes') }}" @class([
+          'flex items-center gap-3 px-4 py-3 rounded-xl transition-all',
+          'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('instructor.classes'),
+          'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('instructor.classes'),
+        ])>
+          <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
+          <span class="font-medium">My Classes</span>
         </a>
         <a href="#"
-          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50">
+          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
           <x-heroicon-o-book-open class="w-6 h-6 flex-shrink-0" />
           <span class="font-medium">Publications</span>
         </a>
         <a href="#"
-          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50">
+          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
           <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
           <span class="font-medium">Team</span>
         </a>
         <a href="#"
-          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50">
+          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
           <x-heroicon-o-document-text class="w-6 h-6 flex-shrink-0" />
           <span class="font-medium">Documents</span>
         </a>
         <a href="#"
-          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50">
+          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
           <x-heroicon-o-chart-bar class="w-6 h-6 flex-shrink-0" />
           <span class="font-medium">Analytics</span>
         </a>
         <a href="#"
-          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50">
+          class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
           <x-heroicon-o-cog-6-tooth class="w-6 h-6 flex-shrink-0" />
           <span class="font-medium">Settings</span>
         </a>
@@ -171,19 +178,27 @@
       <!-- Navigation -->
       <nav class="flex-1 py-6 space-y-2 overflow-y-auto" :class="sidebarOpen ? 'px-4' : 'px-3'">
         <!-- Dashboard -->
-        <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-          class="flex items-center gap-3 py-3 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 transition-all group"
+        <a href="{{ route('instructor.home') }}" wire:navigate :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
+          @class([
+            'flex items-center gap-3 py-3 rounded-xl transition-all group',
+            'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('instructor.home'),
+            'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('instructor.home'),
+          ])
           :title="!sidebarOpen ? 'Dashboard' : null">
           <x-heroicon-o-home class="w-6 h-6 flex-shrink-0" />
           <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Dashboard</span>
         </a>
 
-        <!-- Research Projects -->
-        <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-          class="flex items-center gap-3 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
-          :title="!sidebarOpen ? 'Research' : null">
-          <x-heroicon-o-beaker class="w-6 h-6 flex-shrink-0" />
-          <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Research</span>
+        <!-- My Classes -->
+        <a href="{{ route('instructor.classes') }}" wire:navigate :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
+          @class([
+            'flex items-center gap-3 py-3 rounded-xl transition-all group',
+            'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('instructor.classes'),
+            'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('instructor.classes'),
+          ])
+          :title="!sidebarOpen ? 'My Classes' : null">
+          <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
+          <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">My Classes</span>
         </a>
 
         <!-- Publications -->
@@ -273,7 +288,7 @@
                 class="flex items-center gap-3 pl-3 border-l border-gray-200 hover:bg-gray-50 rounded-lg transition-colors py-1 pr-2">
                 <div class="hidden md:block text-right">
                   <p class="text-sm font-semibold text-gray-900">{{ auth()->user()->name }}</p>
-                  <p class="text-xs text-gray-500">Research Manager</p>
+                  <p class="text-xs text-gray-500">{{ auth()->user()->profileable->role }}</p>
                 </div>
                 <div
                   class="w-10 h-10 bg-gradient-to-br from-orange-400 to-pink-500 rounded-lg flex items-center justify-center shadow-md">
@@ -343,6 +358,7 @@
   </div>
 
   @livewireScripts
+  @filamentScripts
 </body>
 
 </html>
