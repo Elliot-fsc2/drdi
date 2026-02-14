@@ -21,4 +21,14 @@ class Instructor extends Model
     {
         return $this->belongsTo(Department::class);
     }
+
+    public function personnel()
+    {
+        return $this->hasMany(Personnel::class);
+    }
+
+    public function consultations()
+    {
+        return $this->hasMany(Consultation::class);
+    }
 }

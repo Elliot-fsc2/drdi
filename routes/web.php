@@ -48,6 +48,9 @@ Route::middleware(['auth', 'instructor'])
         Route::livewire('/home', 'instructor::home')->name('home');
         Route::livewire('/classes', 'instructor::my-classes')->name('classes');
         Route::livewire('/classes/{section}', 'instructor::my-classes.view')->name('classes.view');
+        Route::livewire('/classes/{section}/group/create', 'instructor::my-classes.group.create')->name('classes.group.create');
+        Route::livewire('/classes/{section}/group/{group}', 'instructor::my-classes.group.view')->name('classes.group.view');
+        Route::livewire('/classes/{section}/group/{group}/proposals', 'instructor::my-classes.group.proposals')->name('classes.group.proposals');
     });
 
 Route::middleware(['auth', 'student'])

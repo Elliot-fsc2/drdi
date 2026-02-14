@@ -22,4 +22,14 @@ class Group extends Model
     {
         return $this->belongsToMany(Student::class, 'members', 'group_id', 'student_id');
     }
+
+    public function proposal()
+    {
+        return $this->hasOne(Proposal::class);
+    }
+
+    public function consultations()
+    {
+        return $this->hasMany(Consultation::class);
+    }
 }

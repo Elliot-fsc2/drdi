@@ -31,4 +31,9 @@ class Student extends Model
     {
         return $this->hasMany(Group::class, 'leader_id');
     }
+
+    public function sections()
+    {
+        return $this->belongsToMany(Section::class);
+    }
 }

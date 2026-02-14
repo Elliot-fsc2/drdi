@@ -1,93 +1,47 @@
 <?php
 
-use Livewire\Component;
+use App\Models\Group;
+use App\Models\Section;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
+use Livewire\Component;
 
-new class extends Component {
-  public $section;
+new class extends Component
+{
+    public Section $section;
 
-  #[Url]
-  public $tab = 'groups';
+    #[Url]
+    public $tab = 'groups';
 
-  public $classData = [
-    'section' => 'BSCS-4A',
-    'course' => 'Thesis 1',
-    'semester' => '2nd Semester 2025-2026',
-    'students_count' => 32,
-    'groups_count' => 8,
-  ];
+    #[Computed]
+    public function classData(): array
+    {
+        return [
+            'id' => $this->section->id,
+            'section' => $this->section->name,
+            'course' => 'Thesis 1',
+            'semester' => '2nd Semester 2025-2026',
+            'students_count' => 32,
+            'groups_count' => 8,
+        ];
+    }
 
-  public $groups = [
-    [
-      'id' => 1,
-      'name' => 'Group 1',
-      'leader' => 'John Doe',
-      'members_count' => 4,
-      'title' => 'AI-Based Student Performance Prediction System',
-      'status' => 'In Progress'
-    ],
-    [
-      'id' => 2,
-      'name' => 'Group 2',
-      'leader' => 'Jane Smith',
-      'members_count' => 4,
-      'title' => 'Mobile Learning Application for Mathematics',
-      'status' => 'Submitted'
-    ],
-    [
-      'id' => 3,
-      'name' => 'Group 3',
-      'leader' => 'Mike Johnson',
-      'members_count' => 4,
-      'title' => 'IoT-Based Campus Security System',
-      'status' => 'In Progress'
-    ],
-    [
-      'id' => 4,
-      'name' => 'Group 4',
-      'leader' => 'Sarah Williams',
-      'members_count' => 4,
-      'title' => 'E-Commerce Platform with Recommendation Engine',
-      'status' => 'For Review'
-    ],
-    [
-      'id' => 5,
-      'name' => 'Group 5',
-      'leader' => 'David Brown',
-      'members_count' => 4,
-      'title' => 'Inventory Management System using RFID',
-      'status' => 'In Progress'
-    ],
-    [
-      'id' => 6,
-      'name' => 'Group 6',
-      'leader' => 'Emily Davis',
-      'members_count' => 4,
-      'title' => 'Automated Attendance System using Facial Recognition',
-      'status' => 'Submitted'
-    ],
-    [
-      'id' => 7,
-      'name' => 'Group 7',
-      'leader' => 'Robert Miller',
-      'members_count' => 4,
-      'title' => 'Online Food Ordering and Delivery System',
-      'status' => 'In Progress'
-    ],
-    [
-      'id' => 8,
-      'name' => 'Group 8',
-      'leader' => 'Lisa Anderson',
-      'members_count' => 4,
-      'title' => 'Library Management System with Analytics',
-      'status' => 'Not Started'
-    ],
-  ];
+    #[Computed]
+    public function groups()
+    {
+        return Group::where('section_id', $this->section->id)
+            ->whereHas('section', function ($query) {
+                $query->where('instructor_id', auth()->user()->profileable->id);
+            })
+            ->with(['leader', 'proposal'])
+            ->withCount('members')
+            ->get();
+    }
 };
 ?>
 
 <x-slot name="title">
-  {{ $classData['section'] }} - {{ $classData['course'] }}
+  {{ $section->name }} - {{ $section->semester->name }}
 </x-slot>
 
 <div class="p-3 lg:p-3 bg-slate-50">
@@ -98,13 +52,13 @@ new class extends Component {
       <div class="flex items-center gap-2 text-sm text-slate-600 mb-3">
         <a href="{{ route('instructor.classes') }}" class="hover:text-blue-600">My Classes</a>
         <span>/</span>
-        <span class="text-slate-900 font-medium">{{ $classData['section'] }}</span>
+        <span class="text-slate-900 font-medium">{{ $this->classData['section'] }}</span>
       </div>
 
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 class="text-3xl font-bold text-slate-900">{{ $classData['section'] }}</h1>
-          <p class="text-slate-600 mt-1">{{ $classData['course'] }} • {{ $classData['semester'] }}</p>
+          <h1 class="text-3xl font-bold text-slate-900">{{ $this->classData['section'] }}</h1>
+          <p class="text-slate-600 mt-1">{{ $this->classData['course'] }} • {{ $this->classData['semester'] }}</p>
         </div>
 
         <div class="flex gap-2">
@@ -150,61 +104,82 @@ new class extends Component {
                 <div class="relative flex-1 max-w-md">
                   <input type="text" placeholder="Search groups or titles..."
                     class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-md text-sm">
-                  <svg class="absolute left-3 top-2.5 h-4 w-4 text-slate-400" fill="none" stroke="currentColor"
-                    viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
+                  <x-heroicon-o-magnifying-glass class="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                 </div>
-                <button class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">
-                  Add Group
-                </button>
+                <a href="{{ route('instructor.classes.group.create', ['section' => $section->id]) }}" wire:navigate
+                  class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors inline-flex items-center gap-2">
+                  <x-heroicon-o-plus class="h-4 w-4" />
+                  <span>Add Group</span>
+                </a>
               </div>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                @foreach($groups as $group)
-                  <div
-                    class="border border-slate-200 rounded-lg p-4 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer bg-white">
-                    <div class="flex items-start justify-between mb-3">
-                      <div>
-                        <h3 class="font-bold text-slate-900 mb-1">{{ $group['name'] }}</h3>
-                        <span class="px-2 py-0.5 text-xs font-medium rounded
-                                      {{ $group['status'] === 'Submitted' ? 'bg-green-100 text-green-700' : '' }}
-                                      {{ $group['status'] === 'In Progress' ? 'bg-blue-100 text-blue-700' : '' }}
-                                      {{ $group['status'] === 'For Review' ? 'bg-orange-100 text-orange-700' : '' }}
-                                      {{ $group['status'] === 'Not Started' ? 'bg-slate-100 text-slate-700' : '' }}">
-                          {{ $group['status'] }}
-                        </span>
+              @if(count($this->groups) === 0)
+                <div class="text-center py-12">
+                  <x-heroicon-o-user-group class="h-16 w-16 mx-auto text-slate-300 mb-4" />
+                  <p class="text-slate-500 text-base font-medium mb-1">No research groups yet</p>
+                  <p class="text-slate-400 text-sm">Create your first group to get started</p>
+                </div>
+              @else
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  @foreach($this->groups as $group)
+                    <a href="{{ route('instructor.classes.group.view', ['section' => $this->classData['id'], 'group' => $group->id]) }}"
+                      wire:navigate
+                      class="block border border-slate-200 rounded-lg p-5 hover:border-blue-400 hover:shadow-md transition-all bg-white group">
+                      <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                          <h3 class="font-semibold text-lg text-slate-900 group-hover:text-blue-600 transition-colors mb-1">
+                            {{ $group->name }}
+                          </h3>
+                          <p class="text-xs text-slate-500">
+                            Led by {{ $group->leader->first_name }} {{ $group->leader->last_name }}
+                          </p>
+                        </div>
+                        <div class="flex items-center gap-1.5 text-sm text-slate-500">
+                          <x-heroicon-o-users class="h-4 w-4" />
+                          <span>{{ $group->members_count }}</span>
+                        </div>
                       </div>
-                    </div>
 
-                    <p class="text-sm text-slate-700 mb-3 line-clamp-2">{{ $group['title'] }}</p>
-
-                    <div class="flex items-center justify-between text-xs text-slate-600 pt-3 border-t border-slate-100">
-                      <div class="flex items-center gap-1">
-                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                        <span>{{ $group['leader'] }}</span>
-                      </div>
-                      <div class="flex items-center gap-1">
-                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                        <span>{{ $group['members_count'] }} members</span>
-                      </div>
-                    </div>
-                  </div>
-                @endforeach
-              </div>
+                      @if($group->proposal)
+                        <div class="pt-3 border-t border-slate-100">
+                          <div class="flex items-start justify-between gap-2">
+                            <div class="flex-1 min-w-0">
+                              <p class="text-sm font-medium text-slate-700 truncate" title="{{ $group->proposal->title }}">
+                                {{ $group->proposal->title }}
+                              </p>
+                            </div>
+                            @php
+                              $statusColors = [
+                                'approved' => 'bg-green-100 text-green-700',
+                                'pending' => 'bg-orange-100 text-orange-700',
+                                'rejected' => 'bg-red-100 text-red-700',
+                              ];
+                              $statusLabels = [
+                                'approved' => 'Approved',
+                                'pending' => 'Pending',
+                                'rejected' => 'Rejected',
+                              ];
+                            @endphp
+                            <span class="px-2 py-0.5 text-xs font-medium rounded whitespace-nowrap {{ $statusColors[$group->proposal->status] ?? 'bg-slate-100 text-slate-600' }}">
+                              {{ $statusLabels[$group->proposal->status] ?? ucfirst($group->proposal->status) }}
+                            </span>
+                          </div>
+                        </div>
+                      @else
+                        <div class="pt-3 border-t border-slate-100">
+                          <p class="text-xs text-slate-400 italic">No proposal submitted yet</p>
+                        </div>
+                      @endif
+                    </a>
+                  @endforeach
+                </div>
+              @endif
             </div>
           @endif
 
           <!-- Students Tab -->
           @if($tab === 'students')
-            <livewire:instructor::my-classes.students />
+            <livewire:instructor::my-classes.students :section="$section" />
           @endif
 
           <!-- Schedule Tab -->
@@ -224,12 +199,12 @@ new class extends Component {
           <div class="space-y-4">
             <div class="pb-4 border-b border-slate-100">
               <div class="text-xs text-slate-500 mb-1.5 uppercase tracking-wide">Total Students</div>
-              <div class="text-3xl font-bold text-slate-900">{{ $classData['students_count'] }}</div>
+              <div class="text-3xl font-bold text-slate-900">{{ $this->classData['students_count'] }}</div>
             </div>
 
             <div class="pb-4 border-b border-slate-100">
               <div class="text-xs text-slate-500 mb-1.5 uppercase tracking-wide">Research Groups</div>
-              <div class="text-3xl font-bold text-slate-900">{{ $classData['groups_count'] }}</div>
+              <div class="text-3xl font-bold text-slate-900">{{ $this->classData['groups_count'] }}</div>
             </div>
 
             <div class="pb-4 border-b border-slate-100">
@@ -244,7 +219,6 @@ new class extends Component {
           </div>
         </div>
       </div>
-
     </div>
   </div>
 </div>

@@ -119,8 +119,8 @@
         </a>
         <a href="{{ route('instructor.classes') }}" @class([
           'flex items-center gap-3 px-4 py-3 rounded-xl transition-all',
-          'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('instructor.classes'),
-          'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('instructor.classes'),
+          'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('instructor.classes*'),
+          'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('instructor.classes*'),
         ])>
           <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
           <span class="font-medium">My Classes</span>
@@ -193,8 +193,8 @@
         <a href="{{ route('instructor.classes') }}" wire:navigate :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
           @class([
             'flex items-center gap-3 py-3 rounded-xl transition-all group',
-            'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('instructor.classes'),
-            'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('instructor.classes'),
+            'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('instructor.classes*'),
+            'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('instructor.classes*'),
           ])
           :title="!sidebarOpen ? 'My Classes' : null">
           <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
@@ -356,7 +356,7 @@
       </main>
     </div>
   </div>
-
+  @livewire('notifications')
   @livewireScripts
   @filamentScripts
 </body>
