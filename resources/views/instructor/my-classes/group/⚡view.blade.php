@@ -180,27 +180,30 @@ new class extends Component implements HasActions, HasSchemas {
   {{ $this->group->name }} - {{ $this->section->name }}
 </x-slot>
 
-<div class="p-3 lg:p-4 bg-slate-50 min-h-screen">
+<div class="p-0 lg:p-4 bg-slate-50 min-h-screen">
   <div class="max-w-7xl mx-auto">
 
     <!-- Header -->
-    <div class="mb-6">
-      <div class="flex items-center gap-2 text-sm text-slate-600 mb-3">
-        <a href="{{ route('instructor.classes') }}" class="hover:text-blue-600">My Classes</a>
+    <div class="mb-4 md:mb-6 px-3 lg:px-0">
+      <div class="flex items-center gap-2 text-xs md:text-sm text-slate-600 mb-3 pt-3 lg:pt-0">
+        <a href="{{ route('instructor.classes') }}" wire:navigate class="hover:text-blue-600">My Classes</a>
         <span>/</span>
-        <a href="{{ route('instructor.classes.view', ['section' => $this->section->id]) }}"
+        <a href="{{ route('instructor.classes.view', ['section' => $this->section->id]) }}" wire:navigate
           class="hover:text-blue-600">{{ $this->section->name }}</a>
         <span>/</span>
         <span class="text-slate-900 font-medium">{{ $this->group->name }}</span>
       </div>
 
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 class="text-3xl font-bold text-slate-900">{{ $this->group->name }}</h1>
-          <p class="text-slate-600 mt-1">{{ $this->section->name }} • {{ $this->section->program->name }}</p>
+      <div class="flex items-start justify-between gap-4">
+        <div class="flex-1">
+          <h1 class="text-2xl md:text-3xl font-bold text-slate-900">{{ $this->group->name }}</h1>
+          <p class="text-slate-600 mt-1 text-sm md:text-base">{{ $this->section->name }} •
+            {{ $this->section->program->name }}
+          </p>
         </div>
 
-        <div class="flex gap-2">
+        <!-- Desktop Buttons -->
+        <div class="hidden sm:flex gap-2">
           <button
             class="px-4 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-md hover:bg-slate-50">
             Export Report
@@ -209,36 +212,59 @@ new class extends Component implements HasActions, HasSchemas {
             Group Settings
           </button>
         </div>
+
+        <!-- Mobile Dropdown -->
+        <div class="sm:hidden">
+          <x-filament::dropdown placement="bottom-end">
+            <x-slot name="trigger">
+              <button class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                <svg class="h-5 w-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                </svg>
+              </button>
+            </x-slot>
+
+            <x-filament::dropdown.list>
+              <x-filament::dropdown.list.item icon="heroicon-o-arrow-down-tray">
+                Export Report
+              </x-filament::dropdown.list.item>
+              <x-filament::dropdown.list.item icon="heroicon-o-cog-6-tooth">
+                Group Settings
+              </x-filament::dropdown.list.item>
+            </x-filament::dropdown.list>
+          </x-filament::dropdown>
+        </div>
       </div>
     </div>
 
     <!-- Main Content with Sidebar Layout -->
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
 
       <!-- Main Content Area -->
       <div class="lg:col-span-3">
         <!-- Tabs -->
-        <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
-          <div class="border-b border-slate-200 px-4">
-            <div class="flex gap-6">
+        <div class="bg-white border-x-0 border-y border-slate-200 lg:border lg:rounded-lg overflow-hidden">
+          <div class="border-b border-slate-200 overflow-x-auto">
+            <div class="flex gap-4 md:gap-6 px-3 md:px-4 min-w-max md:min-w-0">
               <a href="?tab=members" wire:navigate
-                class="py-3 px-1 border-b-2 text-sm font-medium transition-colors {{ $tab === 'members' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-600 hover:text-slate-900' }}">
+                class="py-3 px-1 border-b-2 text-sm font-medium transition-colors whitespace-nowrap {{ $tab === 'members' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-600 hover:text-slate-900' }}">
                 Members
               </a>
               <a href="?tab=title" wire:navigate
-                class="py-3 px-1 border-b-2 text-sm font-medium transition-colors {{ $tab === 'title' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-600 hover:text-slate-900' }}">
+                class="py-3 px-1 border-b-2 text-sm font-medium transition-colors whitespace-nowrap {{ $tab === 'title' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-600 hover:text-slate-900' }}">
                 Proposed Title
               </a>
               <a href="?tab=personnel" wire:navigate
-                class="py-3 px-1 border-b-2 text-sm font-medium transition-colors {{ $tab === 'personnel' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-600 hover:text-slate-900' }}">
+                class="py-3 px-1 border-b-2 text-sm font-medium transition-colors whitespace-nowrap {{ $tab === 'personnel' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-600 hover:text-slate-900' }}">
                 Personnel
               </a>
               <a href="?tab=consultation" wire:navigate
-                class="py-3 px-1 border-b-2 text-sm font-medium transition-colors {{ $tab === 'consultation' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-600 hover:text-slate-900' }}">
+                class="py-3 px-1 border-b-2 text-sm font-medium transition-colors whitespace-nowrap {{ $tab === 'consultation' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-600 hover:text-slate-900' }}">
                 Consultation
               </a>
               <a href="?tab=fees" wire:navigate
-                class="py-3 px-1 border-b-2 text-sm font-medium transition-colors {{ $tab === 'fees' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-600 hover:text-slate-900' }}">
+                class="py-3 px-1 border-b-2 text-sm font-medium transition-colors whitespace-nowrap {{ $tab === 'fees' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-600 hover:text-slate-900' }}">
                 Fees
               </a>
             </div>
@@ -246,21 +272,22 @@ new class extends Component implements HasActions, HasSchemas {
 
           <!-- Members Tab -->
           @if($tab === 'members')
-            <div class="p-4">
-              <div class="mb-4 flex items-center justify-between">
+            <div class="p-3 md:p-4">
+              <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <h3 class="font-semibold text-slate-900">Group Members</h3>
-                <div class="flex gap-2">
+                <div class="flex flex-col sm:flex-row gap-2">
                   @if($selectingLeader)
                     <button wire:click="toggleSelectLeader"
-                      class="px-4 py-2 bg-slate-600 text-white text-sm font-medium rounded-md hover:bg-slate-700">
+                      class="px-4 py-2 bg-slate-600 text-white text-sm font-medium rounded-md hover:bg-slate-700 w-full sm:w-auto">
                       Cancel
                     </button>
                   @else
                     <button wire:click="toggleSelectLeader"
-                      class="px-4 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-md hover:bg-slate-50">
+                      class="px-4 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-md hover:bg-slate-50 w-full sm:w-auto">
                       Select New Leader
                     </button>
-                    <x-filament::button wire:click="mountAction('addMembers')" class="bg-blue-500 text-white">
+                    <x-filament::button wire:click="mountAction('addMembers')"
+                      class="bg-blue-500 text-white w-full sm:w-auto">
                       Add Member
                     </x-filament::button>
                   @endif
@@ -278,20 +305,20 @@ new class extends Component implements HasActions, HasSchemas {
               <div class="space-y-3">
                 @foreach($this->members as $member)
                   <div
-                    class="border border-slate-200 rounded-lg p-4 transition-all bg-white
-                                                                      {{ $selectingLeader ? 'hover:border-blue-500 hover:shadow-md cursor-pointer' : 'hover:border-blue-300' }}"
+                    class="border border-slate-200 rounded-lg p-3 md:p-4 transition-all bg-white
+                              {{ $selectingLeader ? 'hover:border-blue-500 hover:shadow-md cursor-pointer' : 'hover:border-blue-300' }}"
                     @if($selectingLeader) wire:click="selectLeader({{ $member->id }})" @endif>
-                    <div class="flex items-center justify-between">
-                      <div class="flex items-center gap-4">
+                    <div class="flex items-center justify-between gap-3">
+                      <div class="flex items-center gap-3 md:gap-4 min-w-0">
                         <div
-                          class="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold">
+                          class="h-10 w-10 md:h-12 md:w-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm md:text-base shrink-0">
                           {{ substr($member->first_name, 0, 1) }}
                         </div>
-                        <div>
-                          <h4 class="font-semibold text-slate-900 flex items-center gap-2">
-                            {{ $member->first_name }} {{ $member->last_name }}
+                        <div class="min-w-0">
+                          <h4 class="font-semibold text-slate-900 flex items-center gap-2 flex-wrap">
+                            <span class="truncate">{{ $member->first_name }} {{ $member->last_name }}</span>
                             @if($member->id === $this->group->leader_id)
-                              <span class="px-2 py-0.5 text-xs font-medium rounded bg-purple-100 text-purple-700">
+                              <span class="px-2 py-0.5 text-xs font-medium rounded bg-purple-100 text-purple-700 shrink-0">
                                 Leader
                               </span>
                             @endif
@@ -303,7 +330,7 @@ new class extends Component implements HasActions, HasSchemas {
                       @if(!$selectingLeader)
                         <x-filament::dropdown placement="bottom-end">
                           <x-slot name="trigger">
-                            <button class="p-1 hover:bg-slate-100 rounded transition-colors">
+                            <button class="p-1 hover:bg-slate-100 rounded transition-colors shrink-0">
                               <svg class="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
@@ -343,22 +370,23 @@ new class extends Component implements HasActions, HasSchemas {
 
           <!-- Fees Tab -->
           @if($tab === 'fees')
-            <div class="p-4">
+            <div class="p-3 md:p-4">
               <div class="mb-6">
                 <h3 class="font-semibold text-slate-900 mb-4">Payment Summary</h3>
 
-                <div class="grid grid-cols-3 gap-4 mb-6">
-                  <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-6">
+                  <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 md:p-4">
                     <div class="text-xs text-slate-500 mb-1 uppercase tracking-wide">Total Amount</div>
-                    <div class="text-2xl font-bold text-slate-900">₱{{ number_format($fees['total']) }}</div>
+                    <div class="text-xl md:text-2xl font-bold text-slate-900">₱{{ number_format($fees['total']) }}</div>
                   </div>
-                  <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div class="bg-green-50 border border-green-200 rounded-lg p-3 md:p-4">
                     <div class="text-xs text-green-600 mb-1 uppercase tracking-wide">Total Paid</div>
-                    <div class="text-2xl font-bold text-green-700">₱{{ number_format($fees['paid']) }}</div>
+                    <div class="text-xl md:text-2xl font-bold text-green-700">₱{{ number_format($fees['paid']) }}</div>
                   </div>
-                  <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                  <div class="bg-orange-50 border border-orange-200 rounded-lg p-3 md:p-4">
                     <div class="text-xs text-orange-600 mb-1 uppercase tracking-wide">Balance</div>
-                    <div class="text-2xl font-bold text-orange-700">₱{{ number_format($fees['balance']) }}</div>
+                    <div class="text-xl md:text-2xl font-bold text-orange-700">₱{{ number_format($fees['balance']) }}
+                    </div>
                   </div>
                 </div>
 
@@ -378,13 +406,13 @@ new class extends Component implements HasActions, HasSchemas {
                 <h3 class="font-semibold text-slate-900 mb-4">Payment History</h3>
                 <div class="space-y-3">
                   @foreach($fees['payments'] as $payment)
-                    <div class="border border-slate-200 rounded-lg p-4 bg-white">
-                      <div class="flex items-center justify-between">
+                    <div class="border border-slate-200 rounded-lg p-3 md:p-4 bg-white">
+                      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                         <div>
                           <h4 class="font-semibold text-slate-900">{{ $payment['type'] }}</h4>
                           <p class="text-sm text-slate-500">{{ $payment['date'] }}</p>
                         </div>
-                        <div class="text-right">
+                        <div class="sm:text-right">
                           <div class="text-lg font-bold text-green-600">₱{{ number_format($payment['amount']) }}</div>
                         </div>
                       </div>
@@ -399,7 +427,8 @@ new class extends Component implements HasActions, HasSchemas {
 
       <!-- Stats Sidebar -->
       <div class="lg:col-span-1">
-        <div class="bg-white border border-slate-200 rounded-lg p-5 sticky top-4">
+        <div
+          class="bg-white border-x-0 border-y border-slate-200 lg:border lg:rounded-lg p-4 md:p-5 lg:sticky lg:top-4">
           <h3 class="font-bold text-slate-900 mb-4">Group Overview</h3>
 
           <div class="space-y-4">
@@ -416,7 +445,7 @@ new class extends Component implements HasActions, HasSchemas {
 
             <div class="pb-4 border-b border-slate-100">
               <div class="text-xs text-slate-500 mb-1.5 uppercase tracking-wide">Members</div>
-              <div class="text-3xl font-bold text-slate-900">{{ $this->membersCount }}</div>
+              <div class="text-2xl md:text-3xl font-bold text-slate-900">{{ $this->membersCount }}</div>
             </div>
 
             <div class="pb-4 border-b border-slate-100">
@@ -431,9 +460,8 @@ new class extends Component implements HasActions, HasSchemas {
           </div>
         </div>
       </div>
-
     </div>
   </div>
-
   <x-filament-actions::modals />
+  <div class="h-4 lg:hidden"></div>
 </div>

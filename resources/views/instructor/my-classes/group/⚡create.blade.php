@@ -138,9 +138,10 @@ new class extends Component implements HasSchemas {
     <!-- Header with Breadcrumb -->
     <div class="mb-6">
       <div class="flex items-center gap-2 text-sm text-slate-600 mb-4">
-        <a href="{{ route('instructor.classes') }}" class="hover:text-blue-600 transition-colors">My Classes</a>
+        <a href="{{ route('instructor.classes') }}" wire:navigate class="hover:text-blue-600 transition-colors">My
+          Classes</a>
         <x-heroicon-o-chevron-right class="h-4 w-4" />
-        <a href="{{ route('instructor.classes.view', ['section' => $section->id]) }}"
+        <a href="{{ route('instructor.classes.view', ['section' => $section->id]) }}" wire:navigate
           class="hover:text-blue-600 transition-colors">{{ $section->name }}</a>
         <x-heroicon-o-chevron-right class="h-4 w-4" />
         <span class="text-slate-900 font-medium">Create Group</span>

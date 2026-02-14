@@ -50,7 +50,7 @@ new class extends Component
     <!-- Header -->
     <div class="mb-6">
       <div class="flex items-center gap-2 text-sm text-slate-600 mb-3">
-        <a href="{{ route('instructor.classes') }}" class="hover:text-blue-600">My Classes</a>
+        <a href="{{ route('instructor.classes') }}" wire:navigate class="hover:text-blue-600">My Classes</a>
         <span>/</span>
         <span class="text-slate-900 font-medium">{{ $this->classData['section'] }}</span>
       </div>

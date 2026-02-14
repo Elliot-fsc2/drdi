@@ -32,6 +32,7 @@ new class extends Component implements HasActions, HasSchemas {
   public function scheduleConsultationAction(): Action
   {
     return Action::make('scheduleConsultation')
+      ->modalAutofocus(false)
       ->modalWidth('2xl')
       ->modalCloseButton(false)
       ->label('Schedule Consultation')
@@ -95,6 +96,7 @@ new class extends Component implements HasActions, HasSchemas {
   public function editConsultationAction(): Action
   {
     return Action::make('editConsultation')
+      ->modalAutofocus(false)
       ->modalWidth('2xl')
       ->modalCloseButton(false)
       ->icon(Heroicon::PencilSquare)
@@ -199,7 +201,7 @@ new class extends Component implements HasActions, HasSchemas {
 <div class="p-4">
   <div class="mb-4 flex items-center justify-between">
     <h3 class="font-semibold text-slate-900">Consultation Sessions</h3>
-    <x-filament::button wire:click="mountAction('scheduleConsultation')" class="bg-blue-600">
+    <x-filament::button wire:click="mountAction('scheduleConsultation')" class="bg-blue-600 text-white">
       Schedule Consultation
     </x-filament::button>
   </div>
@@ -228,9 +230,9 @@ new class extends Component implements HasActions, HasSchemas {
                 <h4 class="font-semibold text-slate-900">{{ $consultation['topic'] }}</h4>
                 <span
                   class="px-2 py-0.5 text-xs font-medium rounded
-                                                              {{ $consultation['status'] === 'Completed' ? 'bg-green-100 text-green-700' : '' }}
-                                                              {{ $consultation['status'] === 'Scheduled' ? 'bg-blue-100 text-blue-700' : '' }}
-                                                              {{ $consultation['status'] === 'Cancelled' ? 'bg-red-100 text-red-700' : '' }}">
+                                                                          {{ $consultation['status'] === 'Completed' ? 'bg-green-100 text-green-700' : '' }}
+                                                                          {{ $consultation['status'] === 'Scheduled' ? 'bg-blue-100 text-blue-700' : '' }}
+                                                                          {{ $consultation['status'] === 'Cancelled' ? 'bg-red-100 text-red-700' : '' }}">
                   {{ $consultation['status'] }}
                 </span>
               </div>
