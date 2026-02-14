@@ -215,7 +215,7 @@ new class extends Component implements HasActions, HasSchemas {
       <h3 class="mt-2 text-sm font-medium text-slate-900">No consultations scheduled</h3>
       <p class="mt-1 text-sm text-slate-500">Get started by scheduling your first consultation session.</p>
       <div class="mt-6">
-        <x-filament::button wire:click="mountAction('scheduleConsultation')" class="bg-blue-600">
+        <x-filament::button wire:click="mountAction('scheduleConsultation')" class="bg-blue-600 text-white">
           Schedule Consultation
         </x-filament::button>
       </div>
@@ -230,9 +230,9 @@ new class extends Component implements HasActions, HasSchemas {
                 <h4 class="font-semibold text-slate-900">{{ $consultation['topic'] }}</h4>
                 <span
                   class="px-2 py-0.5 text-xs font-medium rounded
-                                                                          {{ $consultation['status'] === 'Completed' ? 'bg-green-100 text-green-700' : '' }}
-                                                                          {{ $consultation['status'] === 'Scheduled' ? 'bg-blue-100 text-blue-700' : '' }}
-                                                                          {{ $consultation['status'] === 'Cancelled' ? 'bg-red-100 text-red-700' : '' }}">
+                                                                              {{ $consultation['status'] === 'Completed' ? 'bg-green-100 text-green-700' : '' }}
+                                                                              {{ $consultation['status'] === 'Scheduled' ? 'bg-blue-100 text-blue-700' : '' }}
+                                                                              {{ $consultation['status'] === 'Cancelled' ? 'bg-red-100 text-red-700' : '' }}">
                   {{ $consultation['status'] }}
                 </span>
               </div>

@@ -463,5 +463,5 @@ new class extends Component implements HasActions, HasSchemas {
     </div>
   </div>
   <x-filament-actions::modals />
-  <div class="h-4 lg:hidden"></div>
+  {{-- <div class="h-4 lg:hidden"></div> --}}
 </div>
