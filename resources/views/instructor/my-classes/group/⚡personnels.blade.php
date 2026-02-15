@@ -5,6 +5,7 @@ use App\Models\Group;
 use App\Models\Instructor;
 use App\Models\Personnel;
 use App\Models\Section;
+use App\Services\FeeService;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
@@ -42,6 +43,7 @@ new class extends Component implements HasActions, HasSchemas {
   {
     return Action::make('assignPersonnel')
       ->label('Assign Personnel')
+      ->databaseTransaction()
       ->icon(Heroicon::UserPlus)
       ->color('primary')
       ->modalWidth('xl')
@@ -81,6 +83,10 @@ new class extends Component implements HasActions, HasSchemas {
           'role' => $data['role'],
         ]);
 
+        // Recalculate honorarium based on updated personnel count
+        $feeService = app(FeeService::class);
+        $feeService->syncHonorarium($this->group);
+
         unset($this->personnels);
       });
   }
@@ -99,6 +105,11 @@ new class extends Component implements HasActions, HasSchemas {
       ->action(function (array $arguments): void {
         $personnelId = $arguments['personnelId'];
         Personnel::destroy($personnelId);
+
+        // Recalculate honorarium based on updated personnel count
+        $feeService = app(FeeService::class);
+        $feeService->syncHonorarium($this->group);
+
         unset($this->personnels);
       });
   }

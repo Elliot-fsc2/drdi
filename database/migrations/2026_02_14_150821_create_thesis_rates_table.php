@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('fees', function (Blueprint $table) {
+        Schema::create('thesis_rates', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->decimal('amount', 8, 2);
-            $table->foreignId('semester_id')->nullable()->constrained()->nullOnDelete();
+            $table->integer('amount');
+            $table->string('type');
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('fees');
+        Schema::dropIfExists('thesis_rates');
     }
 };

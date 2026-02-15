@@ -26,6 +26,16 @@ new #[Title('My Classes')]
   public $search = '';
   public $semester = '2nd Semester 2025-2026';
 
+  #[Computed]
+  public function routePrefix(): string
+  {
+    $user = auth()->user();
+    $isRDO = $user->profileable_type === \App\Models\Instructor::class
+      && $user->profileable?->role === \App\Enums\InstructorRole::RDO;
+
+    return $isRDO ? 'rdo' : 'instructor';
+  }
+
   // public $classes = [
   //   [
   //     'section' => 'BSCS-4A',
@@ -160,8 +170,8 @@ new #[Title('My Classes')]
     @else
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
         @foreach($this->classes as $class)
-          <a href="{{ route('instructor.classes.view', ['section' => $class['id']]) }}" wire:key="{{ $class['section'] }}"
-            wire:navigate>
+          <a href="{{ route($this->routePrefix . '.classes.view', ['section' => $class['id']]) }}"
+            wire:key="{{ $class['section'] }}" wire:navigate>
             <div
               class="bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md hover:border-blue-300 transition-all duration-200 overflow-hidden group cursor-pointer h-full">
               <div

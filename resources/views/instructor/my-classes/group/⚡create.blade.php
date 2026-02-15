@@ -2,12 +2,14 @@
 
 use App\Models\Group;
 use App\Models\Section;
+use App\Services\FeeService;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -19,6 +21,16 @@ new class extends Component implements HasSchemas {
   public ?array $data = [];
 
   public array $selectedMembers = [];
+
+  #[Computed]
+  public function routePrefix(): string
+  {
+    $user = auth()->user();
+    $isRDO = $user->profileable_type === \App\Models\Instructor::class
+      && $user->profileable?->role === \App\Enums\InstructorRole::RDO;
+
+    return $isRDO ? 'rdo' : 'instructor';
+  }
 
   public function mount(): void
   {
@@ -100,26 +112,32 @@ new class extends Component implements HasSchemas {
       return;
     }
 
-    $group = Group::create([
-      'name' => $data['name'],
-      'section_id' => $this->section->id,
-      'leader_id' => $data['leader_id'],
-    ]);
+    DB::transaction(function () use ($data) {
+      $group = Group::create([
+        'name' => $data['name'],
+        'section_id' => $this->section->id,
+        'leader_id' => $data['leader_id'],
+      ]);
 
-    // Add leader and selected members
-    $members = $this->selectedMembers;
-    $members[] = $data['leader_id'];
-    $members = array_unique($members);
+      // Add leader and selected members
+      $members = $this->selectedMembers;
+      $members[] = $data['leader_id'];
+      $members = array_unique($members);
 
-    $group->members()->attach($members);
+      $group->members()->attach($members);
 
-    Notification::make()
-      ->title('Group created successfully')
-      ->body('The research group has been created with ' . count($members) . ' member(s).')
-      ->success()
-      ->send();
+      // Initialize group fee ledger
+      $feeService = app(FeeService::class);
+      $feeService->initializeGroupLedger($group);
 
-    $this->redirect(route('instructor.classes.view', ['section' => $this->section->id, 'tab' => 'groups']), navigate: true);
+      Notification::make()
+        ->title('Group created successfully')
+        ->body('The research group has been created with ' . count($members) . ' member(s).')
+        ->success()
+        ->send();
+    });
+
+    $this->redirect(route($this->routePrefix . '.classes.view', ['section' => $this->section->id, 'tab' => 'groups']), navigate: true);
   }
 };
 ?>
@@ -138,10 +156,11 @@ new class extends Component implements HasSchemas {
     <!-- Header with Breadcrumb -->
     <div class="mb-6">
       <div class="flex items-center gap-2 text-sm text-slate-600 mb-4">
-        <a href="{{ route('instructor.classes') }}" wire:navigate class="hover:text-blue-600 transition-colors">My
+        <a href="{{ route($this->routePrefix . '.classes') }}" wire:navigate
+          class="hover:text-blue-600 transition-colors">My
           Classes</a>
         <x-heroicon-o-chevron-right class="h-4 w-4" />
-        <a href="{{ route('instructor.classes.view', ['section' => $section->id]) }}" wire:navigate
+        <a href="{{ route($this->routePrefix . '.classes.view', ['section' => $section->id]) }}" wire:navigate
           class="hover:text-blue-600 transition-colors">{{ $section->name }}</a>
         <x-heroicon-o-chevron-right class="h-4 w-4" />
         <span class="text-slate-900 font-medium">Create Group</span>
@@ -154,7 +173,8 @@ new class extends Component implements HasSchemas {
         </div>
 
         <div class="flex gap-2">
-          <a href="{{ route('instructor.classes.view', ['section' => $section->id, 'tab' => 'groups']) }}" wire:navigate
+          <a href="{{ route($this->routePrefix . '.classes.view', ['section' => $section->id, 'tab' => 'groups']) }}"
+            wire:navigate
             class="px-4 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-md hover:bg-slate-50 transition-colors">
             <div class="flex items-center gap-2">
               <x-heroicon-o-x-mark class="h-4 w-4" />

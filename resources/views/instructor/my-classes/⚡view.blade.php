@@ -14,6 +14,16 @@ new class extends Component
     public $tab = 'groups';
 
     #[Computed]
+    public function routePrefix(): string
+    {
+        $user = auth()->user();
+        $isRDO = $user->profileable_type === \App\Models\Instructor::class
+                 && $user->profileable?->role === \App\Enums\InstructorRole::RDO;
+
+        return $isRDO ? 'rdo' : 'instructor';
+    }
+
+    #[Computed]
     public function classData(): array
     {
         return [
@@ -50,7 +60,7 @@ new class extends Component
     <!-- Header -->
     <div class="mb-6">
       <div class="flex items-center gap-2 text-sm text-slate-600 mb-3">
-        <a href="{{ route('instructor.classes') }}" wire:navigate class="hover:text-blue-600">My Classes</a>
+        <a href="{{ route($this->routePrefix . '.classes') }}" wire:navigate class="hover:text-blue-600">My Classes</a>
         <span>/</span>
         <span class="text-slate-900 font-medium">{{ $this->classData['section'] }}</span>
       </div>
@@ -106,7 +116,7 @@ new class extends Component
                     class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-md text-sm">
                   <x-heroicon-o-magnifying-glass class="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                 </div>
-                <a href="{{ route('instructor.classes.group.create', ['section' => $section->id]) }}" wire:navigate
+                <a href="{{ route($this->routePrefix . '.classes.group.create', ['section' => $section->id]) }}" wire:navigate
                   class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors inline-flex items-center gap-2">
                   <x-heroicon-o-plus class="h-4 w-4" />
                   <span>Add Group</span>
@@ -122,7 +132,7 @@ new class extends Component
               @else
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   @foreach($this->groups as $group)
-                    <a href="{{ route('instructor.classes.group.view', ['section' => $this->classData['id'], 'group' => $group->id]) }}"
+                    <a href="{{ route($this->routePrefix . '.classes.group.view', ['section' => $this->classData['id'], 'group' => $group->id]) }}"
                       wire:navigate
                       class="block border border-slate-200 rounded-lg p-5 hover:border-blue-400 hover:shadow-md transition-all bg-white group">
                       <div class="flex items-start justify-between mb-3">

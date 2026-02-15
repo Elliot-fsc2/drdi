@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\InstructorRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -16,6 +17,13 @@ class Instructor extends Model
         'department_id',
         'role',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'role' => InstructorRole::class,
+        ];
+    }
 
     public function department()
     {

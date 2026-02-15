@@ -13,6 +13,13 @@ class Section extends Model
         'semester_id',
     ];
 
+    public function scopeActive($query)
+    {
+        return $query->whereHas('semester', function ($q) {
+            $q->active();
+        });
+    }
+
     public function program()
     {
         return $this->belongsTo(Program::class);

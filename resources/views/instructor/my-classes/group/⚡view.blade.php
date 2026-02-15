@@ -26,6 +26,16 @@ new class extends Component implements HasActions, HasSchemas {
 
   public bool $selectingLeader = false;
 
+  #[Computed]
+  public function routePrefix(): string
+  {
+    $user = auth()->user();
+    $isRDO = $user->profileable_type === \App\Models\Instructor::class
+      && $user->profileable?->role === \App\Enums\InstructorRole::RDO;
+
+    return $isRDO ? 'rdo' : 'instructor';
+  }
+
   public function mount()
   {
     abort_if($this->group->section->instructor_id !== auth()->user()->profileable->id, 403);
@@ -151,24 +161,6 @@ new class extends Component implements HasActions, HasSchemas {
     'status' => 'Under Review',
     'submitted_date' => '2026-02-10',
   ];
-
-  public $fees = [
-    'total' => 5000,
-    'paid' => 3000,
-    'balance' => 2000,
-    'payments' => [
-      [
-        'date' => '2026-01-15',
-        'amount' => 1500,
-        'type' => 'Initial Payment',
-      ],
-      [
-        'date' => '2026-02-01',
-        'amount' => 1500,
-        'type' => 'Second Payment',
-      ],
-    ],
-  ];
 };
 ?>
 
@@ -186,9 +178,9 @@ new class extends Component implements HasActions, HasSchemas {
     <!-- Header -->
     <div class="mb-4 md:mb-6 px-3 lg:px-0">
       <div class="flex items-center gap-2 text-xs md:text-sm text-slate-600 mb-3 pt-3 lg:pt-0">
-        <a href="{{ route('instructor.classes') }}" wire:navigate class="hover:text-blue-600">My Classes</a>
+        <a href="{{ route($this->routePrefix . '.classes') }}" wire:navigate class="hover:text-blue-600">My Classes</a>
         <span>/</span>
-        <a href="{{ route('instructor.classes.view', ['section' => $this->section->id]) }}" wire:navigate
+        <a href="{{ route($this->routePrefix . '.classes.view', ['section' => $this->section->id]) }}" wire:navigate
           class="hover:text-blue-600">{{ $this->section->name }}</a>
         <span>/</span>
         <span class="text-slate-900 font-medium">{{ $this->group->name }}</span>
@@ -306,7 +298,7 @@ new class extends Component implements HasActions, HasSchemas {
                 @foreach($this->members as $member)
                   <div
                     class="border border-slate-200 rounded-lg p-3 md:p-4 transition-all bg-white
-                              {{ $selectingLeader ? 'hover:border-blue-500 hover:shadow-md cursor-pointer' : 'hover:border-blue-300' }}"
+                                      {{ $selectingLeader ? 'hover:border-blue-500 hover:shadow-md cursor-pointer' : 'hover:border-blue-300' }}"
                     @if($selectingLeader) wire:click="selectLeader({{ $member->id }})" @endif>
                     <div class="flex items-center justify-between gap-3">
                       <div class="flex items-center gap-3 md:gap-4 min-w-0">
@@ -370,57 +362,7 @@ new class extends Component implements HasActions, HasSchemas {
 
           <!-- Fees Tab -->
           @if($tab === 'fees')
-            <div class="p-3 md:p-4">
-              <div class="mb-6">
-                <h3 class="font-semibold text-slate-900 mb-4">Payment Summary</h3>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-6">
-                  <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 md:p-4">
-                    <div class="text-xs text-slate-500 mb-1 uppercase tracking-wide">Total Amount</div>
-                    <div class="text-xl md:text-2xl font-bold text-slate-900">₱{{ number_format($fees['total']) }}</div>
-                  </div>
-                  <div class="bg-green-50 border border-green-200 rounded-lg p-3 md:p-4">
-                    <div class="text-xs text-green-600 mb-1 uppercase tracking-wide">Total Paid</div>
-                    <div class="text-xl md:text-2xl font-bold text-green-700">₱{{ number_format($fees['paid']) }}</div>
-                  </div>
-                  <div class="bg-orange-50 border border-orange-200 rounded-lg p-3 md:p-4">
-                    <div class="text-xs text-orange-600 mb-1 uppercase tracking-wide">Balance</div>
-                    <div class="text-xl md:text-2xl font-bold text-orange-700">₱{{ number_format($fees['balance']) }}
-                    </div>
-                  </div>
-                </div>
-
-                <div class="mb-2">
-                  <div class="flex items-center justify-between text-sm text-slate-600 mb-2">
-                    <span>Payment Progress</span>
-                    <span class="font-semibold">{{ round(($fees['paid'] / $fees['total']) * 100) }}%</span>
-                  </div>
-                  <div class="w-full bg-slate-200 rounded-full h-2">
-                    <div class="bg-green-600 h-2 rounded-full"
-                      style="width: {{ ($fees['paid'] / $fees['total']) * 100 }}%"></div>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h3 class="font-semibold text-slate-900 mb-4">Payment History</h3>
-                <div class="space-y-3">
-                  @foreach($fees['payments'] as $payment)
-                    <div class="border border-slate-200 rounded-lg p-3 md:p-4 bg-white">
-                      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                        <div>
-                          <h4 class="font-semibold text-slate-900">{{ $payment['type'] }}</h4>
-                          <p class="text-sm text-slate-500">{{ $payment['date'] }}</p>
-                        </div>
-                        <div class="sm:text-right">
-                          <div class="text-lg font-bold text-green-600">₱{{ number_format($payment['amount']) }}</div>
-                        </div>
-                      </div>
-                    </div>
-                  @endforeach
-                </div>
-              </div>
-            </div>
+            <livewire:instructor::my-classes.group.fees :section="$this->section" :group="$this->group" />
           @endif
         </div>
       </div>

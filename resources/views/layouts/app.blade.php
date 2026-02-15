@@ -72,6 +72,7 @@
     sidebarOpen: localStorage.getItem('sidebarOpen') === 'false' ? false : true,
     mobileMenuOpen: false,
     profileDropdownOpen: false,
+    managementOpen: false,
     init() {
         this.$watch('sidebarOpen', value => localStorage.setItem('sidebarOpen', value))
     }
@@ -108,7 +109,7 @@
       </div>
 
       <!-- Mobile Navigation -->
-      <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+      <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
         @php
           $userType = auth()->user()->profileable_type;
           $isInstructor = $userType === \App\Models\Instructor::class && auth()->user()->profileable?->role !== \App\Enums\InstructorRole::RDO;
@@ -119,7 +120,7 @@
         @if($isInstructor)
           {{-- Instructor Navigation --}}
           <a href="{{ route('instructor.home') }}" @class([
-            'flex items-center gap-3 px-4 py-3 rounded-xl transition-all',
+            'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
             'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('instructor.home'),
             'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('instructor.home'),
           ])>
@@ -127,7 +128,7 @@
             <span class="font-medium">Dashboard</span>
           </a>
           <a href="{{ route('instructor.classes') }}" @class([
-            'flex items-center gap-3 px-4 py-3 rounded-xl transition-all',
+            'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
             'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('instructor.classes*'),
             'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('instructor.classes*'),
           ])>
@@ -135,34 +136,34 @@
             <span class="font-medium">My Classes</span>
           </a>
           <a href="#"
-            class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
+            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
             <x-heroicon-o-book-open class="w-6 h-6 flex-shrink-0" />
             <span class="font-medium">Publications</span>
           </a>
           <a href="#"
-            class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
+            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
             <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
             <span class="font-medium">Team</span>
           </a>
           <a href="#"
-            class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
+            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
             <x-heroicon-o-document-text class="w-6 h-6 flex-shrink-0" />
             <span class="font-medium">Documents</span>
           </a>
           <a href="#"
-            class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
+            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
             <x-heroicon-o-chart-bar class="w-6 h-6 flex-shrink-0" />
             <span class="font-medium">Analytics</span>
           </a>
           <a href="#"
-            class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
+            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
             <x-heroicon-o-cog-6-tooth class="w-6 h-6 flex-shrink-0" />
             <span class="font-medium">Settings</span>
           </a>
         @elseif($isStudent)
           {{-- Student Navigation --}}
           <a href="{{ route('student.home') }}" @class([
-            'flex items-center gap-3 px-4 py-3 rounded-xl transition-all',
+            'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
             'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('student.home'),
             'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('student.home'),
           ])>
@@ -170,67 +171,96 @@
             <span class="font-medium">Dashboard</span>
           </a>
           <a href="#"
-            class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
+            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
             <x-heroicon-o-beaker class="w-6 h-6 flex-shrink-0" />
             <span class="font-medium">My Projects</span>
           </a>
           <a href="#"
-            class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
+            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
             <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
             <span class="font-medium">My Groups</span>
           </a>
           <a href="#"
-            class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
+            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
             <x-heroicon-o-chat-bubble-left-right class="w-6 h-6 flex-shrink-0" />
             <span class="font-medium">Consultations</span>
           </a>
           <a href="#"
-            class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
+            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
             <x-heroicon-o-book-open class="w-6 h-6 flex-shrink-0" />
             <span class="font-medium">Resources</span>
           </a>
           <a href="#"
-            class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
+            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
             <x-heroicon-o-cog-6-tooth class="w-6 h-6 flex-shrink-0" />
             <span class="font-medium">Settings</span>
           </a>
         @elseif($isRDO)
           {{-- RDO Navigation --}}
           <a href="{{ route('rdo.home') }}" @class([
-            'flex items-center gap-3 px-4 py-3 rounded-xl transition-all',
+            'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
             'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('rdo.home'),
             'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('rdo.home'),
           ])>
             <x-heroicon-o-home class="w-6 h-6 flex-shrink-0" />
             <span class="font-medium">Dashboard</span>
           </a>
+          <a href="{{ route('rdo.classes') }}" @class([
+            'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
+            'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('rdo.classes*'),
+            'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('rdo.classes*'),
+          ])>
+            <x-heroicon-o-academic-cap class="w-6 h-6 flex-shrink-0" />
+            <span class="font-medium">My Classes</span>
+          </a>
           <a href="#"
-            class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
+            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
             <x-heroicon-o-document-text class="w-6 h-6 flex-shrink-0" />
             <span class="font-medium">Proposals</span>
           </a>
           <a href="#"
-            class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
+            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
             <x-heroicon-o-beaker class="w-6 h-6 flex-shrink-0" />
             <span class="font-medium">Projects</span>
           </a>
+
+          {{-- Management Dropdown --}}
+          <div>
+            <button @click="managementOpen = !managementOpen"
+              class="flex items-center justify-between w-full gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
+              <div class="flex items-center gap-3">
+                <x-heroicon-o-squares-2x2 class="w-6 h-6 flex-shrink-0" />
+                <span class="font-medium">Management</span>
+              </div>
+              <x-heroicon-o-chevron-down class="w-4 h-4 transition-transform"
+                x-bind:class="managementOpen ? 'rotate-180' : ''" />
+            </button>
+            <div x-show="managementOpen" x-collapse class="mt-1 ml-6 space-y-1">
+              <a href="#"
+                class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
+                <x-heroicon-o-user-group class="w-5 h-5 flex-shrink-0" />
+                <span class="font-medium text-sm">Group Masterlist</span>
+              </a>
+            </div>
+          </div>
+
           <a href="#"
-            class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
+            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
             <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
             <span class="font-medium">Instructors</span>
           </a>
           <a href="#"
-            class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
+            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
             <x-heroicon-o-users class="w-6 h-6 flex-shrink-0" />
             <span class="font-medium">Students</span>
           </a>
           <a href="#"
-            class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
+            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
             <x-heroicon-o-chart-bar class="w-6 h-6 flex-shrink-0" />
             <span class="font-medium">Reports</span>
           </a>
           <a href="#"
-            class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
+            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
             <x-heroicon-o-cog-6-tooth class="w-6 h-6 flex-shrink-0" />
             <span class="font-medium">Settings</span>
           </a>
@@ -261,7 +291,7 @@
       </div>
 
       <!-- Navigation -->
-      <nav class="flex-1 py-6 space-y-2 overflow-y-auto" :class="sidebarOpen ? 'px-4' : 'px-3'">
+      <nav class="flex-1 py-6 space-y-1 overflow-y-auto" :class="sidebarOpen ? 'px-4' : 'px-3'">
         @php
           $userType = auth()->user()->profileable_type;
           $isInstructor = $userType === \App\Models\Instructor::class && auth()->user()->profileable?->role !== \App\Enums\InstructorRole::RDO;
@@ -273,7 +303,7 @@
           {{-- Instructor Navigation --}}
           <a href="{{ route('instructor.home') }}" wire:navigate :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
             @class([
-              'flex items-center gap-3 py-3 rounded-xl transition-all group',
+              'flex items-center gap-3 py-2 rounded-xl transition-all group',
               'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('instructor.home'),
               'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('instructor.home'),
             ])
@@ -283,7 +313,7 @@
           </a>
           <a href="{{ route('instructor.classes') }}" wire:navigate :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
             @class([
-              'flex items-center gap-3 py-3 rounded-xl transition-all group',
+              'flex items-center gap-3 py-2 rounded-xl transition-all group',
               'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('instructor.classes*'),
               'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('instructor.classes*'),
             ])
@@ -292,31 +322,31 @@
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">My Classes</span>
           </a>
           <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
+            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
             :title="!sidebarOpen ? 'Publications' : null">
             <x-heroicon-o-book-open class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Publications</span>
           </a>
           <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
+            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
             :title="!sidebarOpen ? 'Team' : null">
             <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Team</span>
           </a>
           <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
+            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
             :title="!sidebarOpen ? 'Documents' : null">
             <x-heroicon-o-document-text class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Documents</span>
           </a>
           <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
+            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
             :title="!sidebarOpen ? 'Analytics' : null">
             <x-heroicon-o-chart-bar class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Analytics</span>
           </a>
           <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
+            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
             :title="!sidebarOpen ? 'Settings' : null">
             <x-heroicon-o-cog-6-tooth class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Settings</span>
@@ -325,7 +355,7 @@
           {{-- Student Navigation --}}
           <a href="{{ route('student.home') }}" wire:navigate :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
             @class([
-              'flex items-center gap-3 py-3 rounded-xl transition-all group',
+              'flex items-center gap-3 py-2 rounded-xl transition-all group',
               'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('student.home'),
               'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('student.home'),
             ]) :title="!sidebarOpen ? 'Dashboard' : null">
@@ -333,31 +363,31 @@
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Dashboard</span>
           </a>
           <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
+            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
             :title="!sidebarOpen ? 'My Projects' : null">
             <x-heroicon-o-beaker class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">My Projects</span>
           </a>
           <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
+            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
             :title="!sidebarOpen ? 'My Groups' : null">
             <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">My Groups</span>
           </a>
           <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
+            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
             :title="!sidebarOpen ? 'Consultations' : null">
             <x-heroicon-o-chat-bubble-left-right class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Consultations</span>
           </a>
           <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
+            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
             :title="!sidebarOpen ? 'Resources' : null">
             <x-heroicon-o-book-open class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Resources</span>
           </a>
           <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
+            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
             :title="!sidebarOpen ? 'Settings' : null">
             <x-heroicon-o-cog-6-tooth class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Settings</span>
@@ -365,45 +395,76 @@
         @elseif($isRDO)
           {{-- RDO Navigation --}}
           <a href="{{ route('rdo.home') }}" wire:navigate :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'" @class([
-            'flex items-center gap-3 py-3 rounded-xl transition-all group',
+            'flex items-center gap-3 py-2 rounded-xl transition-all group',
             'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('rdo.home'),
             'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('rdo.home'),
           ]) :title="!sidebarOpen ? 'Dashboard' : null">
             <x-heroicon-o-home class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Dashboard</span>
           </a>
+          <a href="{{ route('rdo.classes') }}" wire:navigate :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
+            @class([
+              'flex items-center gap-3 py-2 rounded-xl transition-all group',
+              'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('rdo.classes*'),
+              'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('rdo.classes*'),
+            ]) :title="!sidebarOpen ? 'My Classes' : null">
+            <x-heroicon-o-academic-cap class="w-6 h-6 flex-shrink-0" />
+            <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">My Classes</span>
+          </a>
           <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
+            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
             :title="!sidebarOpen ? 'Proposals' : null">
             <x-heroicon-o-document-text class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Proposals</span>
           </a>
           <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
+            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
             :title="!sidebarOpen ? 'Projects' : null">
             <x-heroicon-o-beaker class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Projects</span>
           </a>
+
+          {{-- Management Dropdown --}}
+          <div>
+            <button @click="managementOpen = !managementOpen" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
+              class="flex items-center w-full gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
+              :title="!sidebarOpen ? 'Management' : null">
+              <x-heroicon-o-squares-2x2 class="w-6 h-6 flex-shrink-0" />
+              <span x-show="sidebarOpen" x-transition
+                class="font-medium whitespace-nowrap flex-1 text-left">Management</span>
+              <x-heroicon-o-chevron-down x-show="sidebarOpen" class="w-4 h-4 transition-transform"
+                x-bind:class="managementOpen ? 'rotate-180' : ''" />
+            </button>
+            <div x-show="managementOpen && sidebarOpen" x-collapse class="mt-1 space-y-1">
+              <a href="#" :class="sidebarOpen ? 'ml-6 px-4' : 'px-3 justify-center'"
+                class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group">
+                <x-heroicon-o-user-group class="w-5 h-5 flex-shrink-0" />
+                <span x-show="sidebarOpen" x-transition class="font-medium text-sm whitespace-nowrap">Group
+                  Masterlist</span>
+              </a>
+            </div>
+          </div>
+
           <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
+            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
             :title="!sidebarOpen ? 'Instructors' : null">
             <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Instructors</span>
           </a>
           <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
+            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
             :title="!sidebarOpen ? 'Students' : null">
             <x-heroicon-o-users class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Students</span>
           </a>
           <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
+            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
             :title="!sidebarOpen ? 'Reports' : null">
             <x-heroicon-o-chart-bar class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Reports</span>
           </a>
           <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
+            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
             :title="!sidebarOpen ? 'Settings' : null">
             <x-heroicon-o-cog-6-tooth class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Settings</span>
@@ -456,7 +517,7 @@
                 class="flex items-center gap-3 pl-3 border-l border-gray-200 hover:bg-gray-50 rounded-lg transition-colors py-1 pr-2">
                 <div class="hidden md:block text-right">
                   <p class="text-sm font-semibold text-gray-900">{{ auth()->user()->name }}</p>
-                  <p class="text-xs text-gray-500">{{ auth()->user()->profileable->role }}</p>
+                  <p class="text-xs text-gray-500">{{ auth()->user()->profileable->role ?? 'Student' }}</p>
                 </div>
                 <div
                   class="w-10 h-10 bg-gradient-to-br from-orange-400 to-pink-500 rounded-lg flex items-center justify-center shadow-md">
@@ -519,7 +580,7 @@
       </header>
 
       <!-- Page Content -->
-      <main class="flex-1 overflow-y-auto md:px-6">
+      <main class="flex-1 overflow-y-auto md:p-6">
         {{ $slot }}
       </main>
     </div>

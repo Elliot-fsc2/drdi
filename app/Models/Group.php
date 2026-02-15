@@ -32,4 +32,14 @@ class Group extends Model
     {
         return $this->hasMany(Consultation::class);
     }
+
+    public function personnel()
+    {
+        return $this->hasMany(Personnel::class);
+    }
+
+    public function fee()
+    {
+        return $this->hasOne(GroupFee::class);
+    }
 }

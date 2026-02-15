@@ -3,6 +3,10 @@
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
+Route::fallback(function () {
+    return redirect()->route('login');
+});
+
 Route::get('/', function () {
     if (! Auth::check()) {
         return redirect()->route('login');
@@ -65,4 +69,9 @@ Route::middleware(['auth', 'rdo'])
     ->as('rdo.')
     ->group(function () {
         Route::livewire('/home', 'rdo::home')->name('home');
+        Route::livewire('/classes', 'instructor::my-classes')->name('classes');
+        Route::livewire('/classes/{section}', 'instructor::my-classes.view')->name('classes.view');
+        Route::livewire('/classes/{section}/group/create', 'instructor::my-classes.group.create')->name('classes.group.create');
+        Route::livewire('/classes/{section}/group/{group}', 'instructor::my-classes.group.view')->name('classes.group.view');
+        Route::livewire('/classes/{section}/group/{group}/proposals', 'instructor::my-classes.group.proposals')->name('classes.group.proposals');
     });

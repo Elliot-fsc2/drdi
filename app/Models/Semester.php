@@ -20,10 +20,17 @@ class Semester extends Model
         ];
     }
 
-    public function active(): bool
+    public function scopeActive($query)
     {
         $today = now()->toDateString();
 
-        return $this->start_date <= $today && $this->end_date >= $today;
+        return $query->where('start_date', '<=', $today)
+            ->where('end_date', '>=', $today);
+    }
+
+    public function rates()
+    {
+        return $this->belongsToMany(ThesisRate::class, 'semester_rates')
+            ->withTimestamps();
     }
 }
