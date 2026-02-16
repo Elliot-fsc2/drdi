@@ -74,4 +74,7 @@ Route::middleware(['auth', 'rdo'])
         Route::livewire('/classes/{section}/group/create', 'instructor::my-classes.group.create')->name('classes.group.create');
         Route::livewire('/classes/{section}/group/{group}', 'instructor::my-classes.group.view')->name('classes.group.view');
         Route::livewire('/classes/{section}/group/{group}/proposals', 'instructor::my-classes.group.proposals')->name('classes.group.proposals');
+
+        Route::livewire('/group-masterlist', 'rdo::management.group-masterlist')->name('group-masterlist');
+        Route::livewire('/thesis-fees', 'rdo::management.thesis-fees')->name('thesis-fees');
     });

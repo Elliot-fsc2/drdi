@@ -17,7 +17,7 @@ class RDOStats extends StatsOverviewWidget
             'default' => 1,
             'sm' => 2,
             'md' => 3,
-            'xl' => 6,
+            'xl' => 3,
         ];
     }
 
@@ -32,13 +32,10 @@ class RDOStats extends StatsOverviewWidget
 
         return [
             Stat::make('Total Instructors', $total_instructors)
-                ->description('5% increase since last month')
                 ->color('success'),
             Stat::make('Total Students', $total_students)
-                ->description('2% decrease since last month')
                 ->color('danger'),
             Stat::make('Active Classes', $total_classes)
-                ->description('10% increase since last month')
                 ->color('primary'),
             Stat::make('Total Collectibles', $total_collectibles)
                 ->description('total amount collected this semester')

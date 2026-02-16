@@ -13,6 +13,7 @@ use Filament\Support\Icons\Heroicon;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use App\Services\GroupService;
 
 new class extends Component implements HasActions, HasSchemas {
   use InteractsWithActions;
@@ -20,6 +21,7 @@ new class extends Component implements HasActions, HasSchemas {
 
   public Group $group;
   public Section $section;
+  private GroupService $groupService;
 
   #[Url]
   public $tab = 'members';
@@ -34,6 +36,11 @@ new class extends Component implements HasActions, HasSchemas {
       && $user->profileable?->role === \App\Enums\InstructorRole::RDO;
 
     return $isRDO ? 'rdo' : 'instructor';
+  }
+
+  public function boot(GroupService $groupService)
+  {
+    $this->groupService = $groupService;
   }
 
   public function mount()
@@ -155,12 +162,23 @@ new class extends Component implements HasActions, HasSchemas {
     return $this->group->members()->count();
   }
 
-  public $proposedTitle = [
-    'title' => 'AI-Based Student Performance Prediction System',
-    'description' => 'A machine learning system that predicts student performance based on various academic and behavioral factors.',
-    'status' => 'Under Review',
-    'submitted_date' => '2026-02-10',
-  ];
+  public function deleteGroupAction(): Action
+  {
+    return Action::make('deleteGroup')
+      ->modalCloseButton(false)
+      ->requiresConfirmation()
+      ->databaseTransaction()
+      ->modalHeading('Delete Group')
+      ->modalDescription('Are you sure you want to delete this group? This action cannot be undone.')
+      ->modalSubmitActionLabel('Yes, Delete')
+      ->color('danger')
+      ->icon(Heroicon::Trash)
+      ->successNotificationTitle('Group deleted successfully')
+      ->action(function (): void {
+        $this->groupService->delete($this->group);
+        $this->redirectRoute($this->routePrefix . '.classes.view', ['section' => $this->section->id], navigate: true);
+      });
+  }
 };
 ?>
 
@@ -200,9 +218,21 @@ new class extends Component implements HasActions, HasSchemas {
             class="px-4 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-md hover:bg-slate-50">
             Export Report
           </button>
-          <button class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">
-            Group Settings
-          </button>
+
+          <x-filament::dropdown>
+            <x-slot name="trigger">
+              <x-filament::button color="info">
+                Group Settings
+              </x-filament::button>
+            </x-slot>
+
+            <x-filament::dropdown.list>
+              <x-filament::dropdown.list.item wire:click="mountAction('deleteGroupAction')" icon="heroicon-o-trash"
+                color="danger">
+                Delete
+              </x-filament::dropdown.list.item>
+            </x-filament::dropdown.list>
+          </x-filament::dropdown>
         </div>
 
         <!-- Mobile Dropdown -->
@@ -218,9 +248,6 @@ new class extends Component implements HasActions, HasSchemas {
             </x-slot>
 
             <x-filament::dropdown.list>
-              <x-filament::dropdown.list.item icon="heroicon-o-arrow-down-tray">
-                Export Report
-              </x-filament::dropdown.list.item>
               <x-filament::dropdown.list.item icon="heroicon-o-cog-6-tooth">
                 Group Settings
               </x-filament::dropdown.list.item>
@@ -298,7 +325,7 @@ new class extends Component implements HasActions, HasSchemas {
                 @foreach($this->members as $member)
                   <div
                     class="border border-slate-200 rounded-lg p-3 md:p-4 transition-all bg-white
-                                      {{ $selectingLeader ? 'hover:border-blue-500 hover:shadow-md cursor-pointer' : 'hover:border-blue-300' }}"
+                                                                                      {{ $selectingLeader ? 'hover:border-blue-500 hover:shadow-md cursor-pointer' : 'hover:border-blue-300' }}"
                     @if($selectingLeader) wire:click="selectLeader({{ $member->id }})" @endif>
                     <div class="flex items-center justify-between gap-3">
                       <div class="flex items-center gap-3 md:gap-4 min-w-0">

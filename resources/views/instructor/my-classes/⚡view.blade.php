@@ -140,9 +140,13 @@ new class extends Component
                           <h3 class="font-semibold text-lg text-slate-900 group-hover:text-blue-600 transition-colors mb-1">
                             {{ $group->name }}
                           </h3>
-                          <p class="text-xs text-slate-500">
-                            Led by {{ $group->leader->first_name }} {{ $group->leader->last_name }}
-                          </p>
+                            @if($group->leader_id)
+                              <p class="text-xs text-slate-500">
+                                Led by {{ $group->leader->first_name }} {{ $group->leader->last_name }}
+                              </p>
+                            @else
+                              <p class="text-xs text-slate-400 italic">No leader assigned yet</p>
+                            @endif
                         </div>
                         <div class="flex items-center gap-1.5 text-sm text-slate-500">
                           <x-heroicon-o-users class="h-4 w-4" />

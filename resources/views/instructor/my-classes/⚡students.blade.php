@@ -2,6 +2,7 @@
 
 use App\Models\Section;
 use App\Models\Student;
+use App\Services\GroupService;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
@@ -12,95 +13,102 @@ use Filament\Support\Icons\Heroicon;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
-new class extends Component implements HasActions, HasSchemas {
-  use InteractsWithActions;
-  use InteractsWithSchemas;
+new class extends Component implements HasActions, HasSchemas
+{
+    use InteractsWithActions;
+    use InteractsWithSchemas;
 
-  public Section $section;
+    public Section $section;
 
-  #[Computed]
-  public function students()
-  {
-    return $this->section->students()->with([
-      'groups' => function ($query) {
-        $query->where('section_id', $this->section->id);
-      }
-    ])->get()->map(function ($student) {
-      $group = $student->groups->first();
-      $isLeader = $group && $group->leader_id === $student->id;
+    #[Computed]
+    public function students()
+    {
+        return $this->section->students()->with([
+            'groups' => function ($query) {
+                $query->where('section_id', $this->section->id);
+            },
+        ])->get()->map(function ($student) {
+            $group = $student->groups->first();
+            $isLeader = $group && $group->leader_id === $student->id;
 
-      return [
-        'id' => $student->id,
-        'name' => $student->first_name . ' ' . $student->last_name,
-        'student_number' => $student->student_number,
-        'group' => $group?->name ?? 'No Group',
-        'role' => $isLeader ? 'Leader' : 'Member',
-        'has_group' => $group !== null,
-      ];
-    })->toArray();
-  }
+            return [
+                'id' => $student->id,
+                'name' => $student->first_name.' '.$student->last_name,
+                'student_number' => $student->student_number,
+                'group' => $group?->name ?? 'No Group',
+                'role' => $isLeader ? 'Leader' : 'Member',
+                'has_group' => $group !== null,
+            ];
+        })->toArray();
+    }
 
-  public function addStudentsAction(): Action
-  {
-    return Action::make('addStudents')
-      ->modalWidth('2xl')
-      ->modalCloseButton(false)
-      ->label('Add Students')
-      ->icon(Heroicon::UserPlus)
-      ->modalHeading('Add Students to Section')
-      ->modalDescription(fn() => "Select students from {$this->section->program->name} to add to this section.")
-      ->form(function () {
-        $availableStudents = Student::whereDoesntHave('sections', function ($query) {
-          $query->where('section_id', $this->section->id);
-        })
-          ->where('program_id', $this->section->program_id)
-          ->orderBy('last_name')
-          ->get()
-          ->mapWithKeys(function ($student) {
-            return [$student->id => "{$student->last_name} {$student->first_name} ({$student->student_number})"];
-          })
-          ->toArray();
+    public function addStudentsAction(): Action
+    {
+        return Action::make('addStudents')
+            ->modalWidth('2xl')
+            ->modalCloseButton(false)
+            ->label('Add Students')
+            ->icon(Heroicon::UserPlus)
+            ->modalHeading('Add Students to Section')
+            ->modalDescription(fn () => "Select students from {$this->section->program->name} to add to this section.")
+            ->form(function () {
+                $availableStudents = Student::whereDoesntHave('sections', function ($query) {
+                    $query->where('section_id', $this->section->id);
+                })
+                    ->where('program_id', $this->section->program_id)
+                    ->orderBy('last_name')
+                    ->get()
+                    ->mapWithKeys(function ($student) {
+                        return [$student->id => "{$student->last_name} {$student->first_name} ({$student->student_number})"];
+                    })
+                    ->toArray();
 
-        if (empty($availableStudents)) {
-          return [];
-        }
+                if (empty($availableStudents)) {
+                    return [];
+                }
 
-        return [
-          CheckboxList::make('students')
-            ->label('Select Students')
-            ->options($availableStudents)
-            ->required()
-            ->searchable()
-            ->bulkToggleable()
-            ->columns(3)
-        ];
-      })
-      ->successNotificationTitle('Students added successfully')
-      ->action(function (array $data): void {
-        if (!empty($data['students'])) {
-          $this->section->students()->attach($data['students']);
-          unset($this->students);
-        }
-      });
-  }
+                return [
+                    CheckboxList::make('students')
+                        ->label('Select Students')
+                        ->options($availableStudents)
+                        ->required()
+                        ->searchable()
+                        ->bulkToggleable()
+                        ->columns(3),
+                ];
+            })
+            ->successNotificationTitle('Students added successfully')
+            ->action(function (array $data): void {
+                if (! empty($data['students'])) {
+                    $this->section->students()->attach($data['students']);
+                    unset($this->students);
+                }
+            });
+    }
 
-  public function removeStudentAction(): Action
-  {
-    return Action::make('removeStudent')
-      ->requiresConfirmation()
-      ->modalCloseButton(false)
-      ->modalHeading('Remove Student from Section')
-      ->modalDescription(fn(array $arguments) => "Are you sure you want to remove this student from the section? They will be unassigned from any groups.")
-      ->modalSubmitActionLabel('Yes, Remove')
-      ->color('danger')
-      ->icon(Heroicon::Trash)
-      ->successNotificationTitle('Student removed from section')
-      ->action(function (array $arguments): void {
-        $studentId = $arguments['studentId'];
-        $this->section->students()->detach($studentId);
-        unset($this->students);
-      });
-  }
+    public function removeStudentAction(): Action
+    {
+        return Action::make('removeStudent')
+            ->requiresConfirmation()
+            ->modalCloseButton(false)
+            ->modalHeading('Remove Student from Section')
+            ->modalDescription(fn (array $arguments) => 'Are you sure you want to remove this student from the section? They will be unassigned from any groups.')
+            ->modalSubmitActionLabel('Yes, Remove')
+            ->color('danger')
+            ->icon(Heroicon::Trash)
+            ->successNotificationTitle('Student removed from section')
+            ->action(function (array $arguments): void {
+                $studentId = $arguments['studentId'];
+
+                // Remove student from any groups in this section
+                $groupService = app(GroupService::class);
+                $groupService->removeStudentFromSectionGroups($studentId, $this->section->id);
+
+                // Remove student from section
+                $this->section->students()->detach($studentId);
+                unset($this->students);
+            });
+    }
 };
 ?>
 

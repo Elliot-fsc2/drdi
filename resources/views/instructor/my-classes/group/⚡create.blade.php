@@ -3,13 +3,13 @@
 use App\Models\Group;
 use App\Models\Section;
 use App\Services\FeeService;
+use App\Services\GroupService;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
-use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -58,7 +58,7 @@ new class extends Component implements HasSchemas {
           ->live()
           ->afterStateUpdated(function ($state) {
             // Remove leader from selected members if present
-            $this->selectedMembers = array_diff($this->selectedMembers, [$state]);
+            $this->selectedMembers = array_values(array_diff($this->selectedMembers, [$state]));
           }),
       ])
       ->statePath('data');
@@ -112,30 +112,29 @@ new class extends Component implements HasSchemas {
       return;
     }
 
-    DB::transaction(function () use ($data) {
-      $group = Group::create([
-        'name' => $data['name'],
-        'section_id' => $this->section->id,
-        'leader_id' => $data['leader_id'],
-      ]);
+    // Add leader and selected members
+    $members = $this->selectedMembers;
+    $members[] = $data['leader_id'];
+    $members = array_unique($members);
 
-      // Add leader and selected members
-      $members = $this->selectedMembers;
-      $members[] = $data['leader_id'];
-      $members = array_unique($members);
+    $groupService = app(GroupService::class);
+    $feeService = app(FeeService::class);
 
-      $group->members()->attach($members);
+    $group = $groupService->create([
+      'name' => $data['name'],
+      'section_id' => $this->section->id,
+      'leader_id' => $data['leader_id'],
+      'member_ids' => $members,
+    ]);
 
-      // Initialize group fee ledger
-      $feeService = app(FeeService::class);
-      $feeService->initializeGroupLedger($group);
+    // Initialize group fee ledger
+    $feeService->initializeGroupLedger($group);
 
-      Notification::make()
-        ->title('Group created successfully')
-        ->body('The research group has been created with ' . count($members) . ' member(s).')
-        ->success()
-        ->send();
-    });
+    Notification::make()
+      ->title('Group created successfully')
+      ->body('The research group has been created with ' . count($members) . ' member(s).')
+      ->success()
+      ->send();
 
     $this->redirect(route($this->routePrefix . '.classes.view', ['section' => $this->section->id, 'tab' => 'groups']), navigate: true);
   }

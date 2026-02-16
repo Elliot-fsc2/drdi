@@ -72,9 +72,10 @@
     sidebarOpen: localStorage.getItem('sidebarOpen') === 'false' ? false : true,
     mobileMenuOpen: false,
     profileDropdownOpen: false,
-    managementOpen: false,
+    managementOpen: localStorage.getItem('managementOpen') === 'true' ? true : false,
     init() {
         this.$watch('sidebarOpen', value => localStorage.setItem('sidebarOpen', value))
+        this.$watch('managementOpen', value => localStorage.setItem('managementOpen', value))
     }
 }">
   <div class="flex h-screen overflow-hidden">
@@ -213,17 +214,6 @@
             <x-heroicon-o-academic-cap class="w-6 h-6 flex-shrink-0" />
             <span class="font-medium">My Classes</span>
           </a>
-          <a href="#"
-            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
-            <x-heroicon-o-document-text class="w-6 h-6 flex-shrink-0" />
-            <span class="font-medium">Proposals</span>
-          </a>
-          <a href="#"
-            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
-            <x-heroicon-o-beaker class="w-6 h-6 flex-shrink-0" />
-            <span class="font-medium">Projects</span>
-          </a>
-
           {{-- Management Dropdown --}}
           <div>
             <button @click="managementOpen = !managementOpen"
@@ -236,13 +226,37 @@
                 x-bind:class="managementOpen ? 'rotate-180' : ''" />
             </button>
             <div x-show="managementOpen" x-collapse class="mt-1 ml-6 space-y-1">
-              <a href="#"
-                class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
+              <a href="{{ route('rdo.group-masterlist') }}" wire:navigate @class([
+                'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
+                'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('rdo.group-masterlist*'),
+                'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('rdo.group-masterlist*'),
+              ])>
                 <x-heroicon-o-user-group class="w-5 h-5 flex-shrink-0" />
                 <span class="font-medium text-sm">Group Masterlist</span>
               </a>
+              <a href="{{ route('rdo.thesis-fees') }}" wire:navigate @class([
+                'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
+                'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('rdo.thesis-fees*'),
+                'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('rdo.thesis-fees*'),
+              ])>
+                <x-heroicon-o-user-group class="w-5 h-5 flex-shrink-0" />
+                <span class="font-medium text-sm">Thesis Fees</span>
+              </a>
             </div>
           </div>
+
+          <a href="#"
+            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
+            <x-heroicon-o-document-text class="w-6 h-6 flex-shrink-0" />
+            <span class="font-medium">Proposals</span>
+          </a>
+          <a href="#"
+            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
+            <x-heroicon-o-beaker class="w-6 h-6 flex-shrink-0" />
+            <span class="font-medium">Projects</span>
+          </a>
+
+
 
           <a href="#"
             class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
@@ -411,6 +425,36 @@
             <x-heroicon-o-academic-cap class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">My Classes</span>
           </a>
+          {{-- Management Dropdown --}}
+          <div>
+            <button @click="managementOpen = !managementOpen"
+              class="flex items-center justify-between w-full gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
+              <div class="flex items-center gap-3">
+                <x-heroicon-o-squares-2x2 class="w-6 h-6 flex-shrink-0" />
+                <span class="font-medium">Management</span>
+              </div>
+              <x-heroicon-o-chevron-down class="w-4 h-4 transition-transform"
+                x-bind:class="managementOpen ? 'rotate-180' : ''" />
+            </button>
+            <div x-show="managementOpen" x-collapse class="mt-1 ml-6 space-y-1">
+              <a href="{{ route('rdo.group-masterlist') }}" wire:navigate @class([
+                'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
+                'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('rdo.group-masterlist*'),
+                'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('rdo.group-masterlist*'),
+              ])>
+                <x-heroicon-o-user-group class="w-5 h-5 flex-shrink-0" />
+                <span class="font-medium text-sm">Group Masterlist</span>
+              </a>
+              <a href="{{ route('rdo.thesis-fees') }}" wire:navigate @class([
+                'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
+                'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('rdo.thesis-fees*'),
+                'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('rdo.thesis-fees*'),
+              ])>
+                <x-heroicon-o-user-group class="w-5 h-5 flex-shrink-0" />
+                <span class="font-medium text-sm">Thesis Fees</span>
+              </a>
+            </div>
+          </div>
           <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
             class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
             :title="!sidebarOpen ? 'Proposals' : null">
@@ -423,28 +467,6 @@
             <x-heroicon-o-beaker class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Projects</span>
           </a>
-
-          {{-- Management Dropdown --}}
-          <div>
-            <button @click="managementOpen = !managementOpen" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-              class="flex items-center w-full gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
-              :title="!sidebarOpen ? 'Management' : null">
-              <x-heroicon-o-squares-2x2 class="w-6 h-6 flex-shrink-0" />
-              <span x-show="sidebarOpen" x-transition
-                class="font-medium whitespace-nowrap flex-1 text-left">Management</span>
-              <x-heroicon-o-chevron-down x-show="sidebarOpen" class="w-4 h-4 transition-transform"
-                x-bind:class="managementOpen ? 'rotate-180' : ''" />
-            </button>
-            <div x-show="managementOpen && sidebarOpen" x-collapse class="mt-1 space-y-1">
-              <a href="#" :class="sidebarOpen ? 'ml-6 px-4' : 'px-3 justify-center'"
-                class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group">
-                <x-heroicon-o-user-group class="w-5 h-5 flex-shrink-0" />
-                <span x-show="sidebarOpen" x-transition class="font-medium text-sm whitespace-nowrap">Group
-                  Masterlist</span>
-              </a>
-            </div>
-          </div>
-
           <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
             class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
             :title="!sidebarOpen ? 'Instructors' : null">
@@ -580,7 +602,7 @@
       </header>
 
       <!-- Page Content -->
-      <main class="flex-1 overflow-y-auto md:p-6">
+      <main class="flex-1 overflow-y-auto p-2 md:p-6">
         {{ $slot }}
       </main>
     </div>

@@ -14,12 +14,12 @@ class Login
 
             $user = Auth::user();
 
+            if ($user->profileable?->role === \App\Enums\InstructorRole::RDO) {
+                return redirect()->intended(route('rdo.home'));
+            }
             // Redirect based on user role
             if ($user->profileable_type === \App\Models\Instructor::class) {
                 // Check if RDO
-                if ($user->profileable?->role === \App\Enums\InstructorRole::RDO) {
-                    return redirect()->intended(route('rdo.home'));
-                }
                 // Regular instructor
                 return redirect()->intended(route('instructor.home'));
             } elseif ($user->profileable_type === \App\Models\Student::class) {

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Group;
+use Illuminate\Support\Facades\DB;
 
 class FeeService
 {
@@ -11,17 +12,19 @@ class FeeService
      */
     public function initializeGroupLedger(Group $group): void
     {
-        $semester = $group->section->semester;
+        DB::transaction(function () use ($group) {
+            $semester = $group->section->semester;
 
-        // Find the 'fixed_per_group' rate bound to this semester
-        $baseRate = $semester->rates()
-            ->where('type', 'fixed_per_group')
-            ->first();
+            // Find the 'fixed_per_group' rate bound to this semester
+            $baseRate = $semester->rates()
+                ->where('type', 'fixed_per_group')
+                ->first();
 
-        $group->fee()->updateOrCreate(
-            ['group_id' => $group->id],
-            ['base_fee' => $baseRate->amount ?? 0]
-        );
+            $group->fee()->updateOrCreate(
+                ['group_id' => $group->id],
+                ['base_fee' => $baseRate->amount ?? 0]
+            );
+        });
     }
 
     /**
@@ -29,18 +32,39 @@ class FeeService
      */
     public function syncHonorarium(Group $group): void
     {
-        $semester = $group->section->semester;
+        DB::transaction(function () use ($group) {
+            $semester = $group->section->semester;
 
-        // Find the 'per_personnel' rate for this semester
-        $hRate = $semester->rates()
-            ->where('type', 'per_personnel')
-            ->first();
+            // Find the 'per_personnel' rate for this semester
+            $hRate = $semester->rates()
+                ->where('type', 'per_personnel')
+                ->first();
 
-        $personnelCount = $group->personnel()->count();
-        $totalHonorarium = ($hRate->amount ?? 0) * $personnelCount;
+            $personnelCount = $group->personnel()->count();
+            $totalHonorarium = ($hRate->amount ?? 0) * $personnelCount;
 
-        $group->fee()->update([
-            'honorarium_total' => $totalHonorarium,
-        ]);
+            $group->fee()->update([
+                'honorarium_total' => $totalHonorarium,
+            ]);
+        });
+    }
+
+    public function createRates(array $data): void
+    {
+        DB::transaction(function () use ($data) {
+            $semester = $data['semester_id'];
+
+            // Create or update the fixed per group rate
+            $semester->rates()->updateOrCreate(
+                ['type' => 'fixed_per_group'],
+                ['amount' => $data['fixed_per_group']]
+            );
+
+            // Create or update the per personnel rate
+            $semester->rates()->updateOrCreate(
+                ['type' => 'per_personnel'],
+                ['amount' => $data['per_personnel']]
+            );
+        });
     }
 }
