@@ -17,6 +17,11 @@ class Student extends Model
         'program_id',
     ];
 
+    public function getFullNameAttribute(): string
+    {
+      return "{$this->first_name} {$this->last_name}";
+    }
+
     public function program()
     {
         return $this->belongsTo(Program::class);
@@ -35,5 +40,14 @@ class Student extends Model
     public function sections()
     {
         return $this->belongsToMany(Section::class);
+    }
+
+    public function scopeActiveSection($query)
+    {
+        return $query->whereHas('sections', function ($q) {
+            $q->whereHas('semester', function ($q2) {
+                $q2->active();
+            });
+        });
     }
 }

@@ -242,42 +242,16 @@
                 <x-heroicon-o-user-group class="w-5 h-5 flex-shrink-0" />
                 <span class="font-medium text-sm">Thesis Fees</span>
               </a>
+              <a href="{{ route('rdo.semester-management') }}" wire:navigate @class([
+                'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
+                'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('rdo.semester-management*'),
+                'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('rdo.semester-management*'),
+              ])>
+                <x-heroicon-o-user-group class="w-5 h-5 flex-shrink-0" />
+                <span class="font-medium text-sm">Semester Tracking</span>
+              </a>
             </div>
           </div>
-
-          <a href="#"
-            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
-            <x-heroicon-o-document-text class="w-6 h-6 flex-shrink-0" />
-            <span class="font-medium">Proposals</span>
-          </a>
-          <a href="#"
-            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
-            <x-heroicon-o-beaker class="w-6 h-6 flex-shrink-0" />
-            <span class="font-medium">Projects</span>
-          </a>
-
-
-
-          <a href="#"
-            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
-            <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
-            <span class="font-medium">Instructors</span>
-          </a>
-          <a href="#"
-            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
-            <x-heroicon-o-users class="w-6 h-6 flex-shrink-0" />
-            <span class="font-medium">Students</span>
-          </a>
-          <a href="#"
-            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
-            <x-heroicon-o-chart-bar class="w-6 h-6 flex-shrink-0" />
-            <span class="font-medium">Reports</span>
-          </a>
-          <a href="#"
-            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
-            <x-heroicon-o-cog-6-tooth class="w-6 h-6 flex-shrink-0" />
-            <span class="font-medium">Settings</span>
-          </a>
         @endif
       </nav>
     </aside>
@@ -425,25 +399,31 @@
             <x-heroicon-o-academic-cap class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">My Classes</span>
           </a>
+
           {{-- Management Dropdown --}}
           <div>
-            <button @click="managementOpen = !managementOpen"
-              class="flex items-center justify-between w-full gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
+            <button @click="!sidebarOpen ? (sidebarOpen = true, managementOpen = true) : managementOpen = !managementOpen"
+              :class="sidebarOpen ? 'px-4 justify-between' : 'px-3 justify-center'"
+              class="flex items-center w-full gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
+              :title="!sidebarOpen ? 'Management' : null">
+
               <div class="flex items-center gap-3">
                 <x-heroicon-o-squares-2x2 class="w-6 h-6 flex-shrink-0" />
-                <span class="font-medium">Management</span>
+                <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Management</span>
               </div>
-              <x-heroicon-o-chevron-down class="w-4 h-4 transition-transform"
+
+              <x-heroicon-o-chevron-down x-show="sidebarOpen" class="w-4 h-4 transition-transform"
                 x-bind:class="managementOpen ? 'rotate-180' : ''" />
             </button>
-            <div x-show="managementOpen" x-collapse class="mt-1 ml-6 space-y-1">
+
+            <div x-show="managementOpen && sidebarOpen" x-collapse class="mt-1 ml-6 space-y-1">
               <a href="{{ route('rdo.group-masterlist') }}" wire:navigate @class([
                 'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
                 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('rdo.group-masterlist*'),
                 'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('rdo.group-masterlist*'),
               ])>
                 <x-heroicon-o-user-group class="w-5 h-5 flex-shrink-0" />
-                <span class="font-medium text-sm">Group Masterlist</span>
+                <span class="font-medium text-sm whitespace-nowrap">Group Masterlist</span>
               </a>
               <a href="{{ route('rdo.thesis-fees') }}" wire:navigate @class([
                 'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
@@ -451,46 +431,19 @@
                 'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('rdo.thesis-fees*'),
               ])>
                 <x-heroicon-o-user-group class="w-5 h-5 flex-shrink-0" />
-                <span class="font-medium text-sm">Thesis Fees</span>
+                <span class="font-medium text-sm whitespace-nowrap">Thesis Fees</span>
+              </a>
+              <a href="{{ route('rdo.semester-management') }}" wire:navigate @class([
+                'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
+                'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('rdo.semester-management*'),
+                'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('rdo.semester-management*'),
+              ])>
+                <x-heroicon-o-user-group class="w-5 h-5 flex-shrink-0" />
+                <span class="font-medium text-sm">Semester Tracking</span>
               </a>
             </div>
           </div>
-          <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
-            :title="!sidebarOpen ? 'Proposals' : null">
-            <x-heroicon-o-document-text class="w-6 h-6 flex-shrink-0" />
-            <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Proposals</span>
-          </a>
-          <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
-            :title="!sidebarOpen ? 'Projects' : null">
-            <x-heroicon-o-beaker class="w-6 h-6 flex-shrink-0" />
-            <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Projects</span>
-          </a>
-          <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
-            :title="!sidebarOpen ? 'Instructors' : null">
-            <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
-            <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Instructors</span>
-          </a>
-          <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
-            :title="!sidebarOpen ? 'Students' : null">
-            <x-heroicon-o-users class="w-6 h-6 flex-shrink-0" />
-            <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Students</span>
-          </a>
-          <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
-            :title="!sidebarOpen ? 'Reports' : null">
-            <x-heroicon-o-chart-bar class="w-6 h-6 flex-shrink-0" />
-            <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Reports</span>
-          </a>
-          <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
-            :title="!sidebarOpen ? 'Settings' : null">
-            <x-heroicon-o-cog-6-tooth class="w-6 h-6 flex-shrink-0" />
-            <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Settings</span>
-          </a>
+
         @endif
       </nav>
     </aside>
@@ -549,7 +502,7 @@
               </button>
 
               <!-- Dropdown Menu -->
-              <div x-show="open" x-transition:enter="transition ease-out duration-100"
+              <div x-show="open" x-transition:enter="transition ease-out duration-100" x-cloak
                 x-transition:enter-start="transform opacity-0 scale-95"
                 x-transition:enter-end="transform opacity-100 scale-100"
                 x-transition:leave="transition ease-in duration-75"

@@ -2,13 +2,12 @@
 
 use App\Models\Group;
 use App\Models\Section;
-use App\Models\Student;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
-use Filament\Forms\Components\CheckboxList;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Support\Icons\Heroicon;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
@@ -325,7 +324,7 @@ new class extends Component implements HasActions, HasSchemas {
                 @foreach($this->members as $member)
                   <div
                     class="border border-slate-200 rounded-lg p-3 md:p-4 transition-all bg-white
-                                                                                      {{ $selectingLeader ? 'hover:border-blue-500 hover:shadow-md cursor-pointer' : 'hover:border-blue-300' }}"
+                                                                                              {{ $selectingLeader ? 'hover:border-blue-500 hover:shadow-md cursor-pointer' : 'hover:border-blue-300' }}"
                     @if($selectingLeader) wire:click="selectLeader({{ $member->id }})" @endif>
                     <div class="flex items-center justify-between gap-3">
                       <div class="flex items-center gap-3 md:gap-4 min-w-0">

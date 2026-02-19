@@ -77,4 +77,5 @@ Route::middleware(['auth', 'rdo'])
 
         Route::livewire('/group-masterlist', 'rdo::management.group-masterlist')->name('group-masterlist');
         Route::livewire('/thesis-fees', 'rdo::management.thesis-fees')->name('thesis-fees');
+        Route::livewire('/semester-management', 'rdo::management.semester-tracking')->name('semester-management');
     });

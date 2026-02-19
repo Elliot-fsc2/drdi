@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Group;
+use App\Models\Semester;
 use Illuminate\Support\Facades\DB;
 
 class FeeService
@@ -20,9 +21,15 @@ class FeeService
                 ->where('type', 'fixed_per_group')
                 ->first();
 
+            $amount = $baseRate->amount ?? 0;
+
             $group->fee()->updateOrCreate(
                 ['group_id' => $group->id],
-                ['base_fee' => $baseRate->amount ?? 0]
+                [
+                    'base_fee' => $amount,
+                    // Total is just the base fee since honorarium is usually 0 at init
+                    'total_merger_amount' => $amount + ($group->fee->honorarium_total ?? 0),
+                ]
             );
         });
     }
@@ -42,9 +49,12 @@ class FeeService
 
             $personnelCount = $group->personnel()->count();
             $totalHonorarium = ($hRate->amount ?? 0) * $personnelCount;
+            // Fetch existing base fee to compute the new merger total
+            $currentBaseFee = $group->fee->base_fee ?? 0;
 
             $group->fee()->update([
                 'honorarium_total' => $totalHonorarium,
+                'total_merger_amount' => $currentBaseFee + $totalHonorarium,
             ]);
         });
     }
@@ -65,6 +75,40 @@ class FeeService
                 ['type' => 'per_personnel'],
                 ['amount' => $data['per_personnel']]
             );
+        });
+    }
+
+    public function updateAllGroupsInSemester(Semester $semester): void
+    {
+        // 1. Calculate the aggregate Master Rates for this semester
+        $totalBaseAmount = $semester->rates()
+            ->where('type', 'fixed_per_group')
+            ->sum('amount');
+
+        $totalPersonnelRate = $semester->rates()
+            ->where('type', 'per_personnel')
+            ->sum('amount');
+
+        // 2. Load sections, their groups, and the groups' personnel
+        // We use chunkById to handle large amounts of data efficiently
+        $semester->sections()->with('groups.personnel')->chunkById(100, function ($sections) use ($totalBaseAmount, $totalPersonnelRate) {
+            foreach ($sections as $section) {
+                foreach ($section->groups as $group) {
+                    // Calculate personnel count
+                    $personnelCount = $group->personnel->count();
+                    $totalHonorarium = $totalPersonnelRate * $personnelCount;
+
+                    // Update or create the group fee
+                    $group->fee()->updateOrCreate(
+                        ['group_id' => $group->id],
+                        [
+                            'base_fee' => $totalBaseAmount,
+                            'honorarium_total' => $totalHonorarium,
+                            'total_merger_amount' => $totalBaseAmount + $totalHonorarium,
+                        ]
+                    );
+                }
+            }
         });
     }
 }

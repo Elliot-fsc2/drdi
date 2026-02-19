@@ -33,4 +33,9 @@ class Semester extends Model
         return $this->belongsToMany(ThesisRate::class, 'semester_rates')
             ->withTimestamps();
     }
+
+    public function sections()
+    {
+        return $this->hasMany(Section::class);
+    }
 }

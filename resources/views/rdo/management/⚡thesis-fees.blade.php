@@ -121,21 +121,11 @@ new #[Title('Thesis Rates Management')]
 <link rel="stylesheet" href="{{ Vite::asset('resources/css/filament.css') }}">
 @endassets
 
-<x-slot name="title">
-  Thesis Rates Management
-</x-slot>
-
 <div class="p-3 lg:p-3 bg-slate-50">
   <div class="max-w-7xl mx-auto">
 
     <!-- Header -->
     <div class="mb-6">
-      <div class="flex items-center gap-2 text-sm text-slate-600 mb-3">
-        <a href="{{ route('rdo.home') }}" wire:navigate class="hover:text-blue-600">Dashboard</a>
-        <span>/</span>
-        <span class="text-slate-900 font-medium">Thesis Rates</span>
-      </div>
-
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 class="text-2xl font-semibold text-slate-900">Thesis rates</h1>

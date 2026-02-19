@@ -90,12 +90,6 @@ class extends Component {
 
     <!-- Header -->
     <div class="mb-6">
-      <div class="flex items-center gap-2 text-sm text-slate-600 mb-3">
-        <a href="{{ route('rdo.home') }}" wire:navigate class="hover:text-blue-600">Dashboard</a>
-        <span>/</span>
-        <span class="text-slate-900 font-medium">Group Masterlist</span>
-      </div>
-
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 class="text-3xl font-bold text-slate-900">Group Masterlist</h1>

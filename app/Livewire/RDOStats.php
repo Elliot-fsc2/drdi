@@ -28,7 +28,7 @@ class RDOStats extends StatsOverviewWidget
         $total_classes = Section::active()->count();
         $total_collectibles = GroupFee::active()->get()->totalCollectibles();
         $total_expenses = GroupFee::active()->get()->totalExpenses();
-        $total_savings = GroupFee::active()->get()->totalSavings();
+        $total_savings = max(GroupFee::active()->get()->totalSavings() ?? 0, 0);
 
         return [
             Stat::make('Total Instructors', $total_instructors)
