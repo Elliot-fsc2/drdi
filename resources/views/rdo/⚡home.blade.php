@@ -5,18 +5,17 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 new #[Title('Dashboard')]
-  class extends Component
+  class extends Component {
+  public function with(): array
   {
-      public function with(): array
-      {
-          return [
-              'latestGroups' => Group::with(['section.program', 'section.semester', 'leader', 'members'])
-                  ->latest()
-                  ->take(5)
-                  ->get(),
-          ];
-      }
-  };
+    return [
+      'latestGroups' => Group::with(['section.program', 'section.semester', 'leader', 'members'])
+        ->latest()
+        ->take(5)
+        ->get(),
+    ];
+  }
+};
 ?>
 
 @assets
@@ -59,7 +58,7 @@ new #[Title('Dashboard')]
                   <h3 class="font-semibold text-gray-900">{{ $group->name }}</h3>
                   @if($group->proposal)
                     <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
-                      {{ $group->proposal->status->value }}
+                      {{ $group->proposal->status }}
                     </span>
                   @else
                     <span class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">No Proposal</span>
@@ -74,7 +73,8 @@ new #[Title('Dashboard')]
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
-                    Leader: {{ $group->leader ? $group->leader->first_name . ' ' . $group->leader->last_name : 'None assigned' }}
+                    Leader:
+                    {{ $group->leader ? $group->leader->first_name . ' ' . $group->leader->last_name : 'None assigned' }}
                   </span>
                   <span class="flex items-center gap-1">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

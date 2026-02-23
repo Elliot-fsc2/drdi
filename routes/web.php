@@ -33,6 +33,8 @@ Route::get('/', function () {
     return redirect()->route('login')->with('error', 'Invalid user role');
 });
 
+Route::livewire('/test', 'sorting')->name('test');
+
 Route::middleware('guest')->group(function () {
     Route::livewire('/login', 'pages::auth.login')->name('login');
 });
@@ -55,6 +57,9 @@ Route::middleware(['auth', 'instructor'])
         Route::livewire('/classes/{section}/group/create', 'instructor::my-classes.group.create')->name('classes.group.create');
         Route::livewire('/classes/{section}/group/{group}', 'instructor::my-classes.group.view')->name('classes.group.view');
         Route::livewire('/classes/{section}/group/{group}/proposals', 'instructor::my-classes.group.proposals')->name('classes.group.proposals');
+        Route::livewire('/classes/{section}/group/{group}/schedule', 'instructor::my-classes.schedule')->name('classes.schedule');
+
+        Route::livewire('/groups', 'instructor::groups')->name('groups');
     });
 
 Route::middleware(['auth', 'student'])
@@ -62,6 +67,7 @@ Route::middleware(['auth', 'student'])
     ->as('student.')
     ->group(function () {
         Route::livewire('/home', 'student::home')->name('home');
+        Route::livewire('/proposal-title', 'student::proposal-title')->name('proposal-title');
     });
 
 Route::middleware(['auth', 'rdo'])
@@ -74,8 +80,10 @@ Route::middleware(['auth', 'rdo'])
         Route::livewire('/classes/{section}/group/create', 'instructor::my-classes.group.create')->name('classes.group.create');
         Route::livewire('/classes/{section}/group/{group}', 'instructor::my-classes.group.view')->name('classes.group.view');
         Route::livewire('/classes/{section}/group/{group}/proposals', 'instructor::my-classes.group.proposals')->name('classes.group.proposals');
-
+        Route::livewire('/classes/{section}/group/{group}/schedule', 'instructor::my-classes.schedule')->name('classes.schedule');
         Route::livewire('/group-masterlist', 'rdo::management.group-masterlist')->name('group-masterlist');
         Route::livewire('/thesis-fees', 'rdo::management.thesis-fees')->name('thesis-fees');
         Route::livewire('/semester-management', 'rdo::management.semester-tracking')->name('semester-management');
+
+        Route::livewire('/groups', 'instructor::groups')->name('groups');
     });

@@ -36,33 +36,6 @@ new #[Title('My Classes')]
     return $isRDO ? 'rdo' : 'instructor';
   }
 
-  // public $classes = [
-  //   [
-  //     'section' => 'BSCS-4A',
-  //     'course' => 'Thesis 1',
-  //     'groups_count' => 8,
-  //     'students_count' => 32,
-  //   ],
-  //   [
-  //     'section' => 'BSCS-4B',
-  //     'course' => 'Thesis 1',
-  //     'groups_count' => 6,
-  //     'students_count' => 24,
-  //   ],
-  //   [
-  //     'section' => 'BSP-3B',
-  //     'course' => 'Methods of Research',
-  //     'groups_count' => 12,
-  //     'students_count' => 48,
-  //   ],
-  //   [
-  //     'section' => 'BSIT-3A',
-  //     'course' => 'Capstone 2',
-  //     'groups_count' => 10,
-  //     'students_count' => 40,
-  //   ],
-  // ];
-
   public function createSectionAction(): Action
   {
     return Action::make('createSection')
@@ -87,7 +60,7 @@ new #[Title('My Classes')]
 
         Select::make('semester_id')
           ->label('Semester')
-          ->options(Semester::pluck('name', 'id'))
+          ->options(Semester::active()->pluck('name', 'id'))
           ->required()
           ->searchable(),
       ])
@@ -108,6 +81,9 @@ new #[Title('My Classes')]
   public function classes()
   {
     $query = Section::where('instructor_id', auth()->user()->profileable->id)
+      ->whereHas('semester', function ($query) {
+        $query->active();
+      })
       ->withCount('students')
       ->withCount('groups')
       ->when($this->search, function ($query) {

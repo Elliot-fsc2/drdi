@@ -198,8 +198,8 @@ new class extends Component
 
           <!-- Schedule Tab -->
           @if($tab === 'schedule')
-            <div class="p-4">
-              <p class="text-slate-600 text-center py-12">Presentation schedule will be displayed here</p>
+            <div class="lg:p-4">
+              <livewire:instructor::my-classes.schedule :section="$section" />
             </div>
           @endif
         </div>

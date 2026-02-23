@@ -9,7 +9,6 @@ use Livewire\Component;
 new #[Layout('layouts::guest')]
   #[Title('Login')]
   class extends Component {
-
   #[Validate('required|string')]
   public string $email = '';
 
@@ -25,12 +24,7 @@ new #[Layout('layouts::guest')]
     try {
       $loginService->attempt($this->email, $this->password, $this->remember);
     } catch (\Illuminate\Validation\ValidationException $e) {
-      // Check if the RateLimiter is active
-      $key = request()->ip();
-      if (\Illuminate\Support\Facades\RateLimiter::tooManyAttempts($key, 5)) {
-        $seconds = \Illuminate\Support\Facades\RateLimiter::availableIn($key);
-
-        // Dispatch to Alpine.js
+      if ($seconds = $loginService->getLockoutSeconds()) {
         $this->dispatch('lockout', seconds: $seconds);
       }
 
@@ -68,10 +62,7 @@ new #[Layout('layouts::guest')]
       <div class="mb-6 text-center">
         <div
           class="w-64 h-64 xl:w-80 xl:h-80 bg-white/10 rounded-3xl backdrop-blur-sm flex items-center justify-center mb-6 shadow-2xl">
-          <svg class="w-32 h-32 xl:w-40 xl:h-40 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-          </svg>
+          <img src="{{ asset('images/logo.png') }}" alt="">
         </div>
       </div>
 
@@ -79,7 +70,7 @@ new #[Layout('layouts::guest')]
         Welcome to DRDI NCST
       </h1>
       <p class="text-base xl:text-lg text-center max-w-md text-white/90 drop-shadow">
-        Defense Research and Development Institute - National College of Science and Technology
+        Department of Research and Development Innovation - National College of Science and Technology
       </p>
 
       <!-- Carousel Indicators -->

@@ -8,13 +8,14 @@ use Illuminate\Validation\ValidationException;
 
 class Login
 {
+    protected int $maxAttempts = 5;
+    protected int $decaySeconds = 60;
+
     public function attempt(string $email, string $password, bool $remember = false)
     {
         $key = $this->throttleKey();
-        $maxAttempts = 5;
-        $decaySeconds = 60; // lockout duration
 
-        if (RateLimiter::tooManyAttempts($key, $maxAttempts)) {
+        if (RateLimiter::tooManyAttempts($key, $this->maxAttempts)) {
             $seconds = RateLimiter::availableIn($key);
             throw ValidationException::withMessages([
                 'email' => "Too many login attempts. Please try again in {$seconds} seconds.",
@@ -43,11 +44,22 @@ class Login
             return redirect()->intended('/');
         }
 
-        RateLimiter::hit($key, $decaySeconds);
+        RateLimiter::hit($key, $this->decaySeconds);
 
         throw ValidationException::withMessages([
             'email' => 'The provided credentials do not match our records.',
         ]);
+    }
+
+    public function getLockoutSeconds(): int
+    {
+        $key = $this->throttleKey();
+
+        if (RateLimiter::tooManyAttempts($key, $this->maxAttempts)) {
+            return RateLimiter::availableIn($key);
+        }
+
+        return 0;
     }
 
     private function throttleKey(): string

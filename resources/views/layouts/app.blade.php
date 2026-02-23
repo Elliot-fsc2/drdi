@@ -136,6 +136,14 @@
             <x-heroicon-o-academic-cap class="w-6 h-6 flex-shrink-0" />
             <span class="font-medium">My Classes</span>
           </a>
+          <a href="{{ route('instructor.groups') }}" @class([
+            'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
+            'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('instructor.groups*'),
+            'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('instructor.groups*'),
+          ])>
+            <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
+            <span class="font-medium">My Groups</span>
+          </a>
           <a href="#"
             class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
             <x-heroicon-o-book-open class="w-6 h-6 flex-shrink-0" />
@@ -171,10 +179,10 @@
             <x-heroicon-o-home class="w-6 h-6 flex-shrink-0" />
             <span class="font-medium">Dashboard</span>
           </a>
-          <a href="#"
+          <a href="{{ route('student.proposal-title') }}" wire:navigate
             class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
-            <x-heroicon-o-beaker class="w-6 h-6 flex-shrink-0" />
-            <span class="font-medium">My Projects</span>
+            <x-heroicon-o-newspaper class="w-6 h-6 flex-shrink-0" />
+            <span class="font-medium">Proposals</span>
           </a>
           <a href="#"
             class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
@@ -213,6 +221,14 @@
           ])>
             <x-heroicon-o-academic-cap class="w-6 h-6 flex-shrink-0" />
             <span class="font-medium">My Classes</span>
+          </a>
+          <a href="{{ route('rdo.groups') }}" @class([
+            'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
+            'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('rdo.groups*'),
+            'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('rdo.groups*'),
+          ])>
+            <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
+            <span class="font-medium">My Groups</span>
           </a>
           {{-- Management Dropdown --}}
           <div>
@@ -309,36 +325,17 @@
             <x-heroicon-o-academic-cap class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">My Classes</span>
           </a>
-          <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
-            :title="!sidebarOpen ? 'Publications' : null">
-            <x-heroicon-o-book-open class="w-6 h-6 flex-shrink-0" />
-            <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Publications</span>
-          </a>
-          <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
-            :title="!sidebarOpen ? 'Team' : null">
+          <a href="{{ route('instructor.groups') }}" wire:navigate :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
+            @class([
+              'flex items-center gap-3 py-2 rounded-xl transition-all group',
+              'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('instructor.groups*'),
+              'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('instructor.groups*'),
+            ])
+            :title="!sidebarOpen ? 'My Classes' : null">
             <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
-            <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Team</span>
+            <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">My Groups</span>
           </a>
-          <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
-            :title="!sidebarOpen ? 'Documents' : null">
-            <x-heroicon-o-document-text class="w-6 h-6 flex-shrink-0" />
-            <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Documents</span>
-          </a>
-          <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
-            :title="!sidebarOpen ? 'Analytics' : null">
-            <x-heroicon-o-chart-bar class="w-6 h-6 flex-shrink-0" />
-            <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Analytics</span>
-          </a>
-          <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
-            :title="!sidebarOpen ? 'Settings' : null">
-            <x-heroicon-o-cog-6-tooth class="w-6 h-6 flex-shrink-0" />
-            <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Settings</span>
-          </a>
+
         @elseif($isStudent)
           {{-- Student Navigation --}}
           <a href="{{ route('student.home') }}" wire:navigate :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
@@ -350,11 +347,14 @@
             <x-heroicon-o-home class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Dashboard</span>
           </a>
-          <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
-            :title="!sidebarOpen ? 'My Projects' : null">
-            <x-heroicon-o-beaker class="w-6 h-6 flex-shrink-0" />
-            <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">My Projects</span>
+          <a href="{{ route('student.proposal-title') }}" wire:navigate
+            :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'" @class([
+              'flex items-center gap-3 py-2 rounded-xl transition-all group',
+              'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('student.proposal-title'),
+              'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('student.proposal-title'),
+            ]) :title="!sidebarOpen ? 'Proposals' : null">
+            <x-heroicon-o-newspaper class="w-6 h-6 flex-shrink-0" />
+            <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Proposals</span>
           </a>
           <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
             class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
@@ -398,6 +398,15 @@
             ]) :title="!sidebarOpen ? 'My Classes' : null">
             <x-heroicon-o-academic-cap class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">My Classes</span>
+          </a>
+
+          <a href="{{ route('rdo.groups') }}" wire:navigate :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'" @class([
+            'flex items-center gap-3 py-2 rounded-xl transition-all group',
+            'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('rdo.groups*'),
+            'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('rdo.groups*'),
+          ]) :title="!sidebarOpen ? 'My Classes' : null">
+            <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
+            <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">My Groups</span>
           </a>
 
           {{-- Management Dropdown --}}
