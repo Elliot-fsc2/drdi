@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\ProposalStatus;
 use Illuminate\Database\Eloquent\Model;
 
 class Group extends Model
 {
-    protected $fillable = ['name', 'section_id', 'leader_id'];
+    protected $fillable = ['name', 'section_id', 'leader_id', 'final_title_id'];
 
     public function section()
     {
@@ -23,9 +24,14 @@ class Group extends Model
         return $this->belongsToMany(Student::class, 'members', 'group_id', 'student_id');
     }
 
-    public function proposal()
+    public function proposals()
     {
-        return $this->hasOne(Proposal::class);
+        return $this->hasMany(Proposal::class);
+    }
+
+    public function finalTitle()
+    {
+        return $this->belongsTo(Proposal::class, 'final_title_id');
     }
 
     public function consultations()

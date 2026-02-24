@@ -5,17 +5,18 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 new #[Title('Dashboard')]
-  class extends Component {
-  public function with(): array
+  class extends Component
   {
-    return [
-      'latestGroups' => Group::with(['section.program', 'section.semester', 'leader', 'members'])
-        ->latest()
-        ->take(5)
-        ->get(),
-    ];
-  }
-};
+      public function with(): array
+      {
+          return [
+              'latestGroups' => Group::with(['section.program', 'section.semester', 'leader', 'members'])
+                  ->latest()
+                  ->take(5)
+                  ->get(),
+          ];
+      }
+  };
 ?>
 
 @assets
@@ -35,9 +36,11 @@ new #[Title('Dashboard')]
   </div>
 
   <!-- Stats Overview -->
+  @island
   <div>
     @livewire(app\Livewire\RDOStats::class)
   </div>
+  @endisland
 
   <!-- Main Content Grid -->
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -103,51 +106,6 @@ new #[Title('Dashboard')]
             <p class="text-gray-500">No research groups found</p>
           </div>
         @endforelse
-      </div>
-    </div>
-
-    <!-- Sidebar -->
-    <div class="space-y-5">
-      <!-- Recent Activity -->
-      <div class="bg-white rounded-lg border border-gray-200 p-5 shadow-sm">
-        <h3 class="font-semibold text-gray-900 mb-4 text-sm">Recent Activity</h3>
-        <div class="space-y-3 text-sm">
-          <div class="flex gap-2 items-start">
-            <div class="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0"></div>
-            <div class="flex-1">
-              <p class="text-gray-900">New group "Cybersecurity Research" created</p>
-              <p class="text-xs text-gray-500">23 minutes ago</p>
-            </div>
-          </div>
-          <div class="flex gap-2 items-start">
-            <div class="w-1.5 h-1.5 rounded-full bg-green-500 mt-1.5 shrink-0"></div>
-            <div class="flex-1">
-              <p class="text-gray-900">Proposal approved: ML Detection Framework</p>
-              <p class="text-xs text-gray-500">2 hours ago</p>
-            </div>
-          </div>
-          <div class="flex gap-2 items-start">
-            <div class="w-1.5 h-1.5 rounded-full bg-orange-500 mt-1.5 shrink-0"></div>
-            <div class="flex-1">
-              <p class="text-gray-900">Consultation scheduled for Group 7</p>
-              <p class="text-xs text-gray-500">5 hours ago</p>
-            </div>
-          </div>
-          <div class="flex gap-2 items-start">
-            <div class="w-1.5 h-1.5 rounded-full bg-gray-400 mt-1.5 shrink-0"></div>
-            <div class="flex-1">
-              <p class="text-gray-900">Fee payment recorded: ₱5,000</p>
-              <p class="text-xs text-gray-500">Yesterday</p>
-            </div>
-          </div>
-          <div class="flex gap-2 items-start">
-            <div class="w-1.5 h-1.5 rounded-full bg-gray-400 mt-1.5 shrink-0"></div>
-            <div class="flex-1">
-              <p class="text-gray-900">New instructor registered: Dr. Santos</p>
-              <p class="text-xs text-gray-500">2 days ago</p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>

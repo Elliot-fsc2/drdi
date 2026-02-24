@@ -84,6 +84,7 @@
       x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
       x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100"
       x-transition:leave-end="opacity-0" @click="mobileMenuOpen = false"
+      x-cloak
       class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-30 lg:hidden"></div>
 
     <!-- Mobile Sidebar -->
@@ -91,6 +92,7 @@
       x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0"
       x-transition:leave="transition ease-in-out duration-300 transform" x-transition:leave-start="translate-x-0"
       x-transition:leave-end="-translate-x-full"
+      x-cloak
       class="fixed inset-y-0 left-0 z-40 w-64 bg-gradient-to-b from-slate-900 to-slate-800 lg:hidden flex flex-col">
       <!-- Mobile Logo & Close Button -->
       <div class="flex items-center justify-between h-16 px-6 border-b border-slate-700/50">
@@ -179,18 +181,27 @@
             <x-heroicon-o-home class="w-6 h-6 flex-shrink-0" />
             <span class="font-medium">Dashboard</span>
           </a>
-          <a href="{{ route('student.proposal-title') }}" wire:navigate
-            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
+          <a href="{{ route('student.proposal-title') }}" wire:navigate @class([
+            'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
+            'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('student.proposal-title'),
+            'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('student.proposal-title'),
+          ])>
             <x-heroicon-o-newspaper class="w-6 h-6 flex-shrink-0" />
             <span class="font-medium">Proposals</span>
           </a>
-          <a href="#"
-            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
+          <a href="{{ route('student.group-detail') }}" wire:navigate @class([
+            'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
+            'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('student.group-detail'),
+            'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('student.group-detail'),
+          ])>
             <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
             <span class="font-medium">My Groups</span>
           </a>
-          <a href="#"
-            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
+          <a href="{{ route('student.consultations') }}" wire:navigate @class([
+            'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
+            'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('student.consultations'),
+            'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('student.consultations'),
+          ])>
             <x-heroicon-o-chat-bubble-left-right class="w-6 h-6 flex-shrink-0" />
             <span class="font-medium">Consultations</span>
           </a>
@@ -356,15 +367,21 @@
             <x-heroicon-o-newspaper class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Proposals</span>
           </a>
-          <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
-            :title="!sidebarOpen ? 'My Groups' : null">
+          <a href="{{ route('student.group-detail') }}" wire:navigate
+            :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'" @class([
+              'flex items-center gap-3 py-2 rounded-xl transition-all group',
+              'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('student.group-detail'),
+              'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('student.group-detail'),
+            ]) :title="!sidebarOpen ? 'My Groups' : null">
             <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">My Groups</span>
           </a>
-          <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
-            :title="!sidebarOpen ? 'Consultations' : null">
+          <a href="{{ route('student.consultations') }}" wire:navigate
+            :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'" @class([
+              'flex items-center gap-3 py-2 rounded-xl transition-all group',
+              'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('student.consultations'),
+              'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('student.consultations'),
+            ]) :title="!sidebarOpen ? 'Consultations' : null">
             <x-heroicon-o-chat-bubble-left-right class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Consultations</span>
           </a>
@@ -533,17 +550,6 @@
                   <a href="#" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     <x-heroicon-o-cog-6-tooth class="w-4 h-4" />
                     Settings
-                  </a>
-                  <a href="#" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    <x-heroicon-o-plus class="w-4 h-4" />
-                    New Project
-                  </a>
-
-                  <div class="border-t border-gray-100 my-1"></div>
-
-                  <a href="#" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    <x-heroicon-o-question-mark-circle class="w-4 h-4" />
-                    Help & Support
                   </a>
 
                   <div class="border-t border-gray-100 my-1"></div>

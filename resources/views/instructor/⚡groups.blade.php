@@ -1,8 +1,12 @@
 <?php
 
+use App\Models\Group;
+use App\Models\Instructor;
+use App\Enums\InstructorRole;
 use Livewire\Component;
-use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
+use Livewire\Attributes\Title;
+use Livewire\Attributes\Computed;
 
 new
     #[Title('Groups')]
@@ -11,45 +15,56 @@ new
     #[Url]
     public string $tab = 'my_groups';
 
-    public function with(): array
+    #[Computed]
+    public function routePrefix(): string
     {
-        return [
-            'myGroups' => [
-                [
-                    'id' => 1,
-                    'title' => 'TITLE',
-                    'leader' => 'Name',
-                    'members_count' => 5,
-                ],
-                [
-                    'id' => 2,
-                    'title' => 'TITLE',
-                    'leader' => 'Name',
-                    'members_count' => 5,
-                ],
-                [
-                    'id' => 3,
-                    'title' => 'TITLE',
-                    'leader' => 'Name',
-                    'members_count' => 5,
-                ],
-            ],
-            'assignedGroups' => [
-                [
-                    'id' => 4,
-                    'title' => 'TITLE',
-                    'leader' => 'Name',
-                    'members_count' => 5,
-                ],
-                [
-                    'id' => 5,
-                    'title' => 'TITLE',
-                    'leader' => 'Name',
-                    'members_count' => 5,
-                ],
-            ]
-        ];
+        $user = auth()->user();
+        $isRDO = $user->profileable_type === \App\Models\Instructor::class
+            && $user->profileable?->role === \App\Enums\InstructorRole::RDO;
+
+        return $isRDO ? 'rdo' : 'instructor';
     }
+
+    #[Computed]
+    public function groupsAssigned()
+    {
+        return Group::with(['section', 'members', 'leader'])
+            ->withCount('members')
+            ->whereRelation('personnel', 'instructor_id', auth()->user()->profileable->id)
+            ->get()
+            ->map(function ($group) {
+                return [
+                    'id' => $group->id,
+                    'section_id' => $group->section_id,
+                    'title' => $group->name,
+                    'leader' => $group->leader->full_name,
+                    'members_count' => $group->members_count,
+                ];
+            });
+    }
+    #[Computed]
+    public function groups()
+    {
+        return Group::with(['section', 'members', 'leader'])
+            ->withCount('members')
+            ->whereHas('section', fn($q) => $q->active())
+            ->whereRelation('section', 'instructor_id', auth()->user()->profileable->id)
+            ->get()
+            ->map(function ($group) {
+                return [
+                    'id' => $group->id,
+                    'section_id' => $group->section_id,
+                    'title' => $group->name,
+                    'leader' => $group->leader->full_name,
+                    'members_count' => $group->members_count,
+                ];
+            });
+    }
+
+    public function mount()
+    {
+    }
+
 };
 ?>
 
@@ -81,9 +96,10 @@ new
             <div class="p-4 bg-slate-50/50 min-h-[500px]">
                 @if($tab === 'my_groups')
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        @foreach($myGroups as $group)
-                            <div
-                                class="block border border-slate-200 rounded-lg p-5 hover:border-blue-400 hover:shadow-md transition-all bg-white group cursor-pointer">
+                        @foreach($this->groups as $group)
+                            <a href="{{ route($this->routePrefix . '.classes.group.view', ['section' => $group['section_id'], 'group' => $group['id']]) }}"
+                                wire:navigate
+                                class="block border border-slate-200 rounded-lg p-5 hover:border-blue-400 hover:shadow-md transition-all bg-white group">
                                 <div class="flex items-start justify-between">
                                     <div class="flex-1">
                                         <h3
@@ -99,16 +115,16 @@ new
                                         <span>{{ $group['members_count'] }}</span>
                                     </div>
                                 </div>
-                            </div>
+                            </a>
                         @endforeach
                     </div>
                 @endif
 
                 @if($tab === 'assigned_groups')
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        @foreach($assignedGroups as $group)
-                            <div
-                                class="block border border-slate-200 rounded-lg p-5 hover:border-blue-400 hover:shadow-md transition-all bg-white group cursor-pointer">
+                        @foreach($this->groupsAssigned as $group)
+                            <a href="{{ route($this->routePrefix . '.groups.assigned.view', $group['id']) }}" wire:navigate
+                                class="block border border-slate-200 rounded-lg p-5 hover:border-blue-400 hover:shadow-md transition-all bg-white group">
                                 <div class="flex items-start justify-between">
                                     <div class="flex-1">
                                         <h3
@@ -124,7 +140,7 @@ new
                                         <span>{{ $group['members_count'] }}</span>
                                     </div>
                                 </div>
-                            </div>
+                            </a>
                         @endforeach
                     </div>
                 @endif

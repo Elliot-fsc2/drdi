@@ -1,163 +1,164 @@
 <?php
 
+use App\Enums\ProposalStatus;
 use App\Models\Consultation;
 use App\Models\Proposal;
-use App\Enums\ProposalStatus;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
 new #[Title('Home')]
-  class extends Component {
-  public $user;
-
-  public function mount()
+  class extends Component
   {
-    $this->user = auth()->user()->load(
-      'profileable.sections.program',
-      'profileable.sections.instructor',
-      'profileable.sections.semester'
-    );
-  }
+      public $user;
 
-  #[Computed]
-  public function sections()
-  {
-    $section = $this->user->profileable->sections()
-      ->withCount('students', 'groups')
-      ->active()
-      ->first();
+      public function mount()
+      {
+          $this->user = auth()->user()->load(
+              'profileable.sections.program',
+              'profileable.sections.instructor',
+              'profileable.sections.semester'
+          );
+      }
 
-    if (!$section) {
-      return null;
-    }
+      #[Computed]
+      public function sections()
+      {
+          $section = $this->user->profileable->sections()
+              ->withCount('students', 'groups')
+              ->active()
+              ->first();
 
-    return [
-      'id' => $section->id,
-      'name' => $section->name,
-      'program_name' => $section->program->name ?? 'N/A',
-      'instructor_name' => $section->instructor->full_name ?? 'No instructor assigned',
-      'semester_name' => $section->semester->name ?? 'N/A',
-      'students_count' => $section->students_count,
-      'groups_count' => $section->groups_count,
-    ];
-  }
+          if (! $section) {
+              return null;
+          }
 
-  #[Computed]
-  public function group()
-  {
-    $sections = $this->sections();
+          return [
+              'id' => $section->id,
+              'name' => $section->name,
+              'program_name' => $section->program->name ?? 'N/A',
+              'instructor_name' => $section->instructor->full_name ?? 'No instructor assigned',
+              'semester_name' => $section->semester->name ?? 'N/A',
+              'students_count' => $section->students_count,
+              'groups_count' => $section->groups_count,
+          ];
+      }
 
-    $sectionId = $sections['id'] ?? null;
+      #[Computed]
+      public function group()
+      {
+          $sections = $this->sections();
 
-    if (!$sectionId) {
-      return null;
-    }
+          $sectionId = $sections['id'] ?? null;
 
-    $group = $this->user->profileable->groups()
-      ->with('members', 'section')
-      ->firstWhere('section_id', $sectionId);
+          if (! $sectionId) {
+              return null;
+          }
 
-    if ($group) {
-      return [
-        'id' => $group->id,
-        'name' => $group->name,
-        'section_id' => $group->section->name ?? 'N/A',
-        'leader_id' => $group->leader_id,
-        'members' => $group->members->map(fn($member) => [
-          'id' => $member->id,
-          'name' => $member->full_name,
-        ])->toArray(),
-      ];
-    }
+          $group = $this->user->profileable->groups()
+              ->with('members', 'section')
+              ->firstWhere('section_id', $sectionId);
 
-    return [
-      'id' => null,
-      'name' => 'No group assigned',
-      'section_id' => $sectionId,
-      'leader_id' => null,
-      'members' => [],
-    ];
-  }
+          if ($group) {
+              return [
+                  'id' => $group->id,
+                  'name' => $group->name,
+                  'section_id' => $group->section->name ?? 'N/A',
+                  'leader_id' => $group->leader_id,
+                  'members' => $group->members->map(fn ($member) => [
+                      'id' => $member->id,
+                      'name' => $member->full_name,
+                  ])->toArray(),
+              ];
+          }
 
-  #[Computed]
-  public function proposals()
-  {
-    $group = $this->group();
+          return [
+              'id' => null,
+              'name' => 'No group assigned',
+              'section_id' => $sectionId,
+              'leader_id' => null,
+              'members' => [],
+          ];
+      }
 
-    // Fixed: Check if group exists and has an id
-    if (!$group || !$group['id']) {
-      return [];
-    }
+      #[Computed]
+      public function proposals()
+      {
+          $group = $this->group();
 
-    $proposals = Proposal::where('group_id', $group['id'])->get();
+          // Fixed: Check if group exists and has an id
+          if (! $group || ! $group['id']) {
+              return [];
+          }
 
-    return $proposals->map(fn($proposal) => [
-      'id' => $proposal->id,
-      'title' => $proposal->title,
-      'description' => $proposal->description,
-      'group_id' => $proposal->group_id,
-      'submitted_by' => $proposal->submitted_by,
-      'status' => $proposal->status,
-      'feedback' => $proposal->feedback,
-    ])->toArray();
-  }
+          $proposals = Proposal::with('submittedBy')->where('group_id', $group['id'])->get();
 
-  #[Computed]
-  public function consultations()
-  {
-    $group = $this->group();
+          return $proposals->map(fn ($proposal) => [
+              'id' => $proposal->id,
+              'title' => $proposal->title,
+              'description' => $proposal->description,
+              'group_id' => $proposal->group_id,
+              'submitted_by' => $proposal->submittedBy?->full_name ?? 'Unknown Student',
+              'status' => $proposal->status,
+              'feedback' => $proposal->feedback,
+          ])->toArray();
+      }
 
-    // Fixed: Check if group exists and has an id
-    if (!$group || !$group['id']) {
-      return [];
-    }
+      #[Computed]
+      public function consultations()
+      {
+          $group = $this->group();
 
-    return Consultation::where('group_id', $group['id'])
-      ->orderBy('scheduled_at', 'asc')
-      ->get()
-      ->map(fn($consultation) => [
-        'id' => $consultation->id,
-        'group_id' => $consultation->group_id,
-        'instructor_id' => $consultation->instructor_id,
-        'scheduled_at' => $consultation->scheduled_at,
-        'status' => $consultation->status,
-        'remarks' => $consultation->remarks,
-        'type' => $consultation->type,
-      ])->toArray();
-  }
+          // Fixed: Check if group exists and has an id
+          if (! $group || ! $group['id']) {
+              return [];
+          }
 
-  // Added: Missing formatTime method
-  public function formatTime($datetime): string
-  {
-    return \Carbon\Carbon::parse($datetime)->format('M d, Y - g:i A');
-  }
+          return Consultation::where('group_id', $group['id'])
+              ->orderBy('scheduled_at', 'asc')
+              ->get()
+              ->map(fn ($consultation) => [
+                  'id' => $consultation->id,
+                  'group_id' => $consultation->group_id,
+                  'instructor_id' => $consultation->instructor_id,
+                  'scheduled_at' => $consultation->scheduled_at,
+                  'status' => $consultation->status,
+                  'remarks' => $consultation->remarks,
+                  'type' => $consultation->type,
+              ])->toArray();
+      }
 
-  public function getStatusBadgeClass(string $status): string
-  {
-    return match ($status) {
-      ProposalStatus::APPROVED->value => 'bg-green-50 text-green-700',
-      'revision' => 'bg-orange-50 text-orange-700',
-      ProposalStatus::PENDING->value, 'scheduled' => 'bg-yellow-50 text-yellow-700',
-      ProposalStatus::REJECTED->value => 'bg-red-50 text-red-700',
-      'completed' => 'bg-green-50 text-green-700',
-      default => 'bg-gray-50 text-gray-700',
-    };
-  }
+      // Added: Missing formatTime method
+      public function formatTime($datetime): string
+      {
+          return \Carbon\Carbon::parse($datetime)->format('M d, Y - g:i A');
+      }
 
-  public function getStatusLabel(string $status): string
-  {
-    return match ($status) {
-      'revision' => 'Revision Needed',
-      'scheduled' => 'Scheduled',
-      ProposalStatus::APPROVED->value => 'Approved',
-      ProposalStatus::REJECTED->value => 'Rejected',
-      ProposalStatus::PENDING->value => 'Pending',
-      'completed' => 'Completed',
-      default => ucfirst($status),
-    };
-  }
-};
+      public function getStatusBadgeClass(string $status): string
+      {
+          return match ($status) {
+              ProposalStatus::APPROVED->value => 'bg-green-50 text-green-700',
+              'revision' => 'bg-orange-50 text-orange-700',
+              ProposalStatus::PENDING->value, 'scheduled' => 'bg-yellow-50 text-yellow-700',
+              ProposalStatus::REJECTED->value => 'bg-red-50 text-red-700',
+              'completed' => 'bg-green-50 text-green-700',
+              default => 'bg-gray-50 text-gray-700',
+          };
+      }
+
+      public function getStatusLabel(string $status): string
+      {
+          return match ($status) {
+              'revision' => 'Revision Needed',
+              'scheduled' => 'Scheduled',
+              ProposalStatus::APPROVED->value => 'Approved',
+              ProposalStatus::REJECTED->value => 'Rejected',
+              ProposalStatus::PENDING->value => 'Pending',
+              'completed' => 'Completed',
+              default => ucfirst($status),
+          };
+      }
+  };
 ?>
 
 <div class="space-y-6">
@@ -303,7 +304,7 @@ new #[Title('Home')]
                   </span>
                 </div>
 
-                <p class="text-sm text-gray-600 mb-3">{{ $proposal['description'] }}</p>
+                <p class="text-sm text-gray-600 mb-3">{{ str($proposal['description'])->limit(100) }}</p>
 
                 @if($proposal['feedback'])
                   <div class="bg-orange-50 border border-orange-100 rounded p-3 mb-3">
@@ -318,26 +319,8 @@ new #[Title('Home')]
                     <span class="text-gray-900 font-medium ml-1">{{ $proposal['group_id'] }}</span>
                   </div>
                   <div>
-                    <span class="text-gray-500">Submitted by:</span>
-                    <span class="text-gray-900 font-medium ml-1">User #{{ $proposal['submitted_by'] }}</span>
+                    <span class="text-gray-900 font-medium ml-1">{{ $proposal['submitted_by'] }}</span>
                   </div>
-                </div>
-
-                <div class="flex gap-2 mt-4">
-                  @if($proposal['status'] === 'approved')
-                    <button class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded">View
-                      Details</button>
-                    <button class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded">Download
-                      PDF</button>
-                  @elseif($proposal['status'] === 'revision')
-                    <button class="text-xs bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 rounded">Submit
-                      Revision</button>
-                    <button class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded">View
-                      Feedback</button>
-                  @else
-                    <button class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded">View
-                      Details</button>
-                  @endif
                 </div>
               </div>
             @endforeach

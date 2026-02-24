@@ -60,6 +60,7 @@ Route::middleware(['auth', 'instructor'])
         Route::livewire('/classes/{section}/group/{group}/schedule', 'instructor::my-classes.schedule')->name('classes.schedule');
 
         Route::livewire('/groups', 'instructor::groups')->name('groups');
+        Route::livewire('/groups/{group}', 'instructor::groups.assigned.view')->name('groups.assigned.view');
     });
 
 Route::middleware(['auth', 'student'])
@@ -67,7 +68,9 @@ Route::middleware(['auth', 'student'])
     ->as('student.')
     ->group(function () {
         Route::livewire('/home', 'student::home')->name('home');
+        Route::livewire('/group-detail', 'student::group-detail')->name('group-detail');
         Route::livewire('/proposal-title', 'student::proposal-title')->name('proposal-title');
+        Route::livewire('/consultations', 'student::consultations')->name('consultations');
     });
 
 Route::middleware(['auth', 'rdo'])
@@ -86,4 +89,5 @@ Route::middleware(['auth', 'rdo'])
         Route::livewire('/semester-management', 'rdo::management.semester-tracking')->name('semester-management');
 
         Route::livewire('/groups', 'instructor::groups')->name('groups');
+        Route::livewire('/groups/{group}', 'instructor::groups.assigned.view')->name('groups.assigned.view');
     });

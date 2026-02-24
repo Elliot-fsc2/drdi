@@ -43,7 +43,7 @@ new class extends Component
             ->whereHas('section', function ($query) {
                 $query->where('instructor_id', auth()->user()->profileable->id);
             })
-            ->with(['leader', 'proposal'])
+            ->with(['leader', 'proposals'])
             ->withCount('members')
             ->get();
     }
@@ -154,12 +154,16 @@ new class extends Component
                         </div>
                       </div>
 
-                      @if($group->proposal)
+                      @if($group->proposals->isNotEmpty())
+                        @php
+                          $latestProposal = $group->proposals->sortByDesc('created_at')->first();
+                          $statusValue = $latestProposal->status instanceof \App\Enums\ProposalStatus ? $latestProposal->status->value : strtolower($latestProposal->status);
+                        @endphp
                         <div class="pt-3 border-t border-slate-100">
                           <div class="flex items-start justify-between gap-2">
                             <div class="flex-1 min-w-0">
-                              <p class="text-sm font-medium text-slate-700 truncate" title="{{ $group->proposal->title }}">
-                                {{ $group->proposal->title }}
+                              <p class="text-sm font-medium text-slate-700 truncate" title="{{ $latestProposal->title }}">
+                                {{ $latestProposal->title }}
                               </p>
                             </div>
                             @php
@@ -174,8 +178,8 @@ new class extends Component
                                 'rejected' => 'Rejected',
                               ];
                             @endphp
-                            <span class="px-2 py-0.5 text-xs font-medium rounded whitespace-nowrap {{ $statusColors[$group->proposal->status] ?? 'bg-slate-100 text-slate-600' }}">
-                              {{ $statusLabels[$group->proposal->status] ?? ucfirst($group->proposal->status) }}
+                            <span class="px-2 py-0.5 text-xs font-medium rounded whitespace-nowrap {{ $statusColors[$statusValue] ?? 'bg-slate-100 text-slate-600' }}">
+                              {{ $statusLabels[$statusValue] ?? ucfirst($statusValue) }}
                             </span>
                           </div>
                         </div>
