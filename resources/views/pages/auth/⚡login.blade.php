@@ -8,32 +8,33 @@ use Livewire\Component;
 
 new #[Layout('layouts::guest')]
   #[Title('Login')]
-  class extends Component {
-  #[Validate('required|string')]
-  public string $email = '';
-
-  #[Validate('required|string')]
-  public string $password = '';
-
-  public bool $remember = false;
-
-  public function login(Login $loginService)
+  class extends Component
   {
-    $this->validate();
+      #[Validate('required|string')]
+      public string $email = '';
 
-    try {
-      $loginService->attempt($this->email, $this->password, $this->remember);
-    } catch (\Illuminate\Validation\ValidationException $e) {
-      if ($seconds = $loginService->getLockoutSeconds()) {
-        $this->dispatch('lockout', seconds: $seconds);
+      #[Validate('required|string')]
+      public string $password = '';
+
+      public bool $remember = false;
+
+      public function login(Login $loginService)
+      {
+          $this->validate();
+
+          try {
+              $loginService->attempt($this->email, $this->password, $this->remember);
+          } catch (\Illuminate\Validation\ValidationException $e) {
+              if ($seconds = $loginService->getLockoutSeconds()) {
+                  $this->dispatch('lockout', seconds: $seconds);
+              }
+
+              throw $e; // Re-throw so the error message shows on the input
+          }
+
+          $this->reset(['password']);
       }
-
-      throw $e; // Re-throw so the error message shows on the input
-    }
-
-    $this->reset(['password']);
-  }
-};
+  };
 ?>
 <div class="h-screen flex overflow-hidden" x-data="{
         secondsLeft: 0,
@@ -48,13 +49,13 @@ new #[Layout('layouts::guest')]
 
   <!-- Left Side - Welcome Section -->
   <div
-    class="hidden lg:flex lg:w-1/2 bg-linear-to-br from-orange-400 via-pink-300 to-purple-400 relative overflow-hidden">
-    <div class="absolute inset-0 bg-linear-to-br from-orange-500/80 via-pink-400/60 to-purple-500/80"></div>
+    class="hidden lg:flex lg:w-1/2 bg-linear-to-br from-blue-400 via-cyan-300 to-blue-600 relative overflow-hidden">
+    <div class="absolute inset-0 bg-linear-to-br from-blue-500/80 via-cyan-400/60 to-blue-600/80"></div>
 
     <!-- Decorative Elements -->
     <div class="absolute top-10 left-10 w-32 h-32 bg-white/20 rounded-full blur-3xl"></div>
-    <div class="absolute bottom-20 right-20 w-40 h-40 bg-purple-300/30 rounded-full blur-3xl"></div>
-    <div class="absolute top-1/2 left-1/4 w-24 h-24 bg-pink-200/20 rounded-full blur-2xl"></div>
+    <div class="absolute bottom-20 right-20 w-40 h-40 bg-blue-300/30 rounded-full blur-3xl"></div>
+    <div class="absolute top-1/2 left-1/4 w-24 h-24 bg-cyan-200/20 rounded-full blur-2xl"></div>
 
     <!-- Content -->
     <div class="relative z-10 flex flex-col justify-center items-center px-8 xl:px-16 text-white w-full py-8">
@@ -98,7 +99,7 @@ new #[Layout('layouts::guest')]
               Email or Username
             </label>
             <input type="text" id="email" wire:model="email" placeholder="Enter Email or Username"
-              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
               required>
             @error('email')
               <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -111,7 +112,7 @@ new #[Layout('layouts::guest')]
               Password
             </label>
             <input type="password" id="password" wire:model="password" placeholder="Enter Password"
-              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
               required>
             @error('password')
               <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -122,17 +123,17 @@ new #[Layout('layouts::guest')]
           <div class="flex items-center justify-between">
             <label class="flex items-center">
               <input type="checkbox" wire:model="remember"
-                class="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
               <span class="ml-2 text-sm text-gray-700">Remember Me</span>
             </label>
-            <a href="#" class="text-sm text-purple-600 hover:text-purple-700 font-medium">
+            <a href="#" class="text-sm text-blue-600 hover:text-blue-700 font-medium">
               Forget Password ?
             </a>
           </div>
 
           <!-- Login Button -->
           <button type="submit" x-bind:disabled="secondsLeft > 0"
-            x-bind:class="secondsLeft > 0 ? 'bg-gray-400 opacity-50 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'"
+            x-bind:class="secondsLeft > 0 ? 'bg-gray-400 opacity-50 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'"
             class="w-full text-white font-semibold py-3 rounded-lg transition-all shadow-lg">
 
             <span x-show="secondsLeft <= 0">Login</span>
