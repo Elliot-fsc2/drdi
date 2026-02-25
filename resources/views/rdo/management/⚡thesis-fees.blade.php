@@ -2,6 +2,7 @@
 
 use App\Enums\ThesisRatesType;
 use App\Models\ThesisRate;
+use App\Services\FeeService;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
@@ -15,106 +16,121 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 new #[Title('Thesis Rates Management')]
-  class extends Component implements HasActions, HasSchemas {
-  use InteractsWithActions;
-  use InteractsWithSchemas;
-
-  #[Computed]
-  public function rates()
+  class extends Component implements HasActions, HasSchemas
   {
-    return ThesisRate::orderBy('type')->orderBy('name')->get();
-  }
+      use InteractsWithActions;
+      use InteractsWithSchemas;
 
-  public function createRateAction(): Action
-  {
-    return Action::make('createRate')
-      ->modalWidth('2xl')
-      ->modalCloseButton(false)
-      ->label('Add New Rate')
-      ->icon(Heroicon::Plus)
-      ->modalHeading('Create Thesis Rate')
-      ->form([
-        TextInput::make('name')
-          ->label('Rate Name')
-          ->placeholder('e.g., Base Fee, Technical Adviser Fee')
-          ->required()
-          ->maxLength(255),
+      #[Computed]
+      public function rates()
+      {
+          return ThesisRate::orderBy('type')->orderBy('name')->get();
+      }
 
-        TextInput::make('amount')
-          ->label('Amount (₱)')
-          ->numeric()
-          ->required()
-          ->minValue(0)
-          ->prefix('₱')
-          ->placeholder('0.00'),
+      public function createRateAction(): Action
+      {
+          return Action::make('createRate')
+              ->modalWidth('2xl')
+              ->modalCloseButton(false)
+              ->label('Add New Rate')
+              ->icon(Heroicon::Plus)
+              ->modalHeading('Create Thesis Rate')
+              ->form([
+                  TextInput::make('name')
+                      ->label('Rate Name')
+                      ->placeholder('e.g., Base Fee, Technical Adviser Fee')
+                      ->required()
+                      ->maxLength(255),
 
-        Select::make('type')
-          ->label('Rate Type')
-          ->options(ThesisRatesType::class)
-          ->required()
-          ->native(false),
-      ])
-      ->successNotificationTitle('Thesis rate created successfully')
-      ->action(function (array $data): void {
-        ThesisRate::create($data);
-        unset($this->rates);
-      });
-  }
+                  TextInput::make('amount')
+                      ->label('Amount (₱)')
+                      ->numeric()
+                      ->required()
+                      ->minValue(0)
+                      ->prefix('₱')
+                      ->placeholder('0.00'),
 
-  public function editRateAction(): Action
-  {
-    return Action::make('editRate')
-      ->modalWidth('2xl')
-      ->modalCloseButton(false)
-      ->icon(Heroicon::PencilSquare)
-      ->fillForm(fn(array $arguments): array => [
-        'name' => ThesisRate::find($arguments['rateId'])->name,
-        'amount' => ThesisRate::find($arguments['rateId'])->amount,
-        'type' => ThesisRate::find($arguments['rateId'])->type->value,
-      ])
-      ->form([
-        TextInput::make('name')
-          ->label('Rate Name')
-          ->required()
-          ->maxLength(255),
+                  Select::make('type')
+                      ->label('Rate Type')
+                      ->options(ThesisRatesType::class)
+                      ->required()
+                      ->native(false),
+              ])
+              ->successNotificationTitle('Thesis rate created successfully')
+              ->action(function (array $data): void {
+                  ThesisRate::create($data);
+                  unset($this->rates);
+              });
+      }
 
-        TextInput::make('amount')
-          ->label('Amount (₱)')
-          ->numeric()
-          ->required()
-          ->minValue(0)
-          ->prefix('₱'),
+      public function editRateAction(): Action
+      {
+          return Action::make('editRate')
+              ->modalWidth('2xl')
+              ->modalCloseButton(false)
+              ->icon(Heroicon::PencilSquare)
+              ->fillForm(fn (array $arguments): array => [
+                  'name' => ThesisRate::find($arguments['rateId'])->name,
+                  'amount' => ThesisRate::find($arguments['rateId'])->amount,
+                  'type' => ThesisRate::find($arguments['rateId'])->type->value,
+              ])
+              ->form([
+                  TextInput::make('name')
+                      ->label('Rate Name')
+                      ->required()
+                      ->maxLength(255),
 
-        Select::make('type')
-          ->label('Rate Type')
-          ->options(ThesisRatesType::class)
-          ->required()
-          ->native(false),
-      ])
-      ->successNotificationTitle('Thesis rate updated successfully')
-      ->action(function (array $arguments, array $data): void {
-        ThesisRate::find($arguments['rateId'])->update($data);
-        unset($this->rates);
-      });
-  }
+                  TextInput::make('amount')
+                      ->label('Amount (₱)')
+                      ->numeric()
+                      ->required()
+                      ->minValue(0)
+                      ->prefix('₱'),
 
-  public function deleteRateAction(): Action
-  {
-    return Action::make('deleteRate')
-      ->requiresConfirmation()
-      ->modalCloseButton(false)
-      ->modalHeading('Delete Thesis Rate')
-      ->modalDescription('Are you sure you want to delete this rate? This action cannot be undone.')
-      ->modalSubmitActionLabel('Yes, Delete')
-      ->color('danger')
-      ->icon(Heroicon::Trash)
-      ->successNotificationTitle('Thesis rate deleted successfully')
-      ->action(function (array $arguments): void {
-        ThesisRate::find($arguments['rateId'])->delete();
-        unset($this->rates);
-      });
-  }
-};
+                  Select::make('type')
+                      ->label('Rate Type')
+                      ->options(ThesisRatesType::class)
+                      ->required()
+                      ->native(false),
+              ])
+              ->successNotificationTitle('Thesis rate updated successfully')
+              ->action(function (array $arguments, array $data, FeeService $feeService): void {
+                  $rate = ThesisRate::find($arguments['rateId']);
+                  $rate->update($data);
+
+                  foreach ($rate->semesters as $semester) {
+                      $feeService->updateAllGroupsInSemester($semester);
+                  }
+
+                  unset($this->rates);
+              });
+      }
+
+      public function deleteRateAction(): Action
+      {
+          return Action::make('deleteRate')
+              ->requiresConfirmation()
+              ->modalCloseButton(false)
+              ->modalHeading('Delete Thesis Rate')
+              ->modalDescription('Are you sure you want to delete this rate? This action cannot be undone.')
+              ->modalSubmitActionLabel('Yes, Delete')
+              ->color('danger')
+              ->icon(Heroicon::Trash)
+              ->successNotificationTitle('Thesis rate deleted successfully')
+              ->action(function (array $arguments, FeeService $feeService): void {
+                  $rate = ThesisRate::find($arguments['rateId']);
+                  $semesters = $rate->semesters;
+
+                  $rate->delete();
+
+                  foreach ($semesters as $semester) {
+                      $feeService->updateAllGroupsInSemester($semester);
+                  }
+
+                  unset($this->rates);
+              });
+      }
+  };
 ?>
 
 @assets

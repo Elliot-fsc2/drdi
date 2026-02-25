@@ -91,7 +91,7 @@ class FeeService
 
         // 2. Load sections, their groups, and the groups' personnel
         // We use chunkById to handle large amounts of data efficiently
-        $semester->sections()->with('groups.personnel')->chunkById(100, function ($sections) use ($totalBaseAmount, $totalPersonnelRate) {
+        $semester->sections()->active()->with('groups.personnel')->chunkById(100, function ($sections) use ($totalBaseAmount, $totalPersonnelRate) {
             foreach ($sections as $section) {
                 foreach ($section->groups as $group) {
                     // Calculate personnel count

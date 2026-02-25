@@ -71,6 +71,7 @@ Route::middleware(['auth', 'student'])
         Route::livewire('/group-detail', 'student::group-detail')->name('group-detail');
         Route::livewire('/proposal-title', 'student::proposal-title')->name('proposal-title');
         Route::livewire('/consultations', 'student::consultations')->name('consultations');
+        Route::livewire('/fees', 'student::fees')->name('fees');
     });
 
 Route::middleware(['auth', 'rdo'])

@@ -1,5 +1,6 @@
 <?php
 
+use App\Exports\GroupMasterlist;
 use App\Models\Group;
 use App\Models\Semester;
 use Livewire\Attributes\Computed;
@@ -7,77 +8,88 @@ use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Maatwebsite\Excel\Facades\Excel;
 
 new #[Title('Group Masterlist')]
-class extends Component {
-  use WithPagination;
+class extends Component
+{
+    use WithPagination;
 
-  #[Url]
-  public string $search = '';
+    #[Url]
+    public string $search = '';
 
-  #[Url]
-  public ?int $semesterId = null;
+    #[Url]
+    public ?int $semesterId = null;
 
-  public function mount(): void
-  {
-    if (!$this->semesterId) {
-      $this->semesterId = Semester::active()->first()?->id;
+    public function mount(): void
+    {
+        if (! $this->semesterId) {
+            $this->semesterId = Semester::active()->first()?->id;
+        }
     }
-  }
 
-  #[Computed]
-  public function semesters()
-  {
-    return Semester::orderByDesc('start_date')->get();
-  }
+    #[Computed]
+    public function semesters()
+    {
+        return Semester::orderByDesc('start_date')->get();
+    }
 
-  #[Computed]
-  public function selectedSemester()
-  {
-    return Semester::find($this->semesterId);
-  }
+    #[Computed]
+    public function selectedSemester()
+    {
+        return Semester::find($this->semesterId);
+    }
 
-  #[Computed]
-  public function groups()
-  {
-    return Group::with([
-      'section.program',
-      'section.semester',
-      'section.instructor',
-      'leader',
-      'members.program',
-      'personnel.instructor',
-      'fee',
-    ])
-      ->whereHas('section', function ($query) {
-        $query->where('semester_id', $this->semesterId);
-      })
-      ->when($this->search, function ($query) {
-        $query->where(function ($q) {
-          $q->where('name', 'like', "%{$this->search}%")
-            ->orWhereHas('members', function ($memberQuery) {
-              $memberQuery->where('first_name', 'like', "%{$this->search}%")
-                ->orWhere('last_name', 'like', "%{$this->search}%")
-                ->orWhere('student_number', 'like', "%{$this->search}%");
+    #[Computed]
+    public function groups()
+    {
+        return Group::with([
+            'section.program',
+            'section.semester',
+            'section.instructor',
+            'leader',
+            'members.program',
+            'personnel.instructor',
+            'fee',
+        ])
+            ->whereHas('section', function ($query) {
+                $query->where('semester_id', $this->semesterId);
             })
-            ->orWhereHas('section.program', function ($programQuery) {
-              $programQuery->where('name', 'like', "%{$this->search}%");
-            });
-        });
-      })
-      ->orderBy('name')
-      ->paginate(10);
-  }
+            ->when($this->search, function ($query) {
+                $query->where(function ($q) {
+                    $q->where('name', 'like', "%{$this->search}%")
+                        ->orWhereHas('members', function ($memberQuery) {
+                            $memberQuery->where('first_name', 'like', "%{$this->search}%")
+                                ->orWhere('last_name', 'like', "%{$this->search}%")
+                                ->orWhere('student_number', 'like', "%{$this->search}%");
+                        })
+                        ->orWhereHas('section.program', function ($programQuery) {
+                            $programQuery->where('name', 'like', "%{$this->search}%");
+                        });
+                });
+            })
+            ->orderBy('name')
+            ->paginate(10);
+    }
 
-  public function updatedSearch(): void
-  {
-    $this->resetPage();
-  }
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
 
-  public function updatedSemesterId(): void
-  {
-    $this->resetPage();
-  }
+    public function updatedSemesterId(): void
+    {
+        $this->resetPage();
+    }
+
+    public function export()
+    {
+        $export = new GroupMasterlist($this->semesterId, $this->search);
+
+        $timestamp = now()->format('Y-m-d_H-i-s');
+
+        return Excel::download($export, "group-masterlist-{$timestamp}.xlsx");
+    }
 };
 ?>
 
@@ -103,7 +115,8 @@ class extends Component {
               <option value="{{ $semester->id }}">{{ $semester->name }}</option>
             @endforeach
           </select>
-          <button class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">
+          <button class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
+          wire:click="export">
             Export Data
           </button>
         </div>
@@ -147,7 +160,7 @@ class extends Component {
                 @if($group->fee)
                   <div class="text-right">
                     <span class="text-sm font-semibold text-cyan-700">
-                      ₱{{ number_format($group->fee->base_fee + $group->fee->honorarium_total + $group->fee->total_merger_amount, 2) }}
+                      ₱{{ number_format($group->fee->total_merger_amount, 2) }}
                     </span>
                     <p class="text-xs text-slate-400">Total Fees</p>
                   </div>
@@ -318,7 +331,6 @@ class extends Component {
                     @endif
                   </td>
 
-                  {{-- Fees --}}
                   <td class="px-6 py-4 text-right">
                     @if($group->fee)
                       <div class="space-y-1">
@@ -330,14 +342,8 @@ class extends Component {
                           <span class="text-slate-500">Honorarium:</span>
                           <span class="font-medium text-slate-700">₱{{ number_format($group->fee->honorarium_total, 2) }}</span>
                         </div>
-                        @if($group->fee->total_merger_amount > 0)
-                          <div class="text-sm">
-                            <span class="text-slate-500">Merger:</span>
-                            <span class="font-medium text-slate-700">₱{{ number_format($group->fee->total_merger_amount, 2) }}</span>
-                          </div>
-                        @endif
                         <div class="text-sm font-semibold text-cyan-700 border-t border-slate-200 pt-1 mt-1">
-                          Total: ₱{{ number_format($group->fee->base_fee + $group->fee->honorarium_total + $group->fee->total_merger_amount, 2) }}
+                          Total: ₱{{ number_format($group->fee->total_merger_amount, 2) }}
                         </div>
                       </div>
                     @else

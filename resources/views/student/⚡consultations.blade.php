@@ -1,14 +1,15 @@
 <?php
 
+use Livewire\Component;
 use App\Models\Consultation;
 use Filament\Actions\Action;
-use Filament\Actions\Concerns\InteractsWithActions;
-use Filament\Actions\Contracts\HasActions;
-use Filament\Schemas\Concerns\InteractsWithSchemas;
-use Filament\Schemas\Contracts\HasSchemas;
-use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
-use Livewire\Component;
+use Livewire\Attributes\Computed;
+use Filament\Actions\Contracts\HasActions;
+use Filament\Forms\Components\Placeholder;
+use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
 
 new #[Title('Group Consultations')]
     class extends Component implements HasActions, HasSchemas
@@ -74,23 +75,23 @@ new #[Title('Group Consultations')]
                     $consultation = Consultation::find($arguments['consultation']);
 
                     return [
-                        \Filament\Forms\Components\Placeholder::make('scheduled_at')
+                        Placeholder::make('scheduled_at')
                             ->label('Scheduled Time')
                             ->content(fn () => $consultation?->scheduled_at ? $consultation->scheduled_at->format('M d, Y - g:i A') : 'To Be Determined'),
 
-                        \Filament\Forms\Components\Placeholder::make('instructor')
+                        Placeholder::make('instructor')
                             ->label('Instructor')
                             ->content(fn () => collect([$consultation?->instructor?->first_name, $consultation?->instructor?->last_name])->filter()->join(' ') ?: 'Instructor #'.$consultation?->instructor_id),
 
-                        \Filament\Forms\Components\Placeholder::make('type')
+                        Placeholder::make('type')
                             ->label('Type')
                             ->content(fn () => ucfirst($consultation?->type ?? 'N/A')),
 
-                        \Filament\Forms\Components\Placeholder::make('status')
+                        Placeholder::make('status')
                             ->label('Status')
                             ->content(fn () => ucfirst($consultation?->status ?? 'N/A')),
 
-                        \Filament\Forms\Components\Placeholder::make('remarks')
+                        Placeholder::make('remarks')
                             ->label('Instructor Remarks')
                             ->content(function () use ($consultation) {
                                 $remarks = $consultation?->remarks ?? 'No remarks provided.';

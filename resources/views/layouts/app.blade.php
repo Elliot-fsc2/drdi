@@ -205,16 +205,7 @@
             <x-heroicon-o-chat-bubble-left-right class="w-6 h-6 flex-shrink-0" />
             <span class="font-medium">Consultations</span>
           </a>
-          <a href="#"
-            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
-            <x-heroicon-o-book-open class="w-6 h-6 flex-shrink-0" />
-            <span class="font-medium">Resources</span>
-          </a>
-          <a href="#"
-            class="flex items-center gap-3 px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all">
-            <x-heroicon-o-cog-6-tooth class="w-6 h-6 flex-shrink-0" />
-            <span class="font-medium">Settings</span>
-          </a>
+          
         @elseif($isRDO)
           {{-- RDO Navigation --}}
           <a href="{{ route('rdo.home') }}" @class([
@@ -385,17 +376,14 @@
             <x-heroicon-o-chat-bubble-left-right class="w-6 h-6 flex-shrink-0" />
             <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Consultations</span>
           </a>
-          <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
-            :title="!sidebarOpen ? 'Resources' : null">
-            <x-heroicon-o-book-open class="w-6 h-6 flex-shrink-0" />
-            <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Resources</span>
-          </a>
-          <a href="#" :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
-            class="flex items-center gap-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all group"
-            :title="!sidebarOpen ? 'Settings' : null">
-            <x-heroicon-o-cog-6-tooth class="w-6 h-6 flex-shrink-0" />
-            <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Settings</span>
+          <a href="{{ route('student.fees') }}" wire:navigate
+            :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'" @class([
+              'flex items-center gap-3 py-2 rounded-xl transition-all group',
+              'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' => request()->routeIs('student.fees'),
+              'text-slate-400 hover:text-white hover:bg-slate-700/50' => !request()->routeIs('student.fees'),
+            ]) :title="!sidebarOpen ? 'Fees' : null">
+            <x-heroicon-o-currency-dollar class="w-6 h-6 flex-shrink-0" />
+            <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Fees</span>
           </a>
         @elseif($isRDO)
           {{-- RDO Navigation --}}
@@ -494,13 +482,13 @@
             </button>
 
             <div class="hidden md:block flex-1 max-w-md">
-              <div class="relative">
+              <!-- <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <x-heroicon-o-magnifying-glass class="h-5 w-5 text-gray-400" />
                 </div>
                 <input type="search" placeholder="Search projects, documents..."
                   class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none bg-gray-50">
-              </div>
+              </div> -->
             </div>
           </div>
 
