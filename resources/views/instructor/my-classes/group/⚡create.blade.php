@@ -139,72 +139,93 @@ new class extends Component implements HasSchemas {
 
 @assets
     <link rel="stylesheet" href="{{ Vite::asset('resources/css/filament.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Calistoga&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
 @endassets
 
-<div class="min-h-screen bg-slate-50">
+<div class="relative min-h-screen" style="background: #F8FAFC">
 
-    {{-- Hero Header --}}
-    <div class="relative overflow-hidden bg-slate-900 px-4 py-8 md:px-6 md:py-10">
-        <div class="pointer-events-none absolute inset-0"
-            style="background-image: radial-gradient(circle, rgba(255,255,255,0.035) 1px, transparent 1px); background-size: 28px 28px;">
+    {{-- Ambient background glows --}}
+    <div class="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
+        <div class="absolute -right-32 -top-32 h-[500px] w-[500px] rounded-full"
+            style="background: radial-gradient(circle, rgba(0,82,255,0.07), transparent 70%); filter: blur(60px)"></div>
+        <div class="absolute bottom-1/3 -left-24 h-[400px] w-[400px] rounded-full"
+            style="background: radial-gradient(circle, rgba(77,124,255,0.05), transparent 70%); filter: blur(80px)">
         </div>
-        <div class="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full blur-[120px]"
-            style="background: radial-gradient(circle, rgba(0,82,255,0.18) 0%, transparent 70%);"></div>
+    </div>
 
-        <div class="relative mx-auto max-w-7xl">
+    <div class="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
+
+        {{-- ── Page Header ────────────────────────────── --}}
+        <div class="mb-8">
             {{-- Breadcrumb --}}
-            <div class="mb-4 flex items-center gap-2 text-xs text-slate-400">
+            <div class="mb-5 flex items-center gap-2" style="font-size: 12px; color: #94A3B8">
                 <a href="{{ route($this->routePrefix . '.classes') }}" wire:navigate
-                    class="transition-colors hover:text-blue-400">My Classes</a>
-                <span>/</span>
+                    class="transition-colors hover:underline" style="color: #64748B">My Classes</a>
+                <span style="color: #CBD5E1">/</span>
                 <a href="{{ route($this->routePrefix . '.classes.view', ['section' => $section->id]) }}" wire:navigate
-                    class="transition-colors hover:text-blue-400">{{ $section->name }}</a>
-                <span>/</span>
-                <span class="text-slate-200">Create Group</span>
+                    class="transition-colors hover:underline" style="color: #64748B">{{ $section->name }}</a>
+                <span style="color: #CBD5E1">/</span>
+                <span style="color: #0052FF; font-weight: 500">Create Group</span>
             </div>
 
             <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                    <h1 class="text-2xl font-bold text-white md:text-3xl">Create Research Group</h1>
-                    <p class="mt-1 text-sm text-slate-400">
+                    <div class="mb-4 inline-flex items-center gap-2 rounded-full border px-4 py-1.5"
+                        style="border-color: rgba(0,82,255,0.2); background: rgba(0,82,255,0.05)">
+                        <span class="h-1.5 w-1.5 rounded-full" style="background: #0052FF"></span>
+                        <span
+                            style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: #0052FF; text-transform: uppercase">
+                            New Group
+                        </span>
+                    </div>
+                    <h1 class="leading-tight"
+                        style="font-family: 'Calistoga', Georgia, serif; font-size: clamp(1.6rem, 3.5vw, 2.25rem); letter-spacing: -0.015em; color: #0F172A">
+                        Create Research Group<span
+                            style="background: linear-gradient(to right, #0052FF, #4D7CFF); -webkit-background-clip: text; background-clip: text; color: transparent">.</span>
+                    </h1>
+                    <p class="mt-2 text-sm" style="color: #64748B">
                         {{ $section->name }} &bull; {{ $section->semester->name }}
                     </p>
                 </div>
 
                 <a href="{{ route($this->routePrefix . '.classes.view', ['section' => $section->id, 'tab' => 'groups']) }}"
                     wire:navigate
-                    class="inline-flex items-center gap-2 self-start rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition-all hover:bg-white/15">
+                    class="inline-flex items-center gap-2 self-start rounded-xl border px-4 py-2 text-sm font-medium transition-all hover:-translate-y-px hover:shadow-md"
+                    style="border-color: #E2E8F0; background: white; color: #374151; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
                     <x-heroicon-o-x-mark class="h-4 w-4" />
                     Cancel
                 </a>
             </div>
         </div>
-    </div>
 
-    {{-- Main Content --}}
-    <div class="mx-auto max-w-7xl px-4 py-5 md:px-6 md:py-6">
+        {{-- ── Main Grid ──────────────────────────────── --}}
         <div class="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:gap-6">
 
             {{-- Group Form --}}
             <div class="lg:col-span-1">
-                <div class="sticky top-4 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                    <div class="border-b border-slate-100 px-5 py-4">
-                        <h2 class="text-sm font-semibold text-slate-800">Group Information</h2>
-                        <p class="mt-0.5 text-xs text-slate-400">Enter the basic details for the research group.</p>
+                <div class="sticky top-4 overflow-hidden rounded-2xl border"
+                    style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+                    <div class="border-b px-5 py-4" style="border-color: #F1F5F9">
+                        <h2 class="text-sm font-semibold" style="color: #0F172A">Group Information</h2>
+                        <p class="mt-0.5 text-xs" style="color: #94A3B8">Enter the basic details for the research group.
+                        </p>
                     </div>
 
                     <div class="p-5">
                         <form wire:submit="create">
                             {{ $this->form }}
 
-                            <div class="mt-5 border-t border-slate-100 pt-5">
+                            <div class="mt-5 border-t pt-5" style="border-color: #F1F5F9">
                                 <div class="flex items-center justify-between text-sm">
-                                    <span class="text-slate-500">Selected Members</span>
-                                    <span class="font-semibold text-slate-900"
+                                    <span style="color: #64748B">Selected Members</span>
+                                    <span class="font-semibold" style="color: #0F172A"
                                         x-text="$wire.selectedMembers.length + {{ isset($data['leader_id']) && $data['leader_id'] ? 1 : 0 }}"></span>
                                 </div>
                                 @if (isset($data['leader_id']) && $data['leader_id'])
-                                    <p class="mt-2 text-xs text-slate-400">
+                                    <p class="mt-2 text-xs" style="color: #94A3B8">
                                         <x-heroicon-o-information-circle class="inline h-3.5 w-3.5" />
                                         The group leader is automatically included as a member.
                                     </p>
@@ -213,7 +234,7 @@ new class extends Component implements HasSchemas {
 
                             <button type="submit"
                                 class="mt-5 w-full rounded-xl py-2.5 text-sm font-semibold text-white transition-all hover:-translate-y-px disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
-                                style="background: linear-gradient(135deg, #0052FF 0%, #4D7CFF 100%);"
+                                style="background: linear-gradient(135deg, #0052FF 0%, #4D7CFF 100%); box-shadow: 0 4px 14px rgba(0,82,255,0.25)"
                                 @disabled(empty($data['name']) || empty($data['leader_id']))>
                                 <span class="flex items-center justify-center gap-2">
                                     <x-heroicon-o-user-group class="h-4 w-4" />
@@ -227,10 +248,11 @@ new class extends Component implements HasSchemas {
 
             {{-- Member Selector --}}
             <div class="lg:col-span-2">
-                <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                    <div class="border-b border-slate-100 px-5 py-4">
-                        <h2 class="text-sm font-semibold text-slate-800">Select Members</h2>
-                        <p class="mt-0.5 text-xs text-slate-400">
+                <div class="overflow-hidden rounded-2xl border"
+                    style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+                    <div class="border-b px-5 py-4" style="border-color: #F1F5F9">
+                        <h2 class="text-sm font-semibold" style="color: #0F172A">Select Members</h2>
+                        <p class="mt-0.5 text-xs" style="color: #94A3B8">
                             Choose students from {{ $section->name }} to add to this group.
                             @if (isset($data['leader_id']) && $data['leader_id'])
                                 The group leader is automatically included.
@@ -259,18 +281,18 @@ new class extends Component implements HasSchemas {
                     }">
                         @if (count($this->availableMembers) === 0)
                             <div class="py-12 text-center">
-                                <div
-                                    class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50">
-                                    <x-heroicon-o-users class="h-6 w-6 text-blue-400" />
+                                <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl"
+                                    style="background: rgba(0,82,255,0.06)">
+                                    <x-heroicon-o-users class="h-6 w-6" style="color: #0052FF" />
                                 </div>
-                                <p class="mb-1 text-sm font-semibold text-slate-700">
+                                <p class="mb-1 text-sm font-semibold" style="color: #0F172A">
                                     @if (isset($data['leader_id']) && $data['leader_id'])
                                         No other students available
                                     @else
                                         Select a group leader first
                                     @endif
                                 </p>
-                                <p class="text-xs text-slate-400">
+                                <p class="text-xs" style="color: #94A3B8">
                                     @if (isset($data['leader_id']) && $data['leader_id'])
                                         All students in this section are already assigned to groups.
                                     @else
@@ -284,20 +306,27 @@ new class extends Component implements HasSchemas {
                                     <div wire:key="student-{{ $id }}"
                                         @click="toggleMember({{ $id }})"
                                         :class="isSelected({{ $id }}) ?
-                                            'border-blue-400 bg-blue-50 ring-2 ring-blue-100' :
-                                            'border-slate-200 bg-white hover:border-blue-200 hover:bg-blue-50/40'"
-                                        class="relative cursor-pointer overflow-hidden rounded-xl border p-3.5 transition-all">
+                                            'ring-2' :
+                                            ''"
+                                        :style="isSelected({{ $id }}) ?
+                                            'border-color: #0052FF; background: rgba(0,82,255,0.05); box-shadow: 0 0 0 2px rgba(0,82,255,0.15)' :
+                                            'border-color: #E2E8F0; background: white'"
+                                        class="relative cursor-pointer overflow-hidden rounded-xl border p-3.5 transition-all duration-150 hover:shadow-md"
+                                        style="border-color: #E2E8F0; background: white">
                                         <div class="flex items-center gap-3">
-                                            <div :class="isSelected({{ $id }}) ? 'border-blue-600 bg-blue-600' :
-                                                'border-slate-300 bg-white'"
-                                                class="flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors">
+                                            <div :style="isSelected({{ $id }}) ?
+                                                'border-color: #0052FF; background: #0052FF' :
+                                                'border-color: #CBD5E1; background: white'"
+                                                class="flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors"
+                                                style="border-color: #CBD5E1; background: white">
                                                 <x-heroicon-o-check x-show="isSelected({{ $id }})"
                                                     class="h-3 w-3 text-white" style="stroke-width: 3;" />
                                             </div>
                                             <div class="min-w-0">
-                                                <p class="truncate text-sm font-semibold text-slate-900">
+                                                <p class="truncate text-sm font-semibold" style="color: #0F172A">
                                                     {{ $student['name'] }}</p>
-                                                <p class="text-xs text-slate-400">{{ $student['student_number'] }}</p>
+                                                <p class="text-xs" style="color: #94A3B8">
+                                                    {{ $student['student_number'] }}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -306,11 +335,13 @@ new class extends Component implements HasSchemas {
 
                             <div class="mt-4 flex gap-2">
                                 <button type="button" @click="selectAll()"
-                                    class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-100">
+                                    class="rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors hover:opacity-80"
+                                    style="border-color: rgba(0,82,255,0.25); background: rgba(0,82,255,0.06); color: #0052FF">
                                     Select All ({{ count($this->availableMembers) }})
                                 </button>
                                 <button type="button" @click="deselectAll()"
-                                    class="rounded-lg border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-200">
+                                    class="rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors hover:opacity-80"
+                                    style="border-color: #E2E8F0; background: #F1F5F9; color: #64748B">
                                     Deselect All
                                 </button>
                             </div>
