@@ -17,8 +17,7 @@ use Filament\Schemas\Contracts\HasSchemas;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
-new class extends Component implements HasActions, HasSchemas
-{
+new class extends Component implements HasActions, HasSchemas {
     use InteractsWithActions;
     use InteractsWithSchemas;
 
@@ -29,11 +28,7 @@ new class extends Component implements HasActions, HasSchemas
     #[Computed]
     public function schedules()
     {
-        return Schedule::where('section_id', $this->section->id)
-            ->with('group')
-            ->orderBy('date', 'asc')
-            ->orderBy('start_time', 'asc')
-            ->get();
+        return Schedule::where('section_id', $this->section->id)->with('group')->orderBy('date', 'asc')->orderBy('start_time', 'asc')->get();
     }
 
     // --- Filament Actions ---
@@ -41,11 +36,11 @@ new class extends Component implements HasActions, HasSchemas
     public function createScheduleAction(): Action
     {
         return Action::make('createSchedule')
+            ->color('info')
             ->label('Schedule this Section')
             ->modalWidth('lg')
             ->modalCloseButton(false)
             ->icon('heroicon-m-plus')
-            ->color('primary')
             ->form([
                 DatePicker::make('date')
                     ->required()
@@ -57,23 +52,15 @@ new class extends Component implements HasActions, HasSchemas
                 TextInput::make('venue')->required()->maxLength(255),
                 Repeater::make('presenting_groups')
                     ->label('Presentation Order')
-                    ->schema([
-                        Select::make('group_id')
-                            ->label('Group')
-                            ->options(fn () => $this->section->groups->pluck('name', 'id'))
-                            ->required()
-                            ->distinct()
-                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
-                            ->live(),
-                    ])
+                    ->schema([Select::make('group_id')->label('Group')->options(fn() => $this->section->groups->pluck('name', 'id'))->required()->distinct()->disableOptionsWhenSelectedInSiblingRepeaterItems()->live()])
                     ->minItems(1)
                     ->reorderableWithButtons()
                     ->addActionLabel('Add a Group')
                     ->helperText('The time will be distributed evenly among them.'),
             ])
             ->action(function (array $data): void {
-                $start = Carbon::parse($data['date'].' '.$data['start_time']);
-                $end = Carbon::parse($data['date'].' '.$data['end_time']);
+                $start = Carbon::parse($data['date'] . ' ' . $data['start_time']);
+                $end = Carbon::parse($data['date'] . ' ' . $data['end_time']);
 
                 $totalMinutes = $start->diffInMinutes($end);
                 $groupsCount = count($data['presenting_groups']);
@@ -167,73 +154,83 @@ new class extends Component implements HasActions, HasSchemas
 
 
 @assets
-<link rel="stylesheet" href="{{ Vite::asset('resources/css/filament.css') }}">
+    <link rel="stylesheet" href="{{ Vite::asset('resources/css/filament.css') }}">
 @endassets
 
-<div class="bg-gray-50 py-8 px-4 sm:px-6">
-    <div class="max-w-7xl mx-auto">
-        <!-- Header -->
-        <div class="md:flex md:items-center md:justify-between mb-6 pb-4">
-            <div class="min-w-0 flex-1">
-                <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
-                    Class Schedules
-                </h2>
-                <p class="mt-1 text-sm text-gray-500">
-                    Manage and view chronologically ordered schedules for all groups in this section automatically bounded by the semester date ranges.
-                </p>
-            </div>
-            <div class="mt-4 flex md:ml-4 md:mt-0">
-                {{ $this->createScheduleAction }}
-            </div>
+<div class="space-y-4 p-4 md:p-5">
+    {{-- Header --}}
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <p class="text-[0.8125rem] font-medium text-slate-500">Class Schedules</p>
+            <p class="mt-0.5 text-xs text-slate-400">Bounded by active semester date ranges &amp; distributed evenly
+                across groups.</p>
         </div>
-
-        <!-- Schedules List -->
-        <div class="bg-white shadow sm:rounded-md overflow-hidden border border-gray-200">
-            @if($this->schedules->count() > 0)
-                <ul role="list" class="divide-y divide-gray-100">
-                    @foreach($this->schedules as $schedule)
-                        <li class="relative flex justify-between gap-x-6 px-4 py-5 hover:bg-gray-50 sm:px-6">
-                            <div class="flex min-w-0 gap-x-4">
-                                <div class="min-w-0 flex-auto">
-                                    <p class="text-sm font-semibold leading-6 text-gray-900">
-                                        {{ $schedule->group ? $schedule->group->name : 'Unknown Group' }}
-                                    </p>
-                                    <p class="mt-1 flex text-xs leading-5 text-gray-500 items-center">
-                                        <svg class="mr-1.5 h-4 w-4 text-gray-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd" />
-                                        </svg>
-                                        {{ $schedule->venue }}
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="flex shrink-0 items-center gap-x-4">
-                                <div class="hidden sm:flex sm:flex-col sm:items-end">
-                                    <p class="text-sm leading-6 text-gray-900">
-                                        {{ \Carbon\Carbon::parse($schedule->date)->format('M d, Y') }}
-                                    </p>
-                                    <p class="mt-1 text-xs leading-5 text-gray-500">
-                                        {{ \Carbon\Carbon::parse($schedule->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('h:i A') }}
-                                    </p>
-                                </div>
-                                <div class="flex items-center space-x-2 z-10 relative">
-                                    {{ ($this->editScheduleAction)(['schedule' => $schedule->id]) }}
-                                    {{ ($this->deleteScheduleAction)(['schedule' => $schedule->id]) }}
-                                </div>
-                            </div>
-                        </li>
-                    @endforeach
-                </ul>
-            @else
-                <div class="text-center py-10">
-                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <h3 class="mt-2 text-sm font-semibold text-gray-900">No schedules</h3>
-                    <p class="mt-1 text-sm text-gray-500">Get started by creating a new schedule for a group in this section.</p>
-                </div>
-            @endif
-        </div>
-        
-        <x-filament-actions::modals />
+        {{ $this->createScheduleAction }}
     </div>
+
+    {{-- Schedule list --}}
+    @if ($this->schedules->count() > 0)
+        <div class="space-y-2.5">
+            @foreach ($this->schedules as $schedule)
+                <div
+                    class="group relative overflow-hidden rounded-xl border border-slate-200 bg-white transition-all duration-200 hover:border-blue-200 hover:shadow-md">
+                    <div class="absolute bottom-0 left-0 top-0 w-[3px] rounded-l-xl"
+                        style="background: linear-gradient(to bottom, #0052FF, #4D7CFF);"></div>
+                    <div class="flex items-center justify-between gap-4 py-4 pl-5 pr-4">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-[0.9375rem] font-semibold text-slate-900">
+                                {{ $schedule->group ? $schedule->group->name : 'Unknown Group' }}
+                            </p>
+                            <div class="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400">
+                                <span class="flex items-center gap-1.5">
+                                    <svg class="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    {{ $schedule->venue }}
+                                </span>
+                                <span class="flex items-center gap-1.5">
+                                    <svg class="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    {{ \Carbon\Carbon::parse($schedule->date)->format('M d, Y') }}
+                                </span>
+                                <span class="flex items-center gap-1.5">
+                                    <svg class="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    {{ \Carbon\Carbon::parse($schedule->start_time)->format('h:i A') }} –
+                                    {{ \Carbon\Carbon::parse($schedule->end_time)->format('h:i A') }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex shrink-0 items-center gap-2">
+                            {{ ($this->editScheduleAction)(['schedule' => $schedule->id]) }}
+                            {{ ($this->deleteScheduleAction)(['schedule' => $schedule->id]) }}
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @else
+        <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-10 text-center">
+            <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50">
+                <svg class="h-6 w-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </div>
+            <p class="mb-1 font-semibold text-slate-700">No schedules yet</p>
+            <p class="text-sm text-slate-400">Create a schedule to assign presentation slots for each group.</p>
+        </div>
+    @endif
+
+    <x-filament-actions::modals />
 </div>

@@ -10,9 +10,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
 
-new #[Title('Group Masterlist')]
-class extends Component
-{
+new #[Title('Group Masterlist')] class extends Component {
     use WithPagination;
 
     #[Url]
@@ -23,7 +21,7 @@ class extends Component
 
     public function mount(): void
     {
-        if (! $this->semesterId) {
+        if (!$this->semesterId) {
             $this->semesterId = Semester::active()->first()?->id;
         }
     }
@@ -43,15 +41,7 @@ class extends Component
     #[Computed]
     public function groups()
     {
-        return Group::with([
-            'section.program',
-            'section.semester',
-            'section.instructor',
-            'leader',
-            'members.program',
-            'personnel.instructor',
-            'fee',
-        ])
+        return Group::with(['section.program', 'section.semester', 'section.instructor', 'leader', 'members.program', 'personnel.instructor', 'fee'])
             ->whereHas('section', function ($query) {
                 $query->where('semester_id', $this->semesterId);
             })
@@ -59,7 +49,8 @@ class extends Component
                 $query->where(function ($q) {
                     $q->where('name', 'like', "%{$this->search}%")
                         ->orWhereHas('members', function ($memberQuery) {
-                            $memberQuery->where('first_name', 'like', "%{$this->search}%")
+                            $memberQuery
+                                ->where('first_name', 'like', "%{$this->search}%")
                                 ->orWhere('last_name', 'like', "%{$this->search}%")
                                 ->orWhere('student_number', 'like', "%{$this->search}%");
                         })
@@ -69,7 +60,7 @@ class extends Component
                 });
             })
             ->orderBy('name')
-            ->paginate(10);
+            ->paginate(20);
     }
 
     public function updatedSearch(): void
@@ -94,273 +85,387 @@ class extends Component
 ?>
 
 @assets
-<link rel="stylesheet" href="{{ Vite::asset('resources/css/filament.css') }}">
+    <link rel="stylesheet" href="{{ Vite::asset('resources/css/filament.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Calistoga&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
 @endassets
 
-<div class="p-3 lg:p-3 bg-slate-50">
-  <div class="max-w-7xl mx-auto">
+<div class="min-h-screen relative" style="background: #F8FAFC">
 
-    <!-- Header -->
-    <div class="mb-6">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 class="text-3xl font-bold text-slate-900">Group Masterlist</h1>
-          <p class="text-slate-600 mt-1">All research groups • {{ $this->selectedSemester?->name ?? 'No semester selected' }}</p>
+    {{-- ── Ambient background glows ────────────────────── --}}
+    <div class="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+        <div class="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full"
+            style="background: radial-gradient(circle, rgba(0,82,255,0.07), transparent 70%); filter: blur(60px)"></div>
+        <div class="absolute bottom-1/3 -left-24 w-[400px] h-[400px] rounded-full"
+            style="background: radial-gradient(circle, rgba(77,124,255,0.05), transparent 70%); filter: blur(80px)">
         </div>
-
-        <div class="flex gap-2">
-          <select wire:model.live="semesterId"
-            class="px-4 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-md hover:bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            @foreach($this->semesters as $semester)
-              <option value="{{ $semester->id }}">{{ $semester->name }}</option>
-            @endforeach
-          </select>
-          <button class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
-          wire:click="export">
-            Export Data
-          </button>
-        </div>
-      </div>
     </div>
 
-    <!-- Search -->
-    <div class="bg-white border border-slate-200 rounded-lg p-4 mb-6">
-      <div class="flex flex-col md:flex-row md:items-center gap-4">
-        <div class="relative flex-1 max-w-md">
-          <input type="text" wire:model.live.debounce.300ms="search"
-            placeholder="Search by group name, student name, or program..."
-            class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-          <x-heroicon-o-magnifying-glass class="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-        </div>
-        <div class="flex items-center gap-2 text-sm text-slate-600">
-          <span class="font-medium">{{ $this->groups->total() }}</span> groups found
-        </div>
-      </div>
-    </div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12">
+        {{-- ── Page Header ─────────────────────────────── --}}
+        <div class="mb-8 sm:mb-10">
 
-    <!-- Groups Table -->
-    <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
-      @if($this->groups->isEmpty())
-        <div class="text-center py-16">
-          <x-heroicon-o-user-group class="h-16 w-16 mx-auto text-slate-300 mb-4" />
-          <p class="text-slate-500 text-base font-medium mb-1">No groups found</p>
-          <p class="text-slate-400 text-sm">Try adjusting your search or select a different semester</p>
-        </div>
-      @else
-        {{-- Mobile Card View --}}
-        <div class="lg:hidden divide-y divide-slate-200">
-          @foreach($this->groups as $group)
-            <div class="p-4 space-y-4">
-              {{-- Group Header --}}
-              <div class="flex items-start justify-between">
-                <div>
-                  <h3 class="font-semibold text-slate-900">{{ $group->name }}</h3>
-                  <p class="text-sm text-slate-500">{{ $group->section->program->name }}</p>
-                </div>
-                @if($group->fee)
-                  <div class="text-right">
-                    <span class="text-sm font-semibold text-cyan-700">
-                      ₱{{ number_format($group->fee->total_merger_amount, 2) }}
-                    </span>
-                    <p class="text-xs text-slate-400">Total Fees</p>
-                  </div>
-                @endif
-              </div>
-
-              {{-- Members --}}
-              <div>
-                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Researchers</p>
-                <div class="space-y-1">
-                  @foreach($group->members as $member)
-                    <div class="flex items-center gap-2 text-sm">
-                      @if($member->id === $group->leader_id)
-                        <span class="inline-flex items-center justify-center w-5 h-5 bg-cyan-100 text-cyan-700 rounded-full text-xs font-medium">L</span>
-                      @else
-                        <span class="inline-flex items-center justify-center w-5 h-5 bg-slate-100 text-slate-500 rounded-full text-xs">M</span>
-                      @endif
-                      <span class="text-slate-700">{{ $member->first_name }} {{ $member->last_name }}</span>
-                    </div>
-                  @endforeach
-                  @if($group->members->isEmpty())
-                    <span class="text-slate-400 text-sm italic">No members</span>
-                  @endif
-                </div>
-              </div>
-
-              {{-- Subject & Instructor --}}
-              <div class="flex flex-wrap gap-4 text-sm">
-                <div>
-                  <p class="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Subject</p>
-                  <p class="text-slate-700">{{ $group->section->name }}</p>
-                  <p class="text-slate-500 text-xs">{{ $group->section->instructor->first_name }} {{ $group->section->instructor->last_name }}</p>
-                </div>
-              </div>
-
-              {{-- Personnel --}}
-              @if($group->personnel->isNotEmpty())
-                <div>
-                  <p class="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Assigned Personnel</p>
-                  <div class="flex flex-wrap gap-2">
-                    @foreach($group->personnel as $personnel)
-                      <span @class([
-                        'inline-flex items-center px-2 py-1 rounded text-xs font-medium',
-                        'bg-blue-100 text-blue-700' => $personnel->role->value === 'technical_adviser',
-                        'bg-green-100 text-green-700' => $personnel->role->value === 'grammarian',
-                        'bg-purple-100 text-purple-700' => $personnel->role->value === 'language_critic',
-                        'bg-orange-100 text-orange-700' => $personnel->role->value === 'statistician',
-                      ])>
-                        {{ $personnel->role->getLabel() }}: {{ $personnel->instructor->first_name }} {{ $personnel->instructor->last_name }}
-                      </span>
-                    @endforeach
-                  </div>
-                </div>
-              @endif
-
-              {{-- Fees Breakdown (Mobile) --}}
-              @if($group->fee)
-                <div class="bg-slate-50 rounded-lg p-3">
-                  <p class="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Fee Breakdown</p>
-                  <div class="grid grid-cols-2 gap-2 text-sm">
-                    <div>
-                      <span class="text-slate-500">Base:</span>
-                      <span class="font-medium text-slate-700">₱{{ number_format($group->fee->base_fee, 2) }}</span>
-                    </div>
-                    <div>
-                      <span class="text-slate-500">Honorarium:</span>
-                      <span class="font-medium text-slate-700">₱{{ number_format($group->fee->honorarium_total, 2) }}</span>
-                    </div>
-                    @if($group->fee->total_merger_amount > 0)
-                      <div class="col-span-2">
-                        <span class="text-slate-500">Merger:</span>
-                        <span class="font-medium text-slate-700">₱{{ number_format($group->fee->total_merger_amount, 2) }}</span>
-                      </div>
-                    @endif
-                  </div>
-                </div>
-              @endif
+            {{-- Section label badge --}}
+            <div class="inline-flex items-center gap-2 rounded-full border px-4 py-1.5 mb-5"
+                style="border-color: rgba(0,82,255,0.2); background: rgba(0,82,255,0.05)">
+                <span class="w-1.5 h-1.5 rounded-full animate-pulse" style="background: #0052FF"></span>
+                <span
+                    style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: #0052FF; text-transform: uppercase">
+                    Group Masterlist
+                </span>
             </div>
-          @endforeach
-        </div>
 
-        {{-- Desktop Table View --}}
-        <div class="hidden lg:block overflow-x-auto">
-          <table class="w-full">
-            <thead class="bg-slate-50 border-b border-slate-200">
-              <tr>
-                <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  Group / Researchers
-                </th>
-                <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  Program
-                </th>
-                <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  Subject
-                </th>
-                <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  Assigned Personnel
-                </th>
-                <th class="px-6 py-4 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  Fees
-                </th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-200">
-              @foreach($this->groups as $group)
-                <tr class="hover:bg-slate-50 transition-colors">
-                  {{-- Group / Researchers --}}
-                  <td class="px-6 py-4">
-                    <div class="mb-2">
-                      <span class="font-semibold text-slate-900">{{ $group->name }}</span>
-                    </div>
-                    <div class="space-y-1">
-                      @foreach($group->members as $member)
-                        <div class="flex items-center gap-2 text-sm">
-                          @if($member->id === $group->leader_id)
-                            <span class="inline-flex items-center justify-center w-5 h-5 bg-cyan-100 text-cyan-700 rounded-full text-xs font-medium" title="Leader">L</span>
-                          @else
-                            <span class="inline-flex items-center justify-center w-5 h-5 bg-slate-100 text-slate-500 rounded-full text-xs">M</span>
-                          @endif
-                          <span class="text-slate-700">{{ $member->first_name }} {{ $member->last_name }}</span>
-                          <span class="text-slate-400 text-xs">({{ $member->student_number }})</span>
-                        </div>
-                      @endforeach
-                      @if($group->members->isEmpty())
-                        <span class="text-slate-400 text-sm italic">No members</span>
-                      @endif
-                    </div>
-                  </td>
+            <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-5">
+                <div>
+                    <h1 class="leading-tight"
+                        style="font-family: 'Calistoga', Georgia, serif; font-size: clamp(1.85rem, 4vw, 2.75rem); letter-spacing: -0.015em; color: #0F172A">
+                        Research
+                        <span
+                            style="background: linear-gradient(to right, #0052FF, #4D7CFF); -webkit-background-clip: text; background-clip: text; color: transparent">
+                            Groups
+                        </span>
+                    </h1>
+                    <p class="mt-2 text-sm" style="color: #64748B">
+                        {{ $this->selectedSemester?->name ?? 'No semester selected' }} — all registered research groups,
+                        assigned personnel, and fee summary.
+                    </p>
+                </div>
 
-                  {{-- Class Program --}}
-                  <td class="px-6 py-4">
-                    <span class="text-sm text-slate-700">{{ $group->section->program->name }}</span>
-                  </td>
-
-                  {{-- Subject (Section) --}}
-                  <td class="px-6 py-4">
-                    <div class="text-sm">
-                      <div class="font-medium text-slate-700">{{ $group->section->name }}</div>
-                      <div class="text-slate-500 text-xs mt-0.5">
-                        {{ $group->section->instructor->first_name }} {{ $group->section->instructor->last_name }}
-                      </div>
-                    </div>
-                  </td>
-
-                  {{-- Assigned Personnel --}}
-                  <td class="px-6 py-4">
-                    @if($group->personnel->isNotEmpty())
-                      <div class="space-y-1.5">
-                        @foreach($group->personnel as $personnel)
-                          <div class="flex items-center gap-2">
-                            <span @class([
-                              'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium',
-                              'bg-blue-100 text-blue-700' => $personnel->role->value === 'technical_adviser',
-                              'bg-green-100 text-green-700' => $personnel->role->value === 'grammarian',
-                              'bg-purple-100 text-purple-700' => $personnel->role->value === 'language_critic',
-                              'bg-orange-100 text-orange-700' => $personnel->role->value === 'statistician',
-                            ])>
-                              {{ $personnel->role->getLabel() }}
-                            </span>
-                            <span class="text-sm text-slate-600">
-                              {{ $personnel->instructor->first_name }} {{ $personnel->instructor->last_name }}
-                            </span>
-                          </div>
+                {{-- Controls --}}
+                <div class="flex flex-wrap items-center gap-2">
+                    <select wire:model.live="semesterId"
+                        class="h-10 rounded-xl border px-4 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2"
+                        style="border-color: #E2E8F0; color: #374151; background: white; focus:ring-color: rgba(0,82,255,0.2)">
+                        @foreach ($this->semesters as $semester)
+                            <option value="{{ $semester->id }}">{{ $semester->name }}</option>
                         @endforeach
-                      </div>
-                    @else
-                      <span class="text-slate-400 text-sm italic">Not assigned</span>
-                    @endif
-                  </td>
+                    </select>
 
-                  <td class="px-6 py-4 text-right">
-                    @if($group->fee)
-                      <div class="space-y-1">
-                        <div class="text-sm">
-                          <span class="text-slate-500">Base:</span>
-                          <span class="font-medium text-slate-700">₱{{ number_format($group->fee->base_fee, 2) }}</span>
-                        </div>
-                        <div class="text-sm">
-                          <span class="text-slate-500">Honorarium:</span>
-                          <span class="font-medium text-slate-700">₱{{ number_format($group->fee->honorarium_total, 2) }}</span>
-                        </div>
-                        <div class="text-sm font-semibold text-cyan-700 border-t border-slate-200 pt-1 mt-1">
-                          Total: ₱{{ number_format($group->fee->total_merger_amount, 2) }}
-                        </div>
-                      </div>
-                    @else
-                      <span class="text-slate-400 text-sm italic">No fees</span>
-                    @endif
-                  </td>
-                </tr>
-              @endforeach
-            </tbody>
-          </table>
+                    <button wire:click="export"
+                        class="group inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-px active:scale-[0.98]"
+                        style="background: linear-gradient(135deg, #0052FF 0%, #4D7CFF 100%); box-shadow: 0 4px 16px rgba(0,82,255,0.35)">
+                        <x-heroicon-o-arrow-down-tray class="h-4 w-4" />
+                        Export
+                        <svg class="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </div>
 
-        {{-- Pagination --}}
-        <div class="px-6 py-4 border-t border-slate-200">
-          {{ $this->groups->links() }}
+        {{-- ── Search & Stats ───────────────────────────── --}}
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center mb-6">
+            <div class="relative flex-1">
+                <x-heroicon-o-magnifying-glass class="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2"
+                    style="color: #94A3B8" />
+                <input type="text" wire:model.live.debounce.300ms="search"
+                    placeholder="Search by group name, student, or program…"
+                    class="h-11 w-full rounded-xl border pl-10 pr-4 text-sm transition-all duration-200 focus:outline-none focus:ring-2"
+                    style="border-color: #E2E8F0; background: white; color: #0F172A; focus:ring-color: rgba(0,82,255,0.2)">
+            </div>
+
+            <div class="inline-flex shrink-0 items-center gap-2 rounded-xl border px-4 py-2.5"
+                style="border-color: #E2E8F0; background: white">
+                <span class="w-2 h-2 rounded-full" style="background: linear-gradient(135deg, #0052FF, #4D7CFF)"></span>
+                <span class="text-sm font-semibold" style="color: #0F172A">{{ $this->groups->total() }}</span>
+                <span class="text-sm" style="color: #64748B">{{ Str::plural('group', $this->groups->total()) }}
+                    found</span>
+            </div>
         </div>
-      @endif
+
+        {{-- ── Content ──────────────────────────────────── --}}
+        <div class="overflow-hidden rounded-2xl border"
+            style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+            @if ($this->groups->isEmpty())
+                <div class="flex flex-col items-center justify-center py-24 text-center">
+                    <div class="w-20 h-20 rounded-2xl flex items-center justify-center mb-6"
+                        style="background: linear-gradient(135deg, #0052FF, #4D7CFF); box-shadow: 0 8px 24px rgba(0,82,255,0.3)">
+                        <x-heroicon-o-user-group class="h-10 w-10 text-white" />
+                    </div>
+                    <h3 class="mb-2"
+                        style="font-family: 'Calistoga', Georgia, serif; font-size: 1.5rem; color: #0F172A">
+                        No groups found
+                    </h3>
+                    <p class="text-sm max-w-xs" style="color: #64748B; line-height: 1.6">
+                        Try adjusting your search or select a different semester.
+                    </p>
+                </div>
+            @else
+                {{-- ── Mobile Card View ──────────────────── --}}
+                <div class="lg:hidden divide-y" style="border-color: #F1F5F9">
+                    @foreach ($this->groups as $group)
+                        <div class="p-5 space-y-4 transition-colors duration-150 hover:bg-slate-50/60">
+
+                            {{-- Header --}}
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="min-w-0">
+                                    <h3 class="truncate font-bold text-base" style="color: #0F172A">{{ $group->name }}
+                                    </h3>
+                                    <p class="mt-0.5 text-xs" style="color: #64748B">
+                                        {{ $group->section->program->name }}</p>
+                                </div>
+                                @if ($group->fee)
+                                    <div class="shrink-0 text-right">
+                                        <p class="mb-0.5"
+                                            style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
+                                            Total</p>
+                                        <span class="text-sm font-bold"
+                                            style="background: linear-gradient(to right, #0052FF, #4D7CFF); -webkit-background-clip: text; background-clip: text; color: transparent">
+                                            ₱{{ number_format($group->fee->total_merger_amount, 2) }}
+                                        </span>
+                                    </div>
+                                @endif
+                            </div>
+
+                            {{-- Members --}}
+                            <div>
+                                <p class="mb-2"
+                                    style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #94A3B8; text-transform: uppercase">
+                                    Researchers</p>
+                                <div class="space-y-1.5">
+                                    @foreach ($group->members as $member)
+                                        <div class="flex items-center gap-2 text-sm">
+                                            @if ($member->id === $group->leader_id)
+                                                <span
+                                                    class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                                                    style="background: linear-gradient(135deg, #0052FF, #4D7CFF)">L</span>
+                                            @else
+                                                <span
+                                                    class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px]"
+                                                    style="background: #F1F5F9; color: #64748B">M</span>
+                                            @endif
+                                            <span style="color: #374151">{{ $member->first_name }}
+                                                {{ $member->last_name }}</span>
+                                        </div>
+                                    @endforeach
+                                    @if ($group->members->isEmpty())
+                                        <span class="text-sm italic" style="color: #94A3B8">No members</span>
+                                    @endif
+                                </div>
+                            </div>
+
+                            {{-- Subject --}}
+                            <div>
+                                <p class="mb-1"
+                                    style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #94A3B8; text-transform: uppercase">
+                                    Subject</p>
+                                <p class="text-sm font-medium" style="color: #374151">{{ $group->section->name }}</p>
+                                <p class="text-xs" style="color: #64748B">
+                                    {{ $group->section->instructor->first_name }}
+                                    {{ $group->section->instructor->last_name }}</p>
+                            </div>
+
+                            {{-- Personnel --}}
+                            @if ($group->personnel->isNotEmpty())
+                                <div>
+                                    <p class="mb-2"
+                                        style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #94A3B8; text-transform: uppercase">
+                                        Assigned Personnel</p>
+                                    <div class="flex flex-wrap gap-1.5">
+                                        @foreach ($group->personnel as $personnel)
+                                            <span @class([
+                                                'inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium',
+                                                'bg-blue-50 text-blue-700 ring-1 ring-blue-100' =>
+                                                    $personnel->role->value === 'technical_adviser',
+                                                'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100' =>
+                                                    $personnel->role->value === 'grammarian',
+                                                'bg-violet-50 text-violet-700 ring-1 ring-violet-100' =>
+                                                    $personnel->role->value === 'language_critic',
+                                                'bg-amber-50 text-amber-700 ring-1 ring-amber-100' =>
+                                                    $personnel->role->value === 'statistician',
+                                            ])>
+                                                {{ $personnel->role->getLabel() }}:
+                                                {{ $personnel->instructor->first_name }}
+                                                {{ $personnel->instructor->last_name }}
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+
+                            {{-- Fees --}}
+                            @if ($group->fee)
+                                <div class="rounded-xl p-3" style="background: #F8FAFC; border: 1px solid #F1F5F9">
+                                    <p class="mb-2"
+                                        style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #94A3B8; text-transform: uppercase">
+                                        Fee Breakdown</p>
+                                    <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
+                                        <div class="flex justify-between gap-2">
+                                            <span style="color: #64748B">Base</span>
+                                            <span class="font-medium"
+                                                style="color: #374151">₱{{ number_format($group->fee->base_fee, 2) }}</span>
+                                        </div>
+                                        <div class="flex justify-between gap-2">
+                                            <span style="color: #64748B">Honorarium</span>
+                                            <span class="font-medium"
+                                                style="color: #374151">₱{{ number_format($group->fee->honorarium_total, 2) }}</span>
+                                        </div>
+                                        @if ($group->fee->total_merger_amount > 0)
+                                            <div class="col-span-2 flex justify-between gap-2 pt-1.5 mt-0.5"
+                                                style="border-top: 1px solid #E2E8F0">
+                                                <span style="color: #64748B">Merger</span>
+                                                <span class="font-semibold"
+                                                    style="color: #0F172A">₱{{ number_format($group->fee->total_merger_amount, 2) }}</span>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endif
+
+                        </div>
+                    @endforeach
+                </div>
+
+                {{-- ── Desktop Table View ─────────────────── --}}
+                <div class="hidden lg:block overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr style="border-bottom: 1px solid #F1F5F9; background: #FAFAFA">
+                                <th class="px-6 py-4 text-left">
+                                    <span
+                                        style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #94A3B8; text-transform: uppercase">Group
+                                        / Researchers</span>
+                                </th>
+                                <th class="px-5 py-4 text-left">
+                                    <span
+                                        style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #94A3B8; text-transform: uppercase">Program</span>
+                                </th>
+                                <th class="px-5 py-4 text-left">
+                                    <span
+                                        style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #94A3B8; text-transform: uppercase">Subject</span>
+                                </th>
+                                <th class="px-5 py-4 text-left">
+                                    <span
+                                        style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #94A3B8; text-transform: uppercase">Personnel</span>
+                                </th>
+                                <th class="px-6 py-4 text-right">
+                                    <span
+                                        style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #94A3B8; text-transform: uppercase">Fees</span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($this->groups as $group)
+                                <tr class="transition-colors duration-150 hover:bg-[#F5F8FF]"
+                                    style="border-bottom: 1px solid #F1F5F9">
+
+                                    {{-- Group / Researchers --}}
+                                    <td class="px-6 py-5 align-top">
+                                        <p class="mb-2 font-bold text-sm" style="color: #0F172A">{{ $group->name }}
+                                        </p>
+                                        <div class="space-y-1.5">
+                                            @foreach ($group->members as $member)
+                                                <div class="flex items-center gap-2">
+                                                    @if ($member->id === $group->leader_id)
+                                                        <span
+                                                            class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                                                            style="background: linear-gradient(135deg, #0052FF, #4D7CFF)"
+                                                            title="Leader">L</span>
+                                                    @else
+                                                        <span
+                                                            class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px]"
+                                                            style="background: #F1F5F9; color: #64748B">M</span>
+                                                    @endif
+                                                    <span class="text-sm"
+                                                        style="color: #374151">{{ $member->first_name }}
+                                                        {{ $member->last_name }}</span>
+                                                    <span class="text-xs"
+                                                        style="color: #94A3B8">({{ $member->student_number }})</span>
+                                                </div>
+                                            @endforeach
+                                            @if ($group->members->isEmpty())
+                                                <span class="text-sm italic" style="color: #94A3B8">No members</span>
+                                            @endif
+                                        </div>
+                                    </td>
+
+                                    {{-- Program --}}
+                                    <td class="px-5 py-5 align-top">
+                                        <span class="text-sm"
+                                            style="color: #374151">{{ $group->section->program->name }}</span>
+                                    </td>
+
+                                    {{-- Subject --}}
+                                    <td class="px-5 py-5 align-top">
+                                        <p class="text-sm font-medium" style="color: #374151">
+                                            {{ $group->section->name }}</p>
+                                        <p class="mt-0.5 text-xs" style="color: #64748B">
+                                            {{ $group->section->instructor->first_name }}
+                                            {{ $group->section->instructor->last_name }}
+                                        </p>
+                                    </td>
+
+                                    {{-- Personnel --}}
+                                    <td class="px-5 py-5 align-top">
+                                        @if ($group->personnel->isNotEmpty())
+                                            <div class="space-y-1.5">
+                                                @foreach ($group->personnel as $personnel)
+                                                    <div class="flex items-center gap-2">
+                                                        <span @class([
+                                                            'inline-flex items-center rounded-lg px-2.5 py-0.5 text-xs font-medium',
+                                                            'bg-blue-50 text-blue-700 ring-1 ring-blue-100' =>
+                                                                $personnel->role->value === 'technical_adviser',
+                                                            'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100' =>
+                                                                $personnel->role->value === 'grammarian',
+                                                            'bg-violet-50 text-violet-700 ring-1 ring-violet-100' =>
+                                                                $personnel->role->value === 'language_critic',
+                                                            'bg-amber-50 text-amber-700 ring-1 ring-amber-100' =>
+                                                                $personnel->role->value === 'statistician',
+                                                        ])>
+                                                            {{ $personnel->role->getLabel() }}
+                                                        </span>
+                                                        <span class="text-sm" style="color: #374151">
+                                                            {{ $personnel->instructor->first_name }}
+                                                            {{ $personnel->instructor->last_name }}
+                                                        </span>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <span class="text-sm italic" style="color: #94A3B8">Not assigned</span>
+                                        @endif
+                                    </td>
+
+                                    {{-- Fees --}}
+                                    <td class="px-6 py-5 text-right align-top">
+                                        @if ($group->fee)
+                                            <div class="inline-block text-right space-y-1">
+                                                <div class="text-xs" style="color: #64748B">
+                                                    Base: <span class="font-medium"
+                                                        style="color: #374151">₱{{ number_format($group->fee->base_fee, 2) }}</span>
+                                                </div>
+                                                <div class="text-xs" style="color: #64748B">
+                                                    Honorarium: <span class="font-medium"
+                                                        style="color: #374151">₱{{ number_format($group->fee->honorarium_total, 2) }}</span>
+                                                </div>
+                                                <div class="pt-1 mt-1 text-sm font-bold"
+                                                    style="border-top: 1px solid #F1F5F9; background: linear-gradient(to right, #0052FF, #4D7CFF); -webkit-background-clip: text; background-clip: text; color: transparent">
+                                                    ₱{{ number_format($group->fee->total_merger_amount, 2) }}
+                                                </div>
+                                            </div>
+                                        @else
+                                            <span class="text-sm italic" style="color: #94A3B8">No fees</span>
+                                        @endif
+                                    </td>
+
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                {{-- ── Pagination ──────────────────────────── --}}
+                <div class="px-6 py-4" style="border-top: 1px solid #F1F5F9">
+                    {{ $this->groups->links() }}
+                </div>
+
+            @endif
+        </div>
+
     </div>
-  </div>
 </div>

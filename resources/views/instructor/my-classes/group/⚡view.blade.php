@@ -15,421 +15,473 @@ use Livewire\Component;
 use App\Services\GroupService;
 
 new class extends Component implements HasActions, HasSchemas {
-  use InteractsWithActions;
-  use InteractsWithSchemas;
+    use InteractsWithActions;
+    use InteractsWithSchemas;
 
-  public Group $group;
-  public Section $section;
-  private GroupService $groupService;
+    public Group $group;
+    public Section $section;
+    private GroupService $groupService;
 
-  #[Url]
-  public $tab = 'members';
+    #[Url]
+    public $tab = 'members';
 
-  public bool $selectingLeader = false;
+    public bool $selectingLeader = false;
 
-  #[Computed]
-  public function routePrefix(): string
-  {
-    $user = auth()->user();
-    $isRDO = $user->profileable_type === \App\Models\Instructor::class
-      && $user->profileable?->role === \App\Enums\InstructorRole::RDO;
+    #[Computed]
+    public function routePrefix(): string
+    {
+        $user = auth()->user();
+        $isRDO = $user->profileable_type === \App\Models\Instructor::class && $user->profileable?->role === \App\Enums\InstructorRole::RDO;
 
-    return $isRDO ? 'rdo' : 'instructor';
-  }
+        return $isRDO ? 'rdo' : 'instructor';
+    }
 
-  public function boot(GroupService $groupService)
-  {
-    $this->groupService = $groupService;
-  }
+    public function boot(GroupService $groupService)
+    {
+        $this->groupService = $groupService;
+    }
 
-  public function mount()
-  {
-    abort_if($this->group->section->instructor_id !== auth()->user()->profileable->id, 403);
-    abort_if($this->group->section_id !== $this->section->id, 403);
-  }
+    public function mount()
+    {
+        abort_if($this->group->section->instructor_id !== auth()->user()->profileable->id, 403);
+        abort_if($this->group->section_id !== $this->section->id, 403);
+    }
 
-  #[Computed]
-  public function members()
-  {
-    return $this->group->members()
-      ->select('students.id', 'students.first_name', 'students.last_name', 'students.student_number')
-      ->orderByRaw('students.id = ? DESC', [$this->group->leader_id])
-      ->get();
-  }
+    #[Computed]
+    public function members()
+    {
+        return $this->group
+            ->members()
+            ->select('students.id', 'students.first_name', 'students.last_name', 'students.student_number')
+            ->orderByRaw('students.id = ? DESC', [$this->group->leader_id])
+            ->get();
+    }
 
-  public function addMembersAction(): Action
-  {
-    return Action::make('addMembers')
-      ->modalWidth('2xl')
-      ->modalCloseButton(false)
-      ->label('Add Member')
-      ->icon(Heroicon::UserPlus)
-      ->modalHeading('Add Members to Group')
-      ->modalDescription(fn() => "Select students from {$this->section->name} to add to this group.")
-      ->form(function () {
-        $availableStudents = $this->section->students()
-          ->whereDoesntHave('groups', function ($query) {
-            $query->where('section_id', $this->section->id);
-          })
-          ->orderBy('last_name')
-          ->get()
-          ->mapWithKeys(function ($student) {
-            return [$student->id => "{$student->last_name} {$student->first_name} ({$student->student_number})"];
-          })
-          ->toArray();
+    public function addMembersAction(): Action
+    {
+        return Action::make('addMembers')
+            ->modalWidth('2xl')
+            ->modalCloseButton(false)
+            ->label('Add Member')
+            ->icon(Heroicon::UserPlus)
+            ->modalHeading('Add Members to Group')
+            ->modalDescription(fn() => "Select students from {$this->section->name} to add to this group.")
+            ->form(function () {
+                $availableStudents = $this->section
+                    ->students()
+                    ->whereDoesntHave('groups', function ($query) {
+                        $query->where('section_id', $this->section->id);
+                    })
+                    ->orderBy('last_name')
+                    ->get()
+                    ->mapWithKeys(function ($student) {
+                        return [$student->id => "{$student->last_name} {$student->first_name} ({$student->student_number})"];
+                    })
+                    ->toArray();
 
-        if (empty($availableStudents)) {
-          return [];
-        }
+                if (empty($availableStudents)) {
+                    return [];
+                }
 
-        return [
-          CheckboxList::make('students')
-            ->label('Select Students')
-            ->options($availableStudents)
-            ->required()
-            ->searchable()
-            ->bulkToggleable()
-            ->columns(3)
-        ];
-      })
-      ->successNotificationTitle('Members added successfully')
-      ->action(function (array $data): void {
-        if (!empty($data['students'])) {
-          $this->group->members()->attach($data['students']);
-          unset($this->members);
-        }
-      });
-  }
+                return [CheckboxList::make('students')->label('Select Students')->options($availableStudents)->required()->searchable()->bulkToggleable()->columns(3)];
+            })
+            ->successNotificationTitle('Members added successfully')
+            ->action(function (array $data): void {
+                if (!empty($data['students'])) {
+                    $this->group->members()->attach($data['students']);
+                    unset($this->members);
+                }
+            });
+    }
 
-  public function removeMemberAction(): Action
-  {
-    return Action::make('removeMember')
-      ->before(function (Action $action, array $arguments): void {
-        $studentId = $arguments['studentId'];
+    public function removeMemberAction(): Action
+    {
+        return Action::make('removeMember')
+            ->before(function (Action $action, array $arguments): void {
+                $studentId = $arguments['studentId'];
 
-        if ($studentId == $this->group->leader_id) {
-          \Filament\Notifications\Notification::make()
-            ->title('Cannot remove leader')
-            ->body('Please assign a new leader before removing this member.')
-            ->danger()
-            ->send();
+                if ($studentId == $this->group->leader_id) {
+                    \Filament\Notifications\Notification::make()->title('Cannot remove leader')->body('Please assign a new leader before removing this member.')->danger()->send();
 
-          $action->cancel();
-        }
-      })
-      ->requiresConfirmation()
-      ->modalCloseButton(false)
-      ->modalHeading('Remove Member from Group')
-      ->modalDescription(fn(array $arguments) => "Are you sure you want to remove this student from the group?")
-      ->modalSubmitActionLabel('Yes, Remove')
-      ->color('danger')
-      ->icon(Heroicon::Trash)
-      ->successNotificationTitle('Member removed from group')
-      ->action(function (array $arguments): void {
-        $studentId = $arguments['studentId'];
-        $this->group->members()->detach($studentId);
+                    $action->cancel();
+                }
+            })
+            ->requiresConfirmation()
+            ->modalCloseButton(false)
+            ->modalHeading('Remove Member from Group')
+            ->modalDescription(fn(array $arguments) => 'Are you sure you want to remove this student from the group?')
+            ->modalSubmitActionLabel('Yes, Remove')
+            ->color('danger')
+            ->icon(Heroicon::Trash)
+            ->successNotificationTitle('Member removed from group')
+            ->action(function (array $arguments): void {
+                $studentId = $arguments['studentId'];
+                $this->group->members()->detach($studentId);
+                unset($this->members);
+            });
+    }
+
+    public function toggleSelectLeader()
+    {
+        $this->selectingLeader = !$this->selectingLeader;
+    }
+
+    public function selectLeader(int $studentId): void
+    {
+        $this->group->update(['leader_id' => $studentId]);
+        $this->selectingLeader = false;
         unset($this->members);
-      });
-  }
 
-  public function toggleSelectLeader()
-  {
-    $this->selectingLeader = !$this->selectingLeader;
-  }
+        \Filament\Notifications\Notification::make()->title('Leader updated successfully')->success()->send();
+    }
 
-  public function selectLeader(int $studentId): void
-  {
-    $this->group->update(['leader_id' => $studentId]);
-    $this->selectingLeader = false;
-    unset($this->members);
+    #[Computed]
+    public function leader()
+    {
+        return $this->group->leader;
+    }
 
-    \Filament\Notifications\Notification::make()
-      ->title('Leader updated successfully')
-      ->success()
-      ->send();
-  }
+    #[Computed]
+    public function membersCount()
+    {
+        return $this->group->members()->count();
+    }
 
-  #[Computed]
-  public function leader()
-  {
-    return $this->group->leader;
-  }
-
-  #[Computed]
-  public function membersCount()
-  {
-    return $this->group->members()->count();
-  }
-
-  public function deleteGroupAction(): Action
-  {
-    return Action::make('deleteGroup')
-      ->modalCloseButton(false)
-      ->requiresConfirmation()
-      ->databaseTransaction()
-      ->modalHeading('Delete Group')
-      ->modalDescription('Are you sure you want to delete this group? This action cannot be undone.')
-      ->modalSubmitActionLabel('Yes, Delete')
-      ->color('danger')
-      ->icon(Heroicon::Trash)
-      ->successNotificationTitle('Group deleted successfully')
-      ->action(function (): void {
-        $this->groupService->delete($this->group);
-        $this->redirectRoute($this->routePrefix . '.classes.view', ['section' => $this->section->id], navigate: true);
-      });
-  }
+    public function deleteGroupAction(): Action
+    {
+        return Action::make('deleteGroup')
+            ->modalCloseButton(false)
+            ->requiresConfirmation()
+            ->databaseTransaction()
+            ->modalHeading('Delete Group')
+            ->modalDescription('Are you sure you want to delete this group? This action cannot be undone.')
+            ->modalSubmitActionLabel('Yes, Delete')
+            ->color('danger')
+            ->icon(Heroicon::Trash)
+            ->successNotificationTitle('Group deleted successfully')
+            ->action(function (): void {
+                $this->groupService->delete($this->group);
+                $this->redirectRoute($this->routePrefix . '.classes.view', ['section' => $this->section->id], navigate: true);
+            });
+    }
 };
 ?>
 
 @assets
-<link rel="stylesheet" href="{{ Vite::asset('resources/css/filament.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Calistoga&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{ Vite::asset('resources/css/filament.css') }}">
 @endassets
 
-<x-slot name="title">
-  {{ $this->group->name }} - {{ $this->section->name }}
-</x-slot>
+<x-slot name="title">{{ $this->group->name }} - {{ $this->section->name }}</x-slot>
 
-<div class="p-0 lg:p-4 bg-slate-50 min-h-screen">
-  <div class="max-w-7xl mx-auto">
+<div class="min-h-screen relative" style="background: #F8FAFC">
 
-    <!-- Header -->
-    <div class="mb-4 md:mb-6 px-3 lg:px-0">
-      <div class="flex items-center gap-2 text-xs md:text-sm text-slate-600 mb-3 pt-3 lg:pt-0">
-        <a href="{{ route($this->routePrefix . '.classes') }}" wire:navigate class="hover:text-blue-600">My Classes</a>
-        <span>/</span>
-        <a href="{{ route($this->routePrefix . '.classes.view', ['section' => $this->section->id]) }}" wire:navigate
-          class="hover:text-blue-600">{{ $this->section->name }}</a>
-        <span>/</span>
-        <span class="text-slate-900 font-medium">{{ $this->group->name }}</span>
-      </div>
-
-      <div class="flex items-start justify-between gap-4">
-        <div class="flex-1">
-          <h1 class="text-2xl md:text-3xl font-bold text-slate-900">{{ $this->group->name }}</h1>
-          <p class="text-slate-600 mt-1 text-sm md:text-base">{{ $this->section->name }} •
-            {{ $this->section->program->name }}
-          </p>
+    {{-- Ambient glows --}}
+    <div class="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+        <div class="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full"
+            style="background: radial-gradient(circle, rgba(0,82,255,0.07), transparent 70%); filter: blur(60px)"></div>
+        <div class="absolute bottom-1/3 -left-24 w-[400px] h-[400px] rounded-full"
+            style="background: radial-gradient(circle, rgba(77,124,255,0.05), transparent 70%); filter: blur(80px)">
         </div>
+    </div>
 
-        <!-- Desktop Buttons -->
-        <div class="hidden sm:flex gap-2">
-          <button
-            class="px-4 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-md hover:bg-slate-50">
-            Export Report
-          </button>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12">
 
-          <x-filament::dropdown>
-            <x-slot name="trigger">
-              <x-filament::button color="info">
-                Group Settings
-              </x-filament::button>
-            </x-slot>
+        {{-- ── Page Header ──────────────────────────────────────────────────────────────── --}}
+        <div class="mb-8 sm:mb-10">
 
-            <x-filament::dropdown.list>
-              <x-filament::dropdown.list.item wire:click="mountAction('deleteGroupAction')" icon="heroicon-o-trash"
-                color="danger">
-                Delete
-              </x-filament::dropdown.list.item>
-            </x-filament::dropdown.list>
-          </x-filament::dropdown>
-        </div>
-
-        <!-- Mobile Dropdown -->
-        <div class="sm:hidden">
-          <x-filament::dropdown placement="bottom-end">
-            <x-slot name="trigger">
-              <button class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
-                <svg class="h-5 w-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+            {{-- Breadcrumb --}}
+            <div class="flex items-center gap-2 mb-5 text-sm" style="color: #94A3B8">
+                <a href="{{ route($this->routePrefix . '.classes') }}" wire:navigate
+                    class="transition-colors duration-150 hover:text-blue-500 font-medium">My Classes</a>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                        clip-rule="evenodd" />
                 </svg>
-              </button>
-            </x-slot>
-
-            <x-filament::dropdown.list>
-              <x-filament::dropdown.list.item icon="heroicon-o-cog-6-tooth">
-                Group Settings
-              </x-filament::dropdown.list.item>
-            </x-filament::dropdown.list>
-          </x-filament::dropdown>
-        </div>
-      </div>
-    </div>
-
-    <!-- Main Content with Sidebar Layout -->
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
-
-      <!-- Main Content Area -->
-      <div class="lg:col-span-3">
-        <!-- Tabs -->
-        <div class="bg-white border-x-0 border-y border-slate-200 lg:border lg:rounded-lg overflow-hidden">
-          <div class="border-b border-slate-200 overflow-x-auto">
-            <div class="flex gap-4 md:gap-6 px-3 md:px-4 min-w-max md:min-w-0">
-              <a href="?tab=members" wire:navigate
-                class="py-3 px-1 border-b-2 text-sm font-medium transition-colors whitespace-nowrap {{ $tab === 'members' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-600 hover:text-slate-900' }}">
-                Members
-              </a>
-              <a href="?tab=title" wire:navigate
-                class="py-3 px-1 border-b-2 text-sm font-medium transition-colors whitespace-nowrap {{ $tab === 'title' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-600 hover:text-slate-900' }}">
-                Proposed Title
-              </a>
-              <a href="?tab=personnel" wire:navigate
-                class="py-3 px-1 border-b-2 text-sm font-medium transition-colors whitespace-nowrap {{ $tab === 'personnel' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-600 hover:text-slate-900' }}">
-                Personnel
-              </a>
-              <a href="?tab=consultation" wire:navigate
-                class="py-3 px-1 border-b-2 text-sm font-medium transition-colors whitespace-nowrap {{ $tab === 'consultation' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-600 hover:text-slate-900' }}">
-                Consultation
-              </a>
-              <a href="?tab=fees" wire:navigate
-                class="py-3 px-1 border-b-2 text-sm font-medium transition-colors whitespace-nowrap {{ $tab === 'fees' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-600 hover:text-slate-900' }}">
-                Fees
-              </a>
+                <a href="{{ route($this->routePrefix . '.classes.view', ['section' => $this->section->id]) }}"
+                    wire:navigate
+                    class="transition-colors duration-150 hover:text-blue-500 font-medium">{{ $this->section->name }}</a>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                        clip-rule="evenodd" />
+                </svg>
+                <span style="color: #0F172A; font-weight: 600">{{ $this->group->name }}</span>
             </div>
-          </div>
 
-          <!-- Members Tab -->
-          @if($tab === 'members')
-            <div class="p-3 md:p-4">
-              <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <h3 class="font-semibold text-slate-900">Group Members</h3>
-                <div class="flex flex-col sm:flex-row gap-2">
-                  @if($selectingLeader)
-                    <button wire:click="toggleSelectLeader"
-                      class="px-4 py-2 bg-slate-600 text-white text-sm font-medium rounded-md hover:bg-slate-700 w-full sm:w-auto">
-                      Cancel
-                    </button>
-                  @else
-                    <button wire:click="toggleSelectLeader"
-                      class="px-4 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-md hover:bg-slate-50 w-full sm:w-auto">
-                      Select New Leader
-                    </button>
-                    <x-filament::button wire:click="mountAction('addMembers')"
-                      class="bg-blue-500 text-white w-full sm:w-auto">
-                      Add Member
-                    </x-filament::button>
-                  @endif
-                </div>
-              </div>
-
-              @if($selectingLeader)
-                <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p class="text-sm text-blue-800">
-                    <strong>Select New Leader:</strong> Click on any member below to assign them as the new group leader.
-                  </p>
-                </div>
-              @endif
-
-              <div class="space-y-3">
-                @foreach($this->members as $member)
-                  <div
-                    class="border border-slate-200 rounded-lg p-3 md:p-4 transition-all bg-white
-                                                                                              {{ $selectingLeader ? 'hover:border-blue-500 hover:shadow-md cursor-pointer' : 'hover:border-blue-300' }}"
-                    @if($selectingLeader) wire:click="selectLeader({{ $member->id }})" @endif>
-                    <div class="flex items-center justify-between gap-3">
-                      <div class="flex items-center gap-3 md:gap-4 min-w-0">
-                        <div
-                          class="h-10 w-10 md:h-12 md:w-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm md:text-base shrink-0">
-                          {{ substr($member->first_name, 0, 1) }}
-                        </div>
-                        <div class="min-w-0">
-                          <h4 class="font-semibold text-slate-900 flex items-center gap-2 flex-wrap">
-                            <span class="truncate">{{ $member->first_name }} {{ $member->last_name }}</span>
-                            @if($member->id === $this->group->leader_id)
-                              <span class="px-2 py-0.5 text-xs font-medium rounded bg-purple-100 text-purple-700 shrink-0">
-                                Leader
-                              </span>
-                            @endif
-                          </h4>
-                          <p class="text-sm text-slate-600">{{ $member->student_number }}</p>
-                        </div>
-                      </div>
-
-                      @if(!$selectingLeader)
-                        <x-filament::dropdown placement="bottom-end">
-                          <x-slot name="trigger">
-                            <button class="p-1 hover:bg-slate-100 rounded transition-colors shrink-0">
-                              <svg class="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                              </svg>
-                            </button>
-                          </x-slot>
-
-                          <x-filament::dropdown.list>
-                            <x-filament::dropdown.list.item icon="heroicon-o-trash" color="danger"
-                              wire:click="mountAction('removeMember', { studentId: {{ $member->id }} })">
-                              Remove from Group
-                            </x-filament::dropdown.list.item>
-                          </x-filament::dropdown.list>
-                        </x-filament::dropdown>
-                      @endif
+            <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-5">
+                <div>
+                    {{-- Section label badge --}}
+                    <div class="inline-flex items-center gap-2 rounded-full border px-4 py-1.5 mb-4"
+                        style="border-color: rgba(0,82,255,0.25); background: rgba(0,82,255,0.05)">
+                        <span class="w-1.5 h-1.5 rounded-full" style="background: #0052FF"></span>
+                        <span
+                            style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: #0052FF; text-transform: uppercase">
+                            My Classes
+                        </span>
                     </div>
-                  </div>
-                @endforeach
-              </div>
-            </div>
-          @endif
 
-          <!-- Proposed Title Tab -->
-          @if($tab === 'title')
-            <livewire:instructor::my-classes.group.proposals :section="$this->section" :group="$this->group" />
-          @endif
-
-          <!-- Personnel Tab -->
-          @if($tab === 'personnel')
-            <livewire:instructor::my-classes.group.personnels :section="$this->section" :group="$this->group" />
-          @endif
-
-          <!-- Consultation Tab -->
-          @if($tab === 'consultation')
-            <livewire:instructor::my-classes.group.consultations :section="$this->section" :group="$this->group" />
-          @endif
-
-          <!-- Fees Tab -->
-          @if($tab === 'fees')
-            <livewire:instructor::my-classes.group.fees :section="$this->section" :group="$this->group" />
-          @endif
-        </div>
-      </div>
-
-      <!-- Stats Sidebar -->
-      <div class="lg:col-span-1">
-        <div
-          class="bg-white border-x-0 border-y border-slate-200 lg:border lg:rounded-lg p-4 md:p-5 lg:sticky lg:top-4">
-          <h3 class="font-bold text-slate-900 mb-4">Group Overview</h3>
-
-          <div class="space-y-4">
-            <div class="pb-4 border-b border-slate-100">
-              <div class="text-xs text-slate-500 mb-1.5 uppercase tracking-wide">Leader</div>
-              @if($this->leader)
-                <div class="text-base font-semibold text-slate-900">
-                  {{ $this->leader->first_name }} {{ $this->leader->last_name }}
+                    <h1 class="leading-tight"
+                        style="font-family: 'Calistoga', Georgia, serif; font-size: clamp(1.85rem, 4vw, 2.75rem); letter-spacing: -0.015em; color: #0F172A">
+                        {{ $this->group->name }}
+                    </h1>
+                    <p class="mt-2 text-sm" style="color: #64748B">
+                        {{ $this->section->name }} &bull; {{ $this->section->program->name }}
+                    </p>
                 </div>
-              @else
-                <div class="text-base text-slate-500 italic">No leader assigned</div>
-              @endif
-            </div>
 
-            <div class="pb-4 border-b border-slate-100">
-              <div class="text-xs text-slate-500 mb-1.5 uppercase tracking-wide">Members</div>
-              <div class="text-2xl md:text-3xl font-bold text-slate-900">{{ $this->membersCount }}</div>
-            </div>
+                <div class="flex items-center gap-3 shrink-0 flex-wrap">
+                    {{-- Tab switcher --}}
+                    <div class="inline-flex items-center gap-1 rounded-xl p-1 flex-wrap"
+                        style="background: #EEF2FF; border: 1px solid rgba(0,82,255,0.12)">
+                        @foreach ([
+        'members' => 'Members',
+        'title' => 'Proposed Title',
+        'personnel' => 'Personnel',
+        'consultation' => 'Consultation',
+        'fees' => 'Fees',
+    ] as $key => $label)
+                            <a href="?tab={{ $key }}" wire:navigate
+                                class="inline-flex items-center px-3.5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap"
+                                style="{{ $tab === $key ? 'background: linear-gradient(to right, #0052FF, #4D7CFF); color: white; box-shadow: 0 2px 8px rgba(0,82,255,0.3)' : 'color: #64748B' }}">
+                                {{ $label }}
+                            </a>
+                        @endforeach
+                    </div>
 
-            <div class="pb-4 border-b border-slate-100">
-              <div class="text-xs text-slate-500 mb-1.5 uppercase tracking-wide">Course</div>
-              <div class="text-base font-semibold text-slate-900">{{ $this->section->program->name }}</div>
+                    {{-- Group Settings --}}
+                    <x-filament::dropdown placement="bottom-end">
+                        <x-slot name="trigger">
+                            <button
+                                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                                style="background: white; border: 1px solid #E2E8F0; color: #475569; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+                                <x-heroicon-o-cog-6-tooth class="h-4 w-4" />
+                                Settings
+                            </button>
+                        </x-slot>
+                        <x-filament::dropdown.list>
+                            <x-filament::dropdown.list.item wire:click="mountAction('deleteGroupAction')"
+                                icon="heroicon-o-trash" color="danger">
+                                Delete Group
+                            </x-filament::dropdown.list.item>
+                        </x-filament::dropdown.list>
+                    </x-filament::dropdown>
+                </div>
             </div>
-
-            <div>
-              <div class="text-xs text-slate-500 mb-1.5 uppercase tracking-wide">Section</div>
-              <div class="text-base font-semibold text-slate-900">{{ $this->section->name }}</div>
-            </div>
-          </div>
         </div>
-      </div>
+
+        {{-- ── Two-column layout ────────────────────────────────────────────────────────── --}}
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-5 lg:gap-6">
+
+            {{-- ── Main panel ──────────────────────────────────────────────────────────────── --}}
+            <div class="lg:col-span-3">
+                <div class="bg-white rounded-2xl border overflow-hidden"
+                    style="border-color: #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+
+                    {{-- Gradient top stripe --}}
+                    <div class="h-[3px]" style="background: linear-gradient(to right, #0052FF, #4D7CFF)"></div>
+
+                    {{-- ── Members Tab ─────────────────────────────────────────────────────────── --}}
+                    @if ($tab === 'members')
+                        <div class="p-5 sm:p-6">
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5">
+                                <h3 class="font-bold text-base" style="color: #0F172A">Group Members</h3>
+                                <div class="flex gap-2">
+                                    @if ($selectingLeader)
+                                        <button wire:click="toggleSelectLeader"
+                                            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5"
+                                            style="background: white; border: 1px solid #E2E8F0; color: #64748B; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+                                            <x-heroicon-o-x-mark class="h-4 w-4" />
+                                            Cancel
+                                        </button>
+                                    @else
+                                        <button wire:click="toggleSelectLeader"
+                                            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5"
+                                            style="background: white; border: 1px solid #E2E8F0; color: #64748B; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+                                            <x-heroicon-o-star class="h-4 w-4" />
+                                            Select Leader
+                                        </button>
+                                        <button wire:click="mountAction('addMembers')"
+                                            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm text-white transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+                                            style="background: linear-gradient(to right, #0052FF, #4D7CFF); box-shadow: 0 4px 12px rgba(0,82,255,0.25)">
+                                            <x-heroicon-o-user-plus class="h-4 w-4" />
+                                            Add Member
+                                        </button>
+                                    @endif
+                                </div>
+                            </div>
+
+                            @if ($selectingLeader)
+                                <div class="mb-5 flex items-start gap-3 rounded-xl border px-4 py-3"
+                                    style="border-color: rgba(0,82,255,0.2); background: rgba(0,82,255,0.04)">
+                                    <x-heroicon-o-information-circle class="mt-0.5 h-4 w-4 shrink-0"
+                                        style="color: #0052FF" />
+                                    <p class="text-sm" style="color: #1E40AF">
+                                        <strong>Select New Leader:</strong> Click on any member below to assign them as
+                                        the group leader.
+                                    </p>
+                                </div>
+                            @endif
+
+                            @if ($this->members->isEmpty())
+                                <div class="rounded-xl border py-16 flex flex-col items-center text-center"
+                                    style="border-color: #E2E8F0">
+                                    <div class="w-14 h-14 rounded-xl flex items-center justify-center mb-4"
+                                        style="background: #F1F5F9">
+                                        <x-heroicon-o-users class="h-7 w-7" style="color: #94A3B8" />
+                                    </div>
+                                    <p class="text-sm font-medium" style="color: #64748B">No members yet</p>
+                                </div>
+                            @else
+                                <div class="space-y-3">
+                                    @foreach ($this->members as $member)
+                                        <div class="flex items-center gap-4 p-4 rounded-xl border transition-all duration-200
+                      {{ $selectingLeader ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md' : 'hover:-translate-y-0.5 hover:shadow-md' }}"
+                                            style="border-color: #F1F5F9; background: #FAFAFA"
+                                            @if ($selectingLeader) wire:click="selectLeader({{ $member->id }})" @endif>
+                                            <div class="h-10 w-10 rounded-xl flex items-center justify-center font-bold text-sm shrink-0"
+                                                style="background: linear-gradient(135deg, #0052FF, #4D7CFF); color: white">
+                                                {{ strtoupper(substr($member->first_name, 0, 1)) }}
+                                            </div>
+                                            <div class="min-w-0 flex-1">
+                                                <div class="flex items-center gap-2 flex-wrap">
+                                                    <span class="font-semibold text-sm" style="color: #0F172A">
+                                                        {{ $member->first_name }} {{ $member->last_name }}
+                                                    </span>
+                                                    @if ($member->id === $this->group->leader_id)
+                                                        <span
+                                                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold"
+                                                            style="background: rgba(124,58,237,0.08); color: #7C3AED; border: 1px solid rgba(124,58,237,0.2)">
+                                                            <x-heroicon-s-star class="h-2.5 w-2.5" />
+                                                            Leader
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                                <p class="text-xs mt-0.5" style="color: #94A3B8">
+                                                    {{ $member->student_number }}</p>
+                                            </div>
+
+                                            @if (!$selectingLeader)
+                                                <x-filament::dropdown placement="bottom-end">
+                                                    <x-slot name="trigger">
+                                                        <button
+                                                            class="p-1.5 rounded-lg transition-colors duration-150 hover:bg-slate-100 shrink-0">
+                                                            <x-heroicon-o-ellipsis-vertical class="h-4 w-4"
+                                                                style="color: #94A3B8" />
+                                                        </button>
+                                                    </x-slot>
+                                                    <x-filament::dropdown.list>
+                                                        <x-filament::dropdown.list.item icon="heroicon-o-trash"
+                                                            color="danger"
+                                                            wire:click="mountAction('removeMember', { studentId: {{ $member->id }} })">
+                                                            Remove from Group
+                                                        </x-filament::dropdown.list.item>
+                                                    </x-filament::dropdown.list>
+                                                </x-filament::dropdown>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+
+                    {{-- ── Proposed Title Tab ──────────────────────────────────────────────────── --}}
+                    @if ($tab === 'title')
+                        <livewire:instructor::my-classes.group.proposals :section="$this->section" :group="$this->group" />
+                    @endif
+
+                    {{-- ── Personnel Tab ───────────────────────────────────────────────────────── --}}
+                    @if ($tab === 'personnel')
+                        <livewire:instructor::my-classes.group.personnels :section="$this->section" :group="$this->group" />
+                    @endif
+
+                    {{-- ── Consultation Tab ────────────────────────────────────────────────────── --}}
+                    @if ($tab === 'consultation')
+                        <livewire:instructor::my-classes.group.consultations :section="$this->section" :group="$this->group" />
+                    @endif
+
+                    {{-- ── Fees Tab ────────────────────────────────────────────────────────────── --}}
+                    @if ($tab === 'fees')
+                        <livewire:instructor::my-classes.group.fees :section="$this->section" :group="$this->group" />
+                    @endif
+
+                </div>
+            </div>
+
+            {{-- ── Sidebar ──────────────────────────────────────────────────────────────────── --}}
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-2xl border overflow-hidden lg:sticky lg:top-6"
+                    style="border-color: #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+                    <div class="h-[3px]" style="background: linear-gradient(to right, #0052FF, #4D7CFF)"></div>
+
+                    <div class="p-5">
+                        <p class="font-bold mb-5 text-sm"
+                            style="font-family: 'JetBrains Mono', monospace; letter-spacing: 0.06em; text-transform: uppercase; color: #94A3B8">
+                            Group Overview
+                        </p>
+
+                        <div class="space-y-4">
+
+                            {{-- Leader --}}
+                            <div class="pb-4 border-b" style="border-color: #F1F5F9">
+                                <p class="text-xs mb-2 uppercase tracking-widest"
+                                    style="font-family: 'JetBrains Mono', monospace; color: #94A3B8; font-size: 10px">
+                                    Leader</p>
+                                @if ($this->leader)
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="h-8 w-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0"
+                                            style="background: linear-gradient(135deg, #0052FF, #4D7CFF); color: white">
+                                            {{ strtoupper(substr($this->leader->first_name, 0, 1)) }}
+                                        </div>
+                                        <span class="text-sm font-semibold" style="color: #0F172A">
+                                            {{ $this->leader->first_name }} {{ $this->leader->last_name }}
+                                        </span>
+                                    </div>
+                                @else
+                                    <p class="text-sm italic" style="color: #94A3B8">No leader assigned</p>
+                                @endif
+                            </div>
+
+                            {{-- Members count --}}
+                            <div class="pb-4 border-b" style="border-color: #F1F5F9">
+                                <p class="text-xs mb-1.5 uppercase tracking-widest"
+                                    style="font-family: 'JetBrains Mono', monospace; color: #94A3B8; font-size: 10px">
+                                    Members</p>
+                                <p class="font-bold" style="font-size: 2rem; color: #0052FF; line-height: 1">
+                                    {{ $this->membersCount }}
+                                </p>
+                            </div>
+
+                            {{-- Course --}}
+                            <div class="pb-4 border-b" style="border-color: #F1F5F9">
+                                <p class="text-xs mb-1.5 uppercase tracking-widest"
+                                    style="font-family: 'JetBrains Mono', monospace; color: #94A3B8; font-size: 10px">
+                                    Course</p>
+                                <p class="text-sm font-semibold" style="color: #0F172A">
+                                    {{ $this->section->program->name }}</p>
+                            </div>
+
+                            {{-- Section --}}
+                            <div>
+                                <p class="text-xs mb-1.5 uppercase tracking-widest"
+                                    style="font-family: 'JetBrains Mono', monospace; color: #94A3B8; font-size: 10px">
+                                    Section</p>
+                                <p class="text-sm font-semibold" style="color: #0F172A">{{ $this->section->name }}
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
-  </div>
-  <x-filament-actions::modals />
-  {{-- <div class="h-4 lg:hidden"></div> --}}
+
+    <x-filament-actions::modals />
 </div>

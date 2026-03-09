@@ -124,7 +124,7 @@
 
                 @if ($isInstructor)
                     {{-- Instructor Navigation --}}
-                    <a href="{{ route('instructor.home') }}" @class([
+                    <a href="{{ route('instructor.home') }}" wire:navigate @class([
                         'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
                         'bg-white/15 text-white border border-white/25' => request()->routeIs(
                             'instructor.home'),
@@ -134,7 +134,7 @@
                         <x-heroicon-o-home class="w-6 h-6 flex-shrink-0" />
                         <span class="font-medium">Dashboard</span>
                     </a>
-                    <a href="{{ route('instructor.classes') }}" @class([
+                    <a href="{{ route('instructor.classes') }}" wire:navigate @class([
                         'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
                         'bg-white/15 text-white border border-white/25' => request()->routeIs(
                             'instructor.classes*'),
@@ -144,7 +144,7 @@
                         <x-heroicon-o-academic-cap class="w-6 h-6 flex-shrink-0" />
                         <span class="font-medium">My Classes</span>
                     </a>
-                    <a href="{{ route('instructor.groups') }}" @class([
+                    <a href="{{ route('instructor.groups') }}" wire:navigate @class([
                         'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
                         'bg-white/15 text-white border border-white/25' => request()->routeIs(
                             'instructor.groups*'),
@@ -154,34 +154,10 @@
                         <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
                         <span class="font-medium">My Groups</span>
                     </a>
-                    <a href="#"
-                        class="flex items-center gap-3 px-4 py-2 rounded-xl text-blue-200 hover:text-white hover:bg-blue-700/50 transition-all">
-                        <x-heroicon-o-book-open class="w-6 h-6 flex-shrink-0" />
-                        <span class="font-medium">Publications</span>
-                    </a>
-                    <a href="#"
-                        class="flex items-center gap-3 px-4 py-2 rounded-xl text-blue-200 hover:text-white hover:bg-blue-700/50 transition-all">
-                        <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
-                        <span class="font-medium">Team</span>
-                    </a>
-                    <a href="#"
-                        class="flex items-center gap-3 px-4 py-2 rounded-xl text-blue-200 hover:text-white hover:bg-blue-700/50 transition-all">
-                        <x-heroicon-o-document-text class="w-6 h-6 flex-shrink-0" />
-                        <span class="font-medium">Documents</span>
-                    </a>
-                    <a href="#"
-                        class="flex items-center gap-3 px-4 py-2 rounded-xl text-blue-200 hover:text-white hover:bg-blue-700/50 transition-all">
-                        <x-heroicon-o-chart-bar class="w-6 h-6 flex-shrink-0" />
-                        <span class="font-medium">Analytics</span>
-                    </a>
-                    <a href="#"
-                        class="flex items-center gap-3 px-4 py-2 rounded-xl text-blue-200 hover:text-white hover:bg-blue-700/50 transition-all">
-                        <x-heroicon-o-cog-6-tooth class="w-6 h-6 flex-shrink-0" />
-                        <span class="font-medium">Settings</span>
-                    </a>
+
                 @elseif($isStudent)
                     {{-- Student Navigation --}}
-                    <a href="{{ route('student.home') }}" @class([
+                    <a href="{{ route('student.home') }}" wire:navigate @class([
                         'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
                         'bg-white/15 text-white border border-white/25' => request()->routeIs(
                             'student.home'),
@@ -223,7 +199,7 @@
                     </a>
                 @elseif($isRDO)
                     {{-- RDO Navigation --}}
-                    <a href="{{ route('rdo.home') }}" @class([
+                    <a href="{{ route('rdo.home') }}" wire:navigate @class([
                         'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
                         'bg-white/15 text-white border border-white/25' => request()->routeIs(
                             'rdo.home'),
@@ -233,7 +209,7 @@
                         <x-heroicon-o-home class="w-6 h-6 flex-shrink-0" />
                         <span class="font-medium">Dashboard</span>
                     </a>
-                    <a href="{{ route('rdo.classes') }}" @class([
+                    <a href="{{ route('rdo.classes') }}" wire:navigate @class([
                         'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
                         'bg-white/15 text-white border border-white/25' => request()->routeIs(
                             'rdo.classes*'),
@@ -243,7 +219,7 @@
                         <x-heroicon-o-academic-cap class="w-6 h-6 flex-shrink-0" />
                         <span class="font-medium">My Classes</span>
                     </a>
-                    <a href="{{ route('rdo.groups') }}" @class([
+                    <a href="{{ route('rdo.groups') }}" wire:navigate @class([
                         'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
                         'bg-white/15 text-white border border-white/25' => request()->routeIs(
                             'rdo.groups*'),
@@ -570,10 +546,10 @@
                     <!-- Right Actions -->
                     <div class="flex items-center gap-3">
                         <!-- Notifications -->
-                        <button class="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        {{-- <button class="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
                             <x-heroicon-o-bell class="w-6 h-6 text-gray-600" />
                             <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                        </button>
+                        </button> --}}
 
                         <!-- Profile Dropdown -->
                         <div class="relative" x-data="{ open: false }" @click.away="open = false">

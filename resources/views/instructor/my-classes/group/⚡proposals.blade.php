@@ -16,8 +16,7 @@ use Filament\Support\Icons\Heroicon;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
-new class extends Component implements HasActions, HasSchemas
-{
+new class extends Component implements HasActions, HasSchemas {
     use InteractsWithActions;
     use InteractsWithSchemas;
 
@@ -44,7 +43,7 @@ new class extends Component implements HasActions, HasSchemas
                     'description' => $proposal->description,
                     'status' => $proposal->status,
                     'submitted_date' => $proposal->created_at->format('M d, Y'),
-                    'submitted_by' => $proposal->submittedBy ? trim($proposal->submittedBy->first_name.' '.$proposal->submittedBy->last_name) : 'Unknown',
+                    'submitted_by' => $proposal->submittedBy ? trim($proposal->submittedBy->first_name . ' ' . $proposal->submittedBy->last_name) : 'Unknown',
                     'is_final' => $this->group->final_title_id === $proposal->id,
                 ];
             });
@@ -56,7 +55,7 @@ new class extends Component implements HasActions, HasSchemas
             ->modalAutofocus(false)
             ->modalWidth('2xl')
             ->modalCloseButton(true)
-            ->modalHeading(fn (array $arguments) => $arguments['title'] ?? 'Research Proposal')
+            ->modalHeading(fn(array $arguments) => $arguments['title'] ?? 'Research Proposal')
             ->modalSubmitAction(false)
             ->modalCloseButton(false)
             ->form(function (array $arguments) {
@@ -75,21 +74,20 @@ new class extends Component implements HasActions, HasSchemas
                 };
 
                 return [
-                    Grid::make(3)
-                        ->schema([
-                            Placeholder::make('submitted_date')
-                                ->label('Date Submitted')
-                                ->content($arguments['submitted_date'] ?? ''),
-                            Placeholder::make('submitted_by')
-                                ->label('Submitted By')
-                                ->content(new \Illuminate\Support\HtmlString('<span class="font-bold">'.e($arguments['submitted_by'] ?? 'Unknown').'</span>')),
-                            Placeholder::make('status')
-                                ->label('Status')
-                                ->content(new \Illuminate\Support\HtmlString('<span class="text-xs font-semibold px-2 py-1 rounded text-'.$badgeColor.'-700 bg-'.$badgeColor.'-100">'.$badgeLabel.'</span>')),
-                        ]),
+                    Grid::make(3)->schema([
+                        Placeholder::make('submitted_date')
+                            ->label('Date Submitted')
+                            ->content($arguments['submitted_date'] ?? ''),
+                        Placeholder::make('submitted_by')
+                            ->label('Submitted By')
+                            ->content(new \Illuminate\Support\HtmlString('<span class="font-bold">' . e($arguments['submitted_by'] ?? 'Unknown') . '</span>')),
+                        Placeholder::make('status')
+                            ->label('Status')
+                            ->content(new \Illuminate\Support\HtmlString('<span class="text-xs font-semibold px-2 py-1 rounded text-' . $badgeColor . '-700 bg-' . $badgeColor . '-100">' . $badgeLabel . '</span>')),
+                    ]),
                     Placeholder::make('description')
                         ->label('Description / Abstract')
-                        ->content(new \Illuminate\Support\HtmlString('<div class="prose max-w-none text-slate-600">'.e($arguments['description'] ?? '').'</div>')),
+                        ->content(new \Illuminate\Support\HtmlString('<div class="prose max-w-none text-slate-600">' . e($arguments['description'] ?? '') . '</div>')),
                     Placeholder::make('feedback')
                         ->label('Instructor Feedback')
                         ->content(function () use ($arguments) {
@@ -97,13 +95,11 @@ new class extends Component implements HasActions, HasSchemas
                             $isRejected = $statusValue === 'rejected';
                             $feedback = $arguments['feedback'] ?? 'No feedback provided.';
 
-                            $classes = $isRejected
-                                ? 'p-3 rounded-lg bg-red-50 text-red-700 border border-red-200 text-sm italic mt-1'
-                                : 'p-3 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 text-sm italic mt-1';
+                            $classes = $isRejected ? 'p-3 rounded-lg bg-red-50 text-red-700 border border-red-200 text-sm italic mt-1' : 'p-3 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 text-sm italic mt-1';
 
-                            return new \Illuminate\Support\HtmlString('<div class="'.$classes.'">'.nl2br(e($feedback)).'</div>');
+                            return new \Illuminate\Support\HtmlString('<div class="' . $classes . '">' . nl2br(e($feedback)) . '</div>');
                         })
-                        ->visible(fn () => filled($arguments['feedback'] ?? null)),
+                        ->visible(fn() => filled($arguments['feedback'] ?? null)),
                 ];
             })
             ->extraModalFooterActions(function (array $arguments) {
@@ -164,13 +160,7 @@ new class extends Component implements HasActions, HasSchemas
             ->modalCloseButton(false)
             ->modalDescription('Are you sure you want to reject this proposal? Please provide a reason below.')
             ->color('danger')
-            ->form([
-                \Filament\Forms\Components\Textarea::make('feedback')
-                    ->label('Feedback / Reason for Rejection')
-                    ->placeholder('Please explain why this title is being rejected to help the students.')
-                    ->required()
-                    ->rows(3),
-            ])
+            ->form([\Filament\Forms\Components\Textarea::make('feedback')->label('Feedback / Reason for Rejection')->placeholder('Please explain why this title is being rejected to help the students.')->required()->rows(3)])
             ->successNotificationTitle('Proposal Rejected')
             ->action(function ($arguments, array $data) {
                 Proposal::find($arguments['id'])->update([
@@ -194,20 +184,17 @@ new class extends Component implements HasActions, HasSchemas
             ->label('Edit Title')
             ->icon(Heroicon::PencilSquare)
             ->modalHeading('Edit Research Title')
-            ->form([
-                TextInput::make('title')
-                    ->label('Research Title')
-                    ->required()
-                    ->maxLength(255),
-            ])
+            ->form([TextInput::make('title')->label('Research Title')->required()->maxLength(255)])
             ->successNotificationTitle('Title updated successfully')
             ->action(function (array $data, array $arguments): void {
                 $proposalId = $arguments['id'] ?? null;
 
                 if ($proposalId) {
-                    Proposal::query()->where('id', $proposalId)->update([
-                        'title' => $data['title'],
-                    ]);
+                    Proposal::query()
+                        ->where('id', $proposalId)
+                        ->update([
+                            'title' => $data['title'],
+                        ]);
                 }
             });
     }
@@ -221,20 +208,16 @@ new class extends Component implements HasActions, HasSchemas
             ->modalSubmitActionLabel('Yes, Approve')
             ->color('success')
             ->icon(Heroicon::CheckCircle)
-            ->form([
-                \Filament\Forms\Components\Textarea::make('feedback')
-                    ->label('Feedback / Remarks (Optional)')
-                    ->placeholder('Add any optional remarks or feedback for the students.')
-                    ->rows(3),
-            ])
+            ->form([\Filament\Forms\Components\Textarea::make('feedback')->label('Feedback / Remarks (Optional)')->placeholder('Add any optional remarks or feedback for the students.')->rows(3)])
             ->successNotificationTitle('Title approved successfully')
             ->action(function ($arguments, array $data): void {
-
                 $proposalId = $arguments['id'] ?? null;
-                Proposal::query()->where('id', $proposalId)->update([
-                    'status' => ProposalStatus::APPROVED,
-                    'feedback' => $data['feedback'] ?? null,
-                ]);
+                Proposal::query()
+                    ->where('id', $proposalId)
+                    ->update([
+                        'status' => ProposalStatus::APPROVED,
+                        'feedback' => $data['feedback'] ?? null,
+                    ]);
             });
     }
 
@@ -262,64 +245,81 @@ new class extends Component implements HasActions, HasSchemas
 };
 ?>
 
-<div class="p-4">
-
-  @if($this->proposal->isEmpty())
-    <div class="bg-slate-50 border border-slate-200 rounded-lg p-8 text-center">
-      <div class="text-slate-400 mb-2">
-        <svg class="h-12 w-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      </div>
-      <h4 class="text-lg font-semibold text-slate-900 mb-1">No Proposals Yet</h4>
-      <p class="text-slate-600 text-sm">This group hasn't submitted any research title proposals.</p>
-    </div>
-  @else
-    <div class="space-y-4">
-      @foreach($this->proposal as $proposalItem)
-        <div wire:click="mountAction('viewProposalAction', @js(['id' => $proposalItem['id'], 'title' => $proposalItem['title'], 'description' => $proposalItem['description'], 'status' => strtolower($proposalItem['status'] instanceof \App\Enums\ProposalStatus ? $proposalItem['status']->value : $proposalItem['status']), 'submitted_date' => $proposalItem['submitted_date'], 'submitted_by' => $proposalItem['submitted_by'], 'feedback' => \App\Models\Proposal::find($proposalItem['id'])?->feedback]))" 
-             class="bg-white border border-slate-200 rounded-lg p-5 flex flex-col gap-3 shadow-sm hover:shadow-md hover:border-primary-500 cursor-pointer transition-all">
-          @php
-            $status = $proposalItem['status'];
-            $statusValue = $status instanceof \App\Enums\ProposalStatus ? $status->value : strtolower($status);
-            
-            $badgeColor = match($statusValue) {
-                'approved' => 'success',
-                'pending', 'under review' => 'warning',
-                'rejected' => 'danger',
-                default => 'gray',
-            };
-            
-            $badgeLabel = match($statusValue) {
-                'approved' => 'Approved',
-                'pending' => 'Pending',
-                'rejected' => 'Rejected',
-                default => ucfirst($statusValue),
-            };
-          @endphp
-          
-          <div class="flex items-start justify-between gap-4">
-            <div class="flex-1">
-              <div class="flex items-center gap-2">
-                <h4 class="text-base font-bold text-slate-900 leading-tight group-hover:text-primary-600 transition-colors">{{ $proposalItem['title'] }}</h4>
-                @if($proposalItem['is_final'])
-                   <x-filament::badge color="primary" size="sm" icon="heroicon-m-star">
-                      Final
-                   </x-filament::badge>
-                @endif
-              </div>
-              <p class="text-xs text-slate-500 mt-1">Submitted by <span class="font-bold">{{ $proposalItem['submitted_by'] }}</span> on {{ $proposalItem['submitted_date'] }}</p>
+<div class="p-4 md:p-5 space-y-3">
+    @if ($this->proposal->isEmpty())
+        <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-10 text-center">
+            <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50">
+                <svg class="h-6 w-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
             </div>
-            <x-filament::badge :color="$badgeColor" class="flex-shrink-0">
-              {{ $badgeLabel }}
-            </x-filament::badge>
-          </div>
-
-          <p class="text-sm text-slate-600 leading-relaxed line-clamp-2">{{ $proposalItem['description'] }}</p>
+            <p class="mb-1 font-semibold text-slate-700">No proposals yet</p>
+            <p class="text-sm text-slate-400">This group hasn't submitted any research title proposals.</p>
         </div>
-      @endforeach
-    </div>
-  @endif
-  <x-filament-actions::modals />
+    @else
+        @foreach ($this->proposal as $proposalItem)
+            @php
+                $status = $proposalItem['status'];
+                $statusValue = $status instanceof \App\Enums\ProposalStatus ? $status->value : strtolower($status);
+                $badgeColor = match ($statusValue) {
+                    'approved' => 'success',
+                    'pending', 'under review' => 'warning',
+                    'rejected' => 'danger',
+                    default => 'gray',
+                };
+                $badgeLabel = match ($statusValue) {
+                    'approved' => 'Approved',
+                    'pending' => 'Pending',
+                    'rejected' => 'Rejected',
+                    default => ucfirst($statusValue),
+                };
+            @endphp
+            <div wire:click="mountAction('viewProposalAction', @js(['id' => $proposalItem['id'], 'title' => $proposalItem['title'], 'description' => $proposalItem['description'], 'status' => strtolower($proposalItem['status'] instanceof \App\Enums\ProposalStatus ? $proposalItem['status']->value : $proposalItem['status']), 'submitted_date' => $proposalItem['submitted_date'], 'submitted_by' => $proposalItem['submitted_by'], 'feedback' => \App\Models\Proposal::find($proposalItem['id'])?->feedback]))"
+                class="group relative cursor-pointer overflow-hidden rounded-xl border border-slate-200 bg-white transition-all duration-200 hover:border-blue-200 hover:shadow-md">
+                <div
+                    class="absolute bottom-0 left-0 top-0 w-[3px] rounded-l-xl
+                    @if ($statusValue === 'approved') bg-emerald-500
+                    @elseif($statusValue === 'rejected') bg-red-400
+                    @else bg-amber-400 @endif">
+                </div>
+                <div class="py-4 pl-5 pr-4">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="min-w-0 flex-1">
+                            <div class="mb-1.5 flex flex-wrap items-center gap-2">
+                                <h4 class="text-[0.9375rem] font-semibold leading-snug text-slate-900">
+                                    {{ $proposalItem['title'] }}</h4>
+                                @if ($proposalItem['is_final'])
+                                    <x-filament::badge color="primary" size="sm"
+                                        icon="heroicon-m-star">Final</x-filament::badge>
+                                @endif
+                            </div>
+                            <p class="text-xs text-slate-400">
+                                Submitted by <span
+                                    class="font-semibold text-slate-600">{{ $proposalItem['submitted_by'] }}</span>
+                                on {{ $proposalItem['submitted_date'] }}
+                            </p>
+                            @if ($proposalItem['description'])
+                                <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-slate-500">
+                                    {{ $proposalItem['description'] }}</p>
+                            @endif
+                        </div>
+                        <div class="flex shrink-0 items-center gap-2">
+                            <x-filament::badge :color="$badgeColor">{{ $badgeLabel }}</x-filament::badge>
+                            <div
+                                class="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-50 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                                <svg class="h-3.5 w-3.5 text-blue-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    @endif
+
+    <x-filament-actions::modals />
 </div>
