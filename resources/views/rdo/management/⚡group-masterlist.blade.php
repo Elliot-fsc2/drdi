@@ -41,7 +41,7 @@ new #[Title('Group Masterlist')] class extends Component {
     #[Computed]
     public function groups()
     {
-        return Group::with(['section.program', 'section.semester', 'section.instructor', 'leader', 'members.program', 'personnel.instructor', 'fee'])
+        return Group::with(['section.program', 'section.semester', 'section.instructor', 'leader', 'members.program', 'personnel.instructor', 'fee', 'finalTitle'])
             ->whereHas('section', function ($query) {
                 $query->where('semester_id', $this->semesterId);
             })
@@ -148,11 +148,6 @@ new #[Title('Group Masterlist')] class extends Component {
                         style="background: linear-gradient(135deg, #0052FF 0%, #4D7CFF 100%); box-shadow: 0 4px 16px rgba(0,82,255,0.35)">
                         <x-heroicon-o-arrow-down-tray class="h-4 w-4" />
                         Export
-                        <svg class="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5"
-                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                        </svg>
                     </button>
                 </div>
             </div>
@@ -183,10 +178,6 @@ new #[Title('Group Masterlist')] class extends Component {
             style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
             @if ($this->groups->isEmpty())
                 <div class="flex flex-col items-center justify-center py-24 text-center">
-                    <div class="w-20 h-20 rounded-2xl flex items-center justify-center mb-6"
-                        style="background: linear-gradient(135deg, #0052FF, #4D7CFF); box-shadow: 0 8px 24px rgba(0,82,255,0.3)">
-                        <x-heroicon-o-user-group class="h-10 w-10 text-white" />
-                    </div>
                     <h3 class="mb-2"
                         style="font-family: 'Calistoga', Georgia, serif; font-size: 1.5rem; color: #0F172A">
                         No groups found
@@ -206,6 +197,12 @@ new #[Title('Group Masterlist')] class extends Component {
                                 <div class="min-w-0">
                                     <h3 class="truncate font-bold text-base" style="color: #0F172A">{{ $group->name }}
                                     </h3>
+                                    @if ($group->finalTitle)
+                                        <p class="mt-0.5 text-xs font-medium leading-snug" style="color: #0052FF">
+                                            {{ $group->finalTitle->title }}</p>
+                                    @else
+                                        <p class="mt-0.5 text-xs italic" style="color: #94A3B8">No finalized title</p>
+                                    @endif
                                     <p class="mt-0.5 text-xs" style="color: #64748B">
                                         {{ $group->section->program->name }}</p>
                                 </div>
@@ -230,15 +227,6 @@ new #[Title('Group Masterlist')] class extends Component {
                                 <div class="space-y-1.5">
                                     @foreach ($group->members as $member)
                                         <div class="flex items-center gap-2 text-sm">
-                                            @if ($member->id === $group->leader_id)
-                                                <span
-                                                    class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
-                                                    style="background: linear-gradient(135deg, #0052FF, #4D7CFF)">L</span>
-                                            @else
-                                                <span
-                                                    class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px]"
-                                                    style="background: #F1F5F9; color: #64748B">M</span>
-                                            @endif
                                             <span style="color: #374151">{{ $member->first_name }}
                                                 {{ $member->last_name }}</span>
                                         </div>
@@ -356,21 +344,17 @@ new #[Title('Group Masterlist')] class extends Component {
 
                                     {{-- Group / Researchers --}}
                                     <td class="px-6 py-5 align-top">
-                                        <p class="mb-2 font-bold text-sm" style="color: #0F172A">{{ $group->name }}
-                                        </p>
+                                        <p class="font-bold text-sm" style="color: #0F172A">{{ $group->name }}</p>
+                                        @if ($group->finalTitle)
+                                            <p class="mt-0.5 mb-2 text-xs font-medium leading-snug"
+                                                style="color: #0052FF">{{ $group->finalTitle->title }}</p>
+                                        @else
+                                            <p class="mt-0.5 mb-2 text-xs italic" style="color: #94A3B8">No finalized
+                                                title</p>
+                                        @endif
                                         <div class="space-y-1.5">
                                             @foreach ($group->members as $member)
                                                 <div class="flex items-center gap-2">
-                                                    @if ($member->id === $group->leader_id)
-                                                        <span
-                                                            class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
-                                                            style="background: linear-gradient(135deg, #0052FF, #4D7CFF)"
-                                                            title="Leader">L</span>
-                                                    @else
-                                                        <span
-                                                            class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px]"
-                                                            style="background: #F1F5F9; color: #64748B">M</span>
-                                                    @endif
                                                     <span class="text-sm"
                                                         style="color: #374151">{{ $member->first_name }}
                                                         {{ $member->last_name }}</span>

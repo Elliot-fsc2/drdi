@@ -6,7 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Group extends Model
 {
-  protected $fillable = ['name', 'section_id', 'leader_id', 'final_title_id', 'status'];
+  protected $fillable = [
+    'name',
+    'section_id',
+    'leader_id',
+    'final_title_id',
+    'status',
+    'final_grade',
+  ];
 
   public function section()
   {
@@ -46,5 +53,10 @@ class Group extends Model
   public function fee()
   {
     return $this->hasOne(GroupFee::class);
+  }
+
+  public function scopePassed($query)
+  {
+    return $query->where('status', 'passed');
   }
 }

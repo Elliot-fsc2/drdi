@@ -326,7 +326,6 @@ new #[Title('Thesis Rates Management')] class extends Component implements HasAc
                         @endif
                     </div>
                 </div>
-
                 <div class="rounded-2xl border overflow-hidden"
                     style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
                     <div class="px-5 py-4" style="border-bottom: 1px solid #F1F5F9; background: #FAFAFA">

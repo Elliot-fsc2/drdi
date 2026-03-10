@@ -145,18 +145,21 @@ new class extends Component implements HasActions, HasSchemas {
         <div class="grid grid-cols-1 gap-2.5 md:grid-cols-2 lg:grid-cols-3">
             @foreach ($this->students as $student)
                 <div
-                    class="group relative overflow-hidden rounded-xl border border-slate-200 bg-white transition-all duration-200 hover:border-blue-200 hover:shadow-md">
+                    class="group relative rounded-xl border border-slate-200 bg-white transition-all duration-200 hover:border-blue-200 hover:shadow-md">
                     <div class="absolute bottom-0 left-0 top-0 w-[3px] rounded-l-xl"
                         style="background: linear-gradient(to bottom, #0052FF, #4D7CFF);"></div>
                     <div class="py-4 pl-5 pr-4">
                         <div class="flex items-start justify-between gap-2">
                             <div class="flex min-w-0 items-center gap-3">
-                                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold text-blue-700"
-                                    style="background: linear-gradient(135deg, rgba(0,82,255,0.12), rgba(77,124,255,0.08));">
-                                    {{ substr($student['name'], 0, 1) }}
-                                </div>
                                 <div class="min-w-0">
-                                    <p class="truncate text-sm font-semibold text-slate-900">{{ $student['name'] }}</p>
+                                    <div class="group/tooltip relative">
+                                        <p class="truncate text-sm font-semibold text-slate-900">{{ $student['name'] }}
+                                        </p>
+                                        <div
+                                            class="pointer-events-none absolute bottom-full left-0 mb-2 hidden rounded-lg bg-slate-900 px-2 py-1 text-xs text-white whitespace-nowrap group-hover/tooltip:block">
+                                            {{ $student['name'] }}
+                                        </div>
+                                    </div>
                                     <p class="mt-0.5 text-xs text-slate-400">{{ $student['student_number'] }}</p>
                                 </div>
                             </div>

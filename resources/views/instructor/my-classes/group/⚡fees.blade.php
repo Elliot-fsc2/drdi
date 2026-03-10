@@ -50,14 +50,8 @@ new class extends Component {
     @if ($this->fee)
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:max-w-3xl">
             {{-- Breakdown Card --}}
-            <div class="rounded-xl border border-slate-200 bg-white p-5">
+            <div class="rounded-xl border-slate-200 bg-white p-5">
                 <div class="mb-4 flex items-center gap-2">
-                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50">
-                        <svg class="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                        </svg>
-                    </div>
                     <h3 class="text-sm font-semibold text-slate-900">Fee Breakdown</h3>
                 </div>
                 <div class="space-y-3">

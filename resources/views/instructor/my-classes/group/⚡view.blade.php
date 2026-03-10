@@ -343,10 +343,6 @@ new class extends Component implements HasActions, HasSchemas {
                       {{ $selectingLeader ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md' : 'hover:-translate-y-0.5 hover:shadow-md' }}"
                                             style="border-color: #F1F5F9; background: #FAFAFA"
                                             @if ($selectingLeader) wire:click="selectLeader({{ $member->id }})" @endif>
-                                            <div class="h-10 w-10 rounded-xl flex items-center justify-center font-bold text-sm shrink-0"
-                                                style="background: linear-gradient(135deg, #0052FF, #4D7CFF); color: white">
-                                                {{ strtoupper(substr($member->first_name, 0, 1)) }}
-                                            </div>
                                             <div class="min-w-0 flex-1">
                                                 <div class="flex items-center gap-2 flex-wrap">
                                                     <span class="font-semibold text-sm" style="color: #0F172A">
@@ -434,10 +430,6 @@ new class extends Component implements HasActions, HasSchemas {
                                     Leader</p>
                                 @if ($this->leader)
                                     <div class="flex items-center gap-2.5">
-                                        <div class="h-8 w-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0"
-                                            style="background: linear-gradient(135deg, #0052FF, #4D7CFF); color: white">
-                                            {{ strtoupper(substr($this->leader->first_name, 0, 1)) }}
-                                        </div>
                                         <span class="text-sm font-semibold" style="color: #0F172A">
                                             {{ $this->leader->first_name }} {{ $this->leader->last_name }}
                                         </span>

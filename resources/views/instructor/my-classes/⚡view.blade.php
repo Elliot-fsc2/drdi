@@ -135,10 +135,11 @@ new class extends Component {
 
             {{-- Main panel --}}
             <div class="lg:col-span-3">
-                <div class="bg-white rounded-2xl border overflow-hidden"
+                <div class="bg-white rounded-2xl border"
                     style="border-color: #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
                     {{-- Top gradient stripe --}}
-                    <div class="h-[3px] w-full" style="background: linear-gradient(to right, #0052FF, #4D7CFF)"></div>
+                    <div class="h-[3px] w-full rounded-t-2xl"
+                        style="background: linear-gradient(to right, #0052FF, #4D7CFF)"></div>
 
                     {{-- ── Groups Tab ──────────────────────────────────────────────────── --}}
                     @if ($tab === 'groups')
