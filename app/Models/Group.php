@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\PresentationStatus;
+use App\Enums\PresentationType;
 use Illuminate\Database\Eloquent\Model;
 
 class Group extends Model
@@ -55,8 +57,29 @@ class Group extends Model
     return $this->hasOne(GroupFee::class);
   }
 
+  public function schedules()
+  {
+    return $this->hasMany(Schedule::class);
+  }
+
+  public function researchLibrary()
+  {
+    return $this->hasOne(ResearchLibrary::class);
+  }
+
   public function scopePassed($query)
   {
     return $query->where('status', 'passed');
+  }
+
+  public function isEligibleForLibrary()
+  {
+    if ($this->status !== 'passed') {
+      return false;
+    }
+    return $this->schedules()
+      ->where('presentation_type', PresentationType::THESIS_B_FINAL)
+      ->where('status', PresentationStatus::PASSED)
+      ->exists();
   }
 }

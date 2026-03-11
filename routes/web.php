@@ -49,6 +49,8 @@ Route::middleware('auth')->group(function () {
   Route::livewire('/profile', 'pages::profile')->name('profile');
   Route::livewire('/repository', 'pages::repository')->name('repository');
   Route::livewire('/repository/{index}', 'pages::repository.details')->name('repository.details');
+
+  Route::livewire('/groups/{group}/repository-form', 'instructor::library-requirement')->name('repository-requirement');
 });
 
 Route::middleware(['auth', 'instructor'])

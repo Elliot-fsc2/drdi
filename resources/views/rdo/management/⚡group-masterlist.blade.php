@@ -241,7 +241,7 @@ new #[Title('Group Masterlist')] class extends Component {
                             <div>
                                 <p class="mb-1"
                                     style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #94A3B8; text-transform: uppercase">
-                                    Subject</p>
+                                    Section</p>
                                 <p class="text-sm font-medium" style="color: #374151">{{ $group->section->name }}</p>
                                 <p class="text-xs" style="color: #64748B">
                                     {{ $group->section->instructor->first_name }}
@@ -325,7 +325,7 @@ new #[Title('Group Masterlist')] class extends Component {
                                 </th>
                                 <th class="px-5 py-4 text-left">
                                     <span
-                                        style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #94A3B8; text-transform: uppercase">Subject</span>
+                                        style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #94A3B8; text-transform: uppercase">Section</span>
                                 </th>
                                 <th class="px-5 py-4 text-left">
                                     <span
@@ -344,12 +344,11 @@ new #[Title('Group Masterlist')] class extends Component {
 
                                     {{-- Group / Researchers --}}
                                     <td class="px-6 py-5 align-top">
-                                        <p class="font-bold text-sm" style="color: #0F172A">{{ $group->name }}</p>
                                         @if ($group->finalTitle)
-                                            <p class="mt-0.5 mb-2 text-xs font-medium leading-snug"
-                                                style="color: #0052FF">{{ $group->finalTitle->title }}</p>
+                                            <p class="font-bold mb-2" style="color: #0052FF">
+                                                {{ $group->finalTitle->title }}</p>
                                         @else
-                                            <p class="mt-0.5 mb-2 text-xs italic" style="color: #94A3B8">No finalized
+                                            <p class="font-bold mb-2" style="color: #94A3B8">No finalized
                                                 title</p>
                                         @endif
                                         <div class="space-y-1.5">
