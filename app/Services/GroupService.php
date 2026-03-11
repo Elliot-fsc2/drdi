@@ -46,13 +46,11 @@ class GroupService
     public function delete(Group $group): bool
     {
         return DB::transaction(function () use ($group) {
-            // Detach many-to-many relationships
             $group->members()->detach();
 
-            // Delete related records
             $group->consultations()->delete();
             $group->personnel()->delete();
-            $group->proposal()?->delete();
+            $group->proposals()?->delete();
             $group->fee()?->delete();
 
             return $group->delete();
