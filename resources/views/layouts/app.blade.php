@@ -154,7 +154,6 @@
                         <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
                         <span class="font-medium">My Groups</span>
                     </a>
-
                 @elseif($isStudent)
                     {{-- Student Navigation --}}
                     <a href="{{ route('student.home') }}" wire:navigate @class([
@@ -584,7 +583,7 @@
                                     </div>
 
                                     <!-- Menu Items -->
-                                    <a href="#"
+                                    <a href="{{ route('profile') }}" wire:navigate
                                         class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                         <x-heroicon-o-user class="w-4 h-4" />
                                         My Profile
