@@ -94,7 +94,7 @@ new #[Title('Home')] class extends Component {
                     'description' => $proposal->description,
                     'group_id' => $proposal->group_id,
                     'submitted_by' => $proposal->submittedBy?->full_name ?? 'Unknown Student',
-                    'status' => $proposal->status,
+                    'status' => $proposal->status instanceof \BackedEnum ? $proposal->status->value : $proposal->status,
                     'feedback' => $proposal->feedback,
                 ],
             )
@@ -213,10 +213,6 @@ new #[Title('Home')] class extends Component {
                     style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
                     <div class="px-5 py-4 flex items-center gap-2"
                         style="border-bottom: 1px solid #F1F5F9; background: #FAFAFA">
-                        <div class="w-7 h-7 rounded-lg flex items-center justify-center"
-                            style="background: linear-gradient(135deg, #0052FF, #4D7CFF)">
-                            <x-heroicon-o-book-open class="w-3.5 h-3.5 text-white" />
-                        </div>
                         <span
                             style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #94A3B8; text-transform: uppercase">
                             My Section
@@ -244,14 +240,12 @@ new #[Title('Home')] class extends Component {
 
                         <div class="space-y-3">
                             <div class="flex items-center gap-3 text-sm">
-                                <x-heroicon-o-user class="w-4 h-4 shrink-0" style="color: #94A3B8" />
                                 <span style="color: #64748B">Instructor:</span>
                                 <span class="font-semibold" style="color: #0F172A">
                                     {{ $this->sections['instructor_name'] }}
                                 </span>
                             </div>
                             <div class="flex items-center gap-3 text-sm">
-                                <x-heroicon-o-users class="w-4 h-4 shrink-0" style="color: #94A3B8" />
                                 <span style="color: #64748B">Students:</span>
                                 <span class="font-semibold" style="color: #0F172A">
                                     {{ $this->sections['students_count'] }} enrolled
@@ -267,10 +261,6 @@ new #[Title('Home')] class extends Component {
                     style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
                     <div class="px-5 py-4 flex items-center gap-2"
                         style="border-bottom: 1px solid #F1F5F9; background: #FAFAFA">
-                        <div class="w-7 h-7 rounded-lg flex items-center justify-center"
-                            style="background: linear-gradient(135deg, #0052FF, #4D7CFF)">
-                            <x-heroicon-o-user-group class="w-3.5 h-3.5 text-white" />
-                        </div>
                         <span
                             style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #94A3B8; text-transform: uppercase">
                             My Group
@@ -301,10 +291,6 @@ new #[Title('Home')] class extends Component {
                                     @foreach ($group['members'] as $member)
                                         <div class="flex items-center justify-between text-sm">
                                             <div class="flex items-center gap-2.5">
-                                                <div class="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold text-white shrink-0"
-                                                    style="background: linear-gradient(135deg, #0052FF, #4D7CFF)">
-                                                    {{ collect(explode(' ', $member['name']))->map(fn($n) => strtoupper($n[0] ?? ''))->take(2)->implode('') }}
-                                                </div>
                                                 <div>
                                                     <p class="font-medium text-sm" style="color: #0F172A">
                                                         {{ $member['name'] }}</p>
@@ -358,15 +344,17 @@ new #[Title('Home')] class extends Component {
                             @foreach ($proposals as $proposal)
                                 @php
                                     $borderColor = match ($proposal['status']) {
-                                        'approved' => '#A7F3D0',
+                                        ProposalStatus::APPROVED->value => '#A7F3D0',
                                         'revision' => '#FED7AA',
-                                        'rejected' => '#FECACA',
+                                        ProposalStatus::REJECTED->value => '#FECACA',
                                         default => '#E2E8F0',
                                     };
                                     $stripeColor = match ($proposal['status']) {
-                                        'approved' => 'linear-gradient(to bottom, #059669, #34D399)',
+                                        ProposalStatus::APPROVED->value
+                                            => 'linear-gradient(to bottom, #059669, #34D399)',
                                         'revision' => 'linear-gradient(to bottom, #EA580C, #FB923C)',
-                                        'rejected' => 'linear-gradient(to bottom, #DC2626, #F87171)',
+                                        ProposalStatus::REJECTED->value
+                                            => 'linear-gradient(to bottom, #DC2626, #F87171)',
                                         default => 'linear-gradient(to bottom, #0052FF, #4D7CFF)',
                                     };
                                 @endphp
@@ -410,10 +398,6 @@ new #[Title('Home')] class extends Component {
                     @else
                         <div class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed py-16 text-center"
                             style="border-color: #E2E8F0; background: #FAFAFA">
-                            <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
-                                style="background: #F1F5F9">
-                                <x-heroicon-o-document-text class="w-7 h-7" style="color: #CBD5E1" />
-                            </div>
                             <p class="text-sm font-semibold mb-1" style="color: #374151">No proposals yet</p>
                             <p class="text-xs" style="color: #94A3B8">Your group's proposals will appear here.</p>
                         </div>
@@ -438,9 +422,7 @@ new #[Title('Home')] class extends Component {
                             <div class="divide-y" style="border-color: #F1F5F9">
                                 @foreach ($consultations as $consultation)
                                     @php
-                                        $isCompleted =
-                                            $consultation['status'] === ProposalStatus::APPROVED->value ||
-                                            $consultation['status'] === 'completed';
+                                        $isCompleted = $consultation['status'] === 'completed';
                                         $isUpcoming = $consultation['type'] === 'upcoming' && !$isCompleted;
                                     @endphp
                                     <div class="p-5"
@@ -464,7 +446,8 @@ new #[Title('Home')] class extends Component {
                                             </div>
                                             <div class="flex-1 min-w-0">
                                                 <p class="text-sm font-semibold" style="color: #0F172A">
-                                                    Instructor #{{ $consultation['instructor_id'] }}</p>
+                                                    {{ $this->sections['instructor_name'] ?? 'No instructor assigned' }}
+                                                </p>
                                                 @if ($consultation['scheduled_at'])
                                                     <p class="text-xs mt-0.5" style="color: #64748B">
                                                         {{ $this->formatTime($consultation['scheduled_at']) }}</p>
@@ -486,10 +469,6 @@ new #[Title('Home')] class extends Component {
                             </div>
                         @else
                             <div class="flex flex-col items-center justify-center py-16 px-6 text-center">
-                                <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
-                                    style="background: #F1F5F9">
-                                    <x-heroicon-o-calendar class="w-7 h-7" style="color: #CBD5E1" />
-                                </div>
                                 <p class="text-sm font-semibold mb-1" style="color: #374151">No consultations</p>
                                 <p class="text-xs" style="color: #94A3B8">Scheduled sessions will appear here.</p>
                             </div>
@@ -502,10 +481,7 @@ new #[Title('Home')] class extends Component {
             {{-- No active section --}}
             <div class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed py-20 px-8 text-center"
                 style="border-color: #E2E8F0; background: #FAFAFA">
-                <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-5"
-                    style="background: linear-gradient(135deg, #0052FF, #4D7CFF); box-shadow: 0 8px 24px rgba(0,82,255,0.3)">
-                    <x-heroicon-o-academic-cap class="w-8 h-8 text-white" />
-                </div>
+
                 <h3 class="mb-2"
                     style="font-family: 'Calistoga', Georgia, serif; font-size: 1.4rem; color: #0F172A">
                     No active section found</h3>

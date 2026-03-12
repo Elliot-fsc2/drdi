@@ -68,7 +68,7 @@ new #[Title('Group Proposals')] class extends Component implements HasActions, H
             ->color('info')
             ->form(function (array $arguments) {
                 $proposal = Proposal::find($arguments['proposal']);
-                $isPending = $proposal?->status === ProposalStatus::PENDING->value;
+                $isPending = $proposal?->status === ProposalStatus::PENDING;
 
                 if ($isPending) {
                     return [
@@ -92,7 +92,7 @@ new #[Title('Group Proposals')] class extends Component implements HasActions, H
                         ->label('Instructor Feedback')
                         ->content(function () use ($proposal) {
                             $feedback = $proposal?->feedback ?? 'No feedback provided.';
-                            $isRejected = $proposal?->status === ProposalStatus::REJECTED->value;
+                            $isRejected = $proposal?->status === ProposalStatus::REJECTED;
 
                             $classes = $isRejected ? 'p-3 rounded-lg bg-red-50 text-red-700 border border-red-200 text-sm italic mt-1' : 'p-3 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 text-sm italic mt-1';
 
@@ -112,7 +112,7 @@ new #[Title('Group Proposals')] class extends Component implements HasActions, H
             })
             ->modalSubmitAction(function ($action, array $arguments) {
                 $proposal = Proposal::find($arguments['proposal']);
-                if ($proposal && $proposal->status !== ProposalStatus::PENDING->value) {
+                if ($proposal && $proposal->status !== ProposalStatus::PENDING) {
                     return $action->hidden();
                 }
 
@@ -122,7 +122,7 @@ new #[Title('Group Proposals')] class extends Component implements HasActions, H
             ->action(function (array $arguments, array $data): void {
                 $proposal = Proposal::find($arguments['proposal']);
 
-                if ($proposal && $proposal->status === ProposalStatus::PENDING->value) {
+                if ($proposal && $proposal->status === ProposalStatus::PENDING) {
                     $proposal->update([
                         'title' => $data['title'],
                         'description' => $data['description'],
@@ -133,23 +133,21 @@ new #[Title('Group Proposals')] class extends Component implements HasActions, H
             });
     }
 
-    public function getStatusBadgeClass(string $status): string
+    public function getStatusBadgeClass(ProposalStatus $status): string
     {
         return match ($status) {
-            ProposalStatus::APPROVED->value => 'text-green-700 bg-green-50 ring-green-600/20',
-            ProposalStatus::PENDING->value => 'text-yellow-700 bg-yellow-50 ring-yellow-600/20',
-            ProposalStatus::REJECTED->value => 'text-red-700 bg-red-50 ring-red-600/10',
-            default => 'text-gray-700 bg-gray-50 ring-gray-600/20',
+            ProposalStatus::APPROVED => 'text-green-700 bg-green-50 ring-green-600/20',
+            ProposalStatus::PENDING => 'text-yellow-700 bg-yellow-50 ring-yellow-600/20',
+            ProposalStatus::REJECTED => 'text-red-700 bg-red-50 ring-red-600/10',
         };
     }
 
-    public function getStatusLabel(string $status): string
+    public function getStatusLabel(ProposalStatus $status): string
     {
         return match ($status) {
-            ProposalStatus::APPROVED->value => 'Approved',
-            ProposalStatus::REJECTED->value => 'Rejected',
-            ProposalStatus::PENDING->value => 'Pending',
-            default => ucfirst($status),
+            ProposalStatus::APPROVED => 'Approved',
+            ProposalStatus::REJECTED => 'Rejected',
+            ProposalStatus::PENDING => 'Pending',
         };
     }
 
@@ -253,9 +251,9 @@ new #[Title('Group Proposals')] class extends Component implements HasActions, H
 
                             <!-- Top Status Bar -->
                             <div
-                                class="h-1.5 w-full {{ $proposal->status === \App\Enums\ProposalStatus::APPROVED->value
+                                class="h-1.5 w-full {{ $proposal->status === \App\Enums\ProposalStatus::APPROVED
                                     ? 'bg-green-500'
-                                    : ($proposal->status === \App\Enums\ProposalStatus::REJECTED->value
+                                    : ($proposal->status === \App\Enums\ProposalStatus::REJECTED
                                         ? 'bg-red-500'
                                         : 'bg-yellow-500') }}">
                             </div>

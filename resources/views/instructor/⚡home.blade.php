@@ -1,11 +1,27 @@
 <?php
 
-use App\Enums\InstructorRole;
+use App\Services\InstructorStatsService;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
 new #[Title('Home')] class extends Component {
-    public function mount() {}
+    public int $activeClasses = 0;
+    public int $totalStudents = 0;
+    public int $totalGroups = 0;
+    public int $pendingProposals = 0;
+    public $consultations;
+    public $recentProposals;
+
+    public function mount(InstructorStatsService $stats): void
+    {
+        $data = $stats->dashboardStats();
+        $this->activeClasses = $data['active_classes'];
+        $this->totalStudents = $data['total_students'];
+        $this->totalGroups = $data['total_groups'];
+        $this->pendingProposals = $data['proposals'];
+        $this->consultations = $data['consultations'];
+        $this->recentProposals = $data['recent_proposals'];
+    }
 };
 ?>
 
@@ -56,74 +72,58 @@ new #[Title('Home')] class extends Component {
         </div>
 
         {{-- ── Stats Cards ──────────────────────────────── --}}
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 sm:mb-10">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8 sm:mb-10">
 
             <div class="rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-px hover:shadow-lg"
                 style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
                 <div class="flex items-center gap-3 mb-3">
-                    <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                        style="background: linear-gradient(135deg, #0052FF, #4D7CFF)">
-                        <x-heroicon-o-document-text class="w-5 h-5 text-white" />
-                    </div>
                     <div class="min-w-0">
                         <p
                             style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
-                            Projects</p>
-                        <p class="text-2xl font-bold" style="color: #0F172A">7</p>
+                            Active Classes</p>
+                        <p class="text-2xl font-bold" style="color: #0F172A">{{ $activeClasses }}</p>
                     </div>
                 </div>
-                <p class="text-xs" style="color: #94A3B8">3 active, 4 completed</p>
+                <p class="text-xs" style="color: #94A3B8">Currently running sections</p>
             </div>
 
             <div class="rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-px hover:shadow-lg"
                 style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
                 <div class="flex items-center gap-3 mb-3">
-                    <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                        style="background: #ECFDF5">
-                        <x-heroicon-o-check-circle class="w-5 h-5" style="color: #059669" />
-                    </div>
                     <div class="min-w-0">
                         <p
                             style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
-                            Publications</p>
-                        <p class="text-2xl font-bold" style="color: #0F172A">23</p>
+                            Total Students</p>
+                        <p class="text-2xl font-bold" style="color: #0F172A">{{ $totalStudents }}</p>
                     </div>
                 </div>
-                <p class="text-xs" style="color: #94A3B8">5 pending review</p>
+                <p class="text-xs" style="color: #94A3B8">Across all active classes</p>
             </div>
 
             <div class="rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-px hover:shadow-lg"
                 style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
                 <div class="flex items-center gap-3 mb-3">
-                    <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                        style="background: #F3F0FF">
-                        <x-heroicon-o-user-group class="w-5 h-5" style="color: #7C3AED" />
-                    </div>
                     <div class="min-w-0">
                         <p
                             style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
-                            Collaborators</p>
-                        <p class="text-2xl font-bold" style="color: #0F172A">14</p>
+                            Total Groups</p>
+                        <p class="text-2xl font-bold" style="color: #0F172A">{{ $totalGroups }}</p>
                     </div>
                 </div>
-                <p class="text-xs" style="color: #94A3B8">Across 5 departments</p>
+                <p class="text-xs" style="color: #94A3B8">Research groups enrolled</p>
             </div>
 
             <div class="rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-px hover:shadow-lg"
                 style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
                 <div class="flex items-center gap-3 mb-3">
-                    <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                        style="background: #FFF7ED">
-                        <x-heroicon-o-clock class="w-5 h-5" style="color: #EA580C" />
-                    </div>
                     <div class="min-w-0">
                         <p
                             style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
-                            Due This Week</p>
-                        <p class="text-2xl font-bold" style="color: #0F172A">2</p>
+                            Pending Proposals</p>
+                        <p class="text-2xl font-bold" style="color: #0F172A">{{ $pendingProposals }}</p>
                     </div>
                 </div>
-                <p class="text-xs" style="color: #94A3B8">1 overdue</p>
+                <p class="text-xs" style="color: #94A3B8">Awaiting your review</p>
             </div>
 
         </div>
@@ -131,7 +131,7 @@ new #[Title('Home')] class extends Component {
         {{-- ── Main Content ─────────────────────────────── --}}
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            {{-- Left: Recent Projects --}}
+            {{-- Left: Recent Proposals --}}
             <div class="lg:col-span-2 space-y-5">
 
                 <div class="flex items-center justify-between">
@@ -140,209 +140,122 @@ new #[Title('Home')] class extends Component {
                         <span class="w-1.5 h-1.5 rounded-full" style="background: #0052FF"></span>
                         <span
                             style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #0052FF; text-transform: uppercase">
-                            Recent Projects
+                            Recent Proposals
                         </span>
                     </div>
-                    <a href="#"
-                        class="group inline-flex items-center gap-1 text-sm font-semibold transition-colors duration-150"
-                        style="color: #0052FF">
-                        View all
-                        <svg class="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5"
-                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </a>
                 </div>
 
                 <div class="space-y-3">
-
-                    {{-- Project 1 --}}
-                    <div class="relative overflow-hidden rounded-2xl border transition-all duration-200 hover:-translate-y-px hover:shadow-lg cursor-pointer"
-                        style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
-                        <div class="absolute bottom-0 left-0 top-0 w-[3px] rounded-l-2xl"
-                            style="background: linear-gradient(to bottom, #0052FF, #4D7CFF)"></div>
-                        <div class="py-5 pl-6 pr-5">
-                            <div class="flex items-start justify-between mb-3 gap-3">
-                                <h3 class="text-sm font-semibold leading-snug" style="color: #0F172A">
-                                    Cybersecurity Threat Detection Framework</h3>
-                                <span
-                                    class="shrink-0 inline-flex items-center rounded-lg px-2.5 py-0.5 text-xs font-medium"
-                                    style="background: rgba(0,82,255,0.07); color: #0052FF; border: 1px solid rgba(0,82,255,0.12)">
-                                    Active
-                                </span>
-                            </div>
-                            <p class="text-xs mb-4" style="color: #64748B; line-height: 1.5">
-                                Development of ML-based intrusion detection system for military networks</p>
-                            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs mb-4"
-                                style="color: #94A3B8">
-                                <span class="flex items-center gap-1">
-                                    <x-heroicon-o-calendar class="w-3.5 h-3.5" /> Due Feb 28, 2026
-                                </span>
-                                <span class="flex items-center gap-1">
-                                    <x-heroicon-o-users class="w-3.5 h-3.5" /> 3 members
-                                </span>
-                                <span>67% complete</span>
-                            </div>
-                            <div class="h-1.5 rounded-full overflow-hidden" style="background: #F1F5F9">
-                                <div class="h-full rounded-full"
-                                    style="width: 67%; background: linear-gradient(to right, #0052FF, #4D7CFF)"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Project 2 --}}
-                    <div class="relative overflow-hidden rounded-2xl border transition-all duration-200 hover:-translate-y-px hover:shadow-lg cursor-pointer"
-                        style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
-                        <div class="absolute bottom-0 left-0 top-0 w-[3px] rounded-l-2xl"
-                            style="background: linear-gradient(to bottom, #059669, #34D399)"></div>
-                        <div class="py-5 pl-6 pr-5">
-                            <div class="flex items-start justify-between mb-3 gap-3">
-                                <h3 class="text-sm font-semibold leading-snug" style="color: #0F172A">
-                                    Drone Navigation Systems Research</h3>
-                                <span
-                                    class="shrink-0 inline-flex items-center rounded-lg px-2.5 py-0.5 text-xs font-medium"
-                                    style="background: #ECFDF5; color: #059669; border: 1px solid #A7F3D0">
-                                    On Track
-                                </span>
-                            </div>
-                            <p class="text-xs mb-4" style="color: #64748B; line-height: 1.5">
-                                Autonomous navigation in GPS-denied environments</p>
-                            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs mb-4"
-                                style="color: #94A3B8">
-                                <span class="flex items-center gap-1">
-                                    <x-heroicon-o-calendar class="w-3.5 h-3.5" /> Due Mar 15, 2026
-                                </span>
-                                <span class="flex items-center gap-1">
-                                    <x-heroicon-o-users class="w-3.5 h-3.5" /> 5 members
-                                </span>
-                                <span>43% complete</span>
-                            </div>
-                            <div class="h-1.5 rounded-full overflow-hidden" style="background: #F1F5F9">
-                                <div class="h-full rounded-full"
-                                    style="width: 43%; background: linear-gradient(to right, #059669, #34D399)"></div>
+                    @forelse($recentProposals as $proposal)
+                        @php
+                            $statusStyle = match ($proposal->status) {
+                                \App\Enums\ProposalStatus::APPROVED => [
+                                    'bar' => 'linear-gradient(to bottom, #059669, #34D399)',
+                                    'bg' => '#ECFDF5',
+                                    'color' => '#059669',
+                                    'border' => '#A7F3D0',
+                                ],
+                                \App\Enums\ProposalStatus::REJECTED => [
+                                    'bar' => 'linear-gradient(to bottom, #DC2626, #F87171)',
+                                    'bg' => '#FEF2F2',
+                                    'color' => '#DC2626',
+                                    'border' => '#FECACA',
+                                ],
+                                default => [
+                                    'bar' => 'linear-gradient(to bottom, #EA580C, #FB923C)',
+                                    'bg' => '#FFF7ED',
+                                    'color' => '#EA580C',
+                                    'border' => '#FED7AA',
+                                ],
+                            };
+                        @endphp
+                        <div class="relative overflow-hidden rounded-2xl border transition-all duration-200 hover:-translate-y-px hover:shadow-lg"
+                            style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+                            <div class="absolute bottom-0 left-0 top-0 w-[3px] rounded-l-2xl"
+                                style="background: {{ $statusStyle['bar'] }}"></div>
+                            <div class="py-5 pl-6 pr-5">
+                                <div class="flex items-start justify-between mb-2 gap-3">
+                                    <h3 class="text-sm font-semibold leading-snug" style="color: #0F172A">
+                                        {{ $proposal->title }}</h3>
+                                    <span
+                                        class="shrink-0 inline-flex items-center rounded-lg px-2.5 py-0.5 text-xs font-medium"
+                                        style="background: {{ $statusStyle['bg'] }}; color: {{ $statusStyle['color'] }}; border: 1px solid {{ $statusStyle['border'] }}">
+                                        {{ ucfirst($proposal->status->value) }}
+                                    </span>
+                                </div>
+                                @if ($proposal->description)
+                                    <p class="text-xs mb-3" style="color: #64748B; line-height: 1.5">
+                                        {{ Str::limit($proposal->description, 120) }}</p>
+                                @endif
+                                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs" style="color: #94A3B8">
+                                    <span class="flex items-center gap-1">
+                                        <x-heroicon-o-user-group class="w-3.5 h-3.5" />
+                                        {{ $proposal->group->name ?? '—' }}
+                                    </span>
+                                    <span class="flex items-center gap-1">
+                                        <x-heroicon-o-clock class="w-3.5 h-3.5" />
+                                        {{ $proposal->created_at->diffForHumans() }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    {{-- Project 3 --}}
-                    <div class="relative overflow-hidden rounded-2xl border transition-all duration-200 hover:-translate-y-px hover:shadow-lg cursor-pointer"
-                        style="border-color: #FED7AA; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
-                        <div class="absolute bottom-0 left-0 top-0 w-[3px] rounded-l-2xl"
-                            style="background: linear-gradient(to bottom, #EA580C, #FB923C)"></div>
-                        <div class="py-5 pl-6 pr-5">
-                            <div class="flex items-start justify-between mb-3 gap-3">
-                                <h3 class="text-sm font-semibold leading-snug" style="color: #0F172A">
-                                    Materials Science — Composite Armor</h3>
-                                <span
-                                    class="shrink-0 inline-flex items-center rounded-lg px-2.5 py-0.5 text-xs font-medium"
-                                    style="background: #FFF7ED; color: #EA580C; border: 1px solid #FED7AA">
-                                    Delayed
-                                </span>
-                            </div>
-                            <p class="text-xs mb-4" style="color: #64748B; line-height: 1.5">
-                                Testing phase postponed pending equipment calibration</p>
-                            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs mb-4"
-                                style="color: #94A3B8">
-                                <span class="flex items-center gap-1">
-                                    <x-heroicon-o-calendar class="w-3.5 h-3.5" /> Due Feb 15, 2026
-                                </span>
-                                <span class="flex items-center gap-1">
-                                    <x-heroicon-o-users class="w-3.5 h-3.5" /> 2 members
-                                </span>
-                                <span>28% complete</span>
-                            </div>
-                            <div class="h-1.5 rounded-full overflow-hidden" style="background: #F1F5F9">
-                                <div class="h-full rounded-full"
-                                    style="width: 28%; background: linear-gradient(to right, #EA580C, #FB923C)"></div>
-                            </div>
+                    @empty
+                        <div class="rounded-2xl border p-10 text-center"
+                            style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+                            <x-heroicon-o-document-text class="w-8 h-8 mx-auto mb-3" style="color: #CBD5E1" />
+                            <p class="text-sm" style="color: #94A3B8">No proposals yet</p>
                         </div>
-                    </div>
-
+                    @endforelse
                 </div>
             </div>
 
             {{-- Right: Sidebar --}}
             <div class="space-y-5">
 
-                {{-- Upcoming Deadlines --}}
+                {{-- Consultation Schedule --}}
                 <div class="rounded-2xl border overflow-hidden"
                     style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
                     <div class="px-5 py-4" style="border-bottom: 1px solid #F1F5F9; background: #FAFAFA">
                         <span
                             style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #94A3B8; text-transform: uppercase">
-                            Upcoming Deadlines
+                            Consultation Schedule
                         </span>
                     </div>
                     <div class="p-5 space-y-4">
-                        <div class="flex gap-3 items-start">
-                            <div class="shrink-0 w-12 rounded-xl text-center py-2"
-                                style="background: #FEE2E2; border: 1px solid #FECACA">
-                                <div class="text-[10px] font-bold" style="color: #DC2626">FEB</div>
-                                <div class="text-lg font-bold leading-none" style="color: #DC2626">15</div>
+                        @forelse($consultations as $consultation)
+                            @unless ($loop->first)
+                                <div style="border-top: 1px solid #F1F5F9"></div>
+                            @endunless
+                            <div class="flex gap-3 items-start">
+                                <div class="shrink-0 w-12 rounded-xl text-center py-2"
+                                    style="background: rgba(0,82,255,0.06); border: 1px solid rgba(0,82,255,0.12)">
+                                    <div class="text-[10px] font-bold uppercase" style="color: #0052FF">
+                                        {{ $consultation->scheduled_at->format('M') }}</div>
+                                    <div class="text-lg font-bold leading-none" style="color: #0052FF">
+                                        {{ $consultation->scheduled_at->format('d') }}</div>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-sm font-semibold" style="color: #0F172A">
+                                        {{ $consultation->group->name ?? 'Unknown Group' }}</p>
+                                    <p class="text-xs" style="color: #64748B">
+                                        {{ $consultation->scheduled_at->format('g:i A') }}
+                                        @if ($consultation->type)
+                                            &middot; {{ ucfirst($consultation->type) }}
+                                        @endif
+                                    </p>
+                                    @if ($consultation->remarks)
+                                        <p class="text-xs mt-0.5 truncate" style="color: #94A3B8">
+                                            {{ $consultation->remarks }}</p>
+                                    @endif
+                                </div>
                             </div>
-                            <div class="min-w-0">
-                                <p class="text-sm font-semibold" style="color: #0F172A">Armor Testing Report</p>
-                                <p class="text-xs" style="color: #DC2626">Overdue by 22 days</p>
-                            </div>
-                        </div>
-                        <div style="border-top: 1px solid #F1F5F9"></div>
-                        <div class="flex gap-3 items-start">
-                            <div class="shrink-0 w-12 rounded-xl text-center py-2"
-                                style="background: rgba(0,82,255,0.06); border: 1px solid rgba(0,82,255,0.12)">
-                                <div class="text-[10px] font-bold" style="color: #0052FF">MAR</div>
-                                <div class="text-lg font-bold leading-none" style="color: #0052FF">20</div>
-                            </div>
-                            <div class="min-w-0">
-                                <p class="text-sm font-semibold" style="color: #0F172A">Review Draft Paper #47</p>
-                                <p class="text-xs" style="color: #64748B">In 11 days</p>
-                            </div>
-                        </div>
+                        @empty
+                            <p class="text-sm text-center py-4" style="color: #94A3B8">No scheduled consultations</p>
+                        @endforelse
                     </div>
                 </div>
 
-                {{-- Recent Activity --}}
-                <div class="rounded-2xl border overflow-hidden"
-                    style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
-                    <div class="px-5 py-4" style="border-bottom: 1px solid #F1F5F9; background: #FAFAFA">
-                        <span
-                            style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #94A3B8; text-transform: uppercase">
-                            Recent Activity
-                        </span>
-                    </div>
-                    <div class="p-5 space-y-4">
-                        <div class="flex gap-3 items-start">
-                            <div class="mt-1 w-2 h-2 rounded-full shrink-0"
-                                style="background: #0052FF; box-shadow: 0 0 0 3px rgba(0,82,255,0.12)"></div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm" style="color: #0F172A">J. Rodriguez commented on "Detection
-                                    Framework"</p>
-                                <p class="text-xs mt-0.5" style="color: #94A3B8">23 minutes ago</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-3 items-start">
-                            <div class="mt-1 w-2 h-2 rounded-full shrink-0"
-                                style="background: #059669; box-shadow: 0 0 0 3px rgba(5,150,105,0.12)"></div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm" style="color: #0F172A">Milestone completed: Phase 2 Testing</p>
-                                <p class="text-xs mt-0.5" style="color: #94A3B8">2 hours ago</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-3 items-start">
-                            <div class="mt-1 w-2 h-2 rounded-full shrink-0" style="background: #CBD5E1"></div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm" style="color: #0F172A">File uploaded: calibration_data.xlsx</p>
-                                <p class="text-xs mt-0.5" style="color: #94A3B8">Yesterday</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-3 items-start">
-                            <div class="mt-1 w-2 h-2 rounded-full shrink-0" style="background: #CBD5E1"></div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm" style="color: #0F172A">Meeting notes shared by S. Kim</p>
-                                <p class="text-xs mt-0.5" style="color: #94A3B8">2 days ago</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
 
             </div>
         </div>
