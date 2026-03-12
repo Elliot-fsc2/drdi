@@ -123,12 +123,6 @@ new class extends Component implements HasSchemas {
 
         {{-- ── Page Header ────────────────────────────── --}}
         <div class="mb-8">
-            <div class="mb-5 flex items-center gap-2" style="font-size: 12px; color: #94A3B8">
-                <a href="{{ route('instructor.groups') }}" wire:navigate class="transition-colors hover:underline"
-                    style="color: #64748B">Groups</a>
-                <span style="color: #CBD5E1">/</span>
-                <span style="color: #0052FF; font-weight: 500">Library Repository</span>
-            </div>
 
             <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>

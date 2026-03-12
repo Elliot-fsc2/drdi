@@ -6,11 +6,10 @@ use App\Models\Group;
 
 class LibraryService
 {
-  public function __construct(private Group $group) {}
 
-  public function create()
+  public function create(Group $group)
   {
-    if ($this->group->isEligibleForLibrary()) {
+    if ($group->isEligibleForLibrary()) {
     }
   }
 

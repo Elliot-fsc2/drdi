@@ -274,6 +274,18 @@
                         </div>
                     </div>
                 @endif
+
+                {{-- Repository - All Roles --}}
+                <a href="{{ route('repository') }}" wire:navigate @class([
+                    'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
+                    'bg-white/15 text-white border border-white/25' => request()->routeIs(
+                        'repository*'),
+                    'text-blue-200 hover:text-white hover:bg-blue-700/50' => !request()->routeIs(
+                        'repository*'),
+                ])>
+                    <x-heroicon-o-book-open class="w-6 h-6 flex-shrink-0" />
+                    <span class="font-medium">Repository</span>
+                </a>
             </nav>
         </aside>
 
@@ -508,6 +520,20 @@
                         </div>
                     </div>
                 @endif
+
+                {{-- Repository - All Roles --}}
+                <a href="{{ route('repository') }}" wire:navigate
+                    :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'" @class([
+                        'flex items-center gap-3 py-2 rounded-xl transition-all group',
+                        'bg-white/15 text-white border border-white/25' => request()->routeIs(
+                            'repository*'),
+                        'text-blue-200 hover:text-white hover:bg-blue-700/50' => !request()->routeIs(
+                            'repository*'),
+                    ])
+                    :title="!sidebarOpen ? 'Repository' : null">
+                    <x-heroicon-o-book-open class="w-6 h-6 flex-shrink-0" />
+                    <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Repository</span>
+                </a>
             </nav>
         </aside>
 
