@@ -2,13 +2,10 @@
 
 namespace App\Models;
 
-use App\Collections\InstructorCollection;
 use App\Enums\InstructorRole;
-use Illuminate\Database\Eloquent\Attributes\CollectedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-#[CollectedBy(InstructorCollection::class)]
 class Instructor extends Model
 {
   /** @use HasFactory<\Database\Factories\InstructorFactory> */
