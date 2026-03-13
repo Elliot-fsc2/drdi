@@ -79,6 +79,15 @@ new class extends Component {
                     })
                     .filter(Boolean);
             },
+            removeToolbarTooltips() {
+                if (!this.$refs.calendar) {
+                    return;
+                }
+        
+                this.$refs.calendar
+                    .querySelectorAll('.ec-toolbar .ec-button[title]')
+                    .forEach((button) => button.removeAttribute('title'));
+            },
             initCalendar() {
                 const calendarEl = this.$refs.calendar;
         
@@ -109,16 +118,23 @@ new class extends Component {
                     }),
                     eventBackgroundColor: '#0052FF',
                     eventTextColor: '#FFFFFF',
+                    editable: false,
+                    eventStartEditable: false,
+                    eventDurationEditable: false,
                     eventTimeFormat: {
                         hour: 'numeric',
                         minute: '2-digit',
                     },
+                    datesSet: () => this.removeToolbarTooltips(),
+                    viewDidMount: () => this.removeToolbarTooltips(),
                     headerToolbar: {
                         start: 'title',
                         center: '',
                         end: 'today prev,next dayGridMonth,timeGridWeek,timeGridDay, listMonth',
                     },
                 });
+        
+                this.$nextTick(() => this.removeToolbarTooltips());
             },
         }" x-init="initCalendar()">
 
