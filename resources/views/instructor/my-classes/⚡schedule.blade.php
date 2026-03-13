@@ -82,12 +82,13 @@ new class extends Component implements HasActions, HasSchemas {
 
                 $hasConflict = Schedule::query()
                     ->whereDate('date', $selectedDate)
+                    ->where('venue', $data['venue'])
                     ->where('start_time', '<', $endTime)
                     ->where('end_time', '>', $startTime)
                     ->exists();
 
                 if ($hasConflict) {
-                    Notification::make()->title('Time slot already taken')->body('This section already has a schedule that overlaps with the selected date and time.')->danger()->send();
+                    Notification::make()->title('Time slot already taken')->body('The venue is already booked for another schedule that overlaps with the selected date and time.')->danger()->send();
 
                     $action->halt();
                 }
@@ -173,13 +174,14 @@ new class extends Component implements HasActions, HasSchemas {
 
                 $hasConflict = Schedule::query()
                     ->whereDate('date', $selectedDate)
+                    ->where('venue', $data['venue'])
                     ->where('id', '!=', $schedule->id)
                     ->where('start_time', '<', $endTime)
                     ->where('end_time', '>', $startTime)
                     ->exists();
 
                 if ($hasConflict) {
-                    Notification::make()->title('Time slot already taken')->body('This section already has a schedule that overlaps with the selected date and time.')->danger()->send();
+                    Notification::make()->title('Time slot already taken')->body('The venue is already booked for another schedule that overlaps with the selected date and time.')->danger()->send();
 
                     $action->halt();
                 }

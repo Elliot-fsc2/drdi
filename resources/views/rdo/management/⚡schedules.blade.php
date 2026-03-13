@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Instructor;
 use App\Models\Schedule;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -17,14 +18,27 @@ new class extends Component {
             ->orderBy('date')
             ->orderBy('start_time')
             ->get()
-            ->map(function (Schedule $schedule) {
-                $schedule->setAttribute('calendar_date', $schedule->getRawOriginal('date'));
-                $schedule->setAttribute('calendar_start_time', $schedule->getRawOriginal('start_time'));
-                $schedule->setAttribute('calendar_end_time', $schedule->getRawOriginal('end_time'));
-                $schedule->setAttribute('presentation_type_label', $schedule->presentation_type?->getLabel() ?? 'Uncategorized');
-                $schedule->setAttribute('venue_label', $schedule->venue ?: 'No venue');
+            ->pipe(function ($schedules) {
+                $allPanelistIds = $schedules->flatMap(fn(Schedule $s) => $s->panelists ?? [])->unique()->filter()->values();
+                $instructors = $allPanelistIds->isNotEmpty() ? Instructor::whereIn('id', $allPanelistIds)->orderBy('last_name')->get()->keyBy('id') : collect();
 
-                return $schedule;
+                return $schedules->map(function (Schedule $schedule) use ($instructors) {
+                    $schedule->setAttribute('calendar_date', $schedule->getRawOriginal('date'));
+                    $schedule->setAttribute('calendar_start_time', $schedule->getRawOriginal('start_time'));
+                    $schedule->setAttribute('calendar_end_time', $schedule->getRawOriginal('end_time'));
+                    $schedule->setAttribute('presentation_type_label', $schedule->presentation_type?->getLabel() ?? 'Uncategorized');
+                    $schedule->setAttribute('venue_label', $schedule->venue ?: 'No venue');
+                    $schedule->setAttribute(
+                        'panelist_names',
+                        collect($schedule->panelists ?? [])
+                            ->map(fn($id) => $instructors->get($id)?->full_name)
+                            ->filter()
+                            ->join(', ') ?:
+                        null,
+                    );
+
+                    return $schedule;
+                });
             });
     }
 
@@ -57,6 +71,7 @@ new class extends Component {
             schedules: @js($this->schedules),
             calendarInstance: null,
             hoverTooltipEl: null,
+            tableGroupBy: 'type',
             normalizeDate(value) {
                 if (!value) {
                     return null;
@@ -146,6 +161,48 @@ new class extends Component {
                 }
         
                 this.hoverTooltipEl.style.display = 'none';
+            },
+            formatDate(dateStr) {
+                if (!dateStr) {
+                    return '—';
+                }
+        
+                const d = new Date(dateStr + 'T00:00:00');
+        
+                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            },
+            statusStyle(status) {
+                const map = {
+                    passed: { bg: 'rgba(5,150,105,0.08)', border: 'rgba(5,150,105,0.2)', color: '#059669', label: 'Passed' },
+                    redefense: { bg: 'rgba(217,119,6,0.08)', border: 'rgba(217,119,6,0.2)', color: '#D97706', label: 'Re-defense' },
+                    failed: { bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.25)', color: '#DC2626', label: 'Failed' },
+                    scheduled: { bg: 'rgba(100,116,139,0.07)', border: 'rgba(100,116,139,0.15)', color: '#64748B', label: 'Scheduled' },
+                };
+        
+                return map[status] ?? map.scheduled;
+            },
+            groupedSchedules() {
+                const grouped = {};
+        
+                this.schedules.forEach((s) => {
+                    let key;
+        
+                    if (this.tableGroupBy === 'type') {
+                        key = s.presentation_type_label ?? 'Uncategorized';
+                    } else if (this.tableGroupBy === 'status') {
+                        key = s.status ?? 'scheduled';
+                    } else {
+                        key = s.venue_label ?? 'No venue';
+                    }
+        
+                    if (!grouped[key]) {
+                        grouped[key] = [];
+                    }
+        
+                    grouped[key].push(s);
+                });
+        
+                return Object.entries(grouped).sort((a, b) => a[0].localeCompare(b[0]));
             },
             colorForType(type) {
                 const palette = {
@@ -312,6 +369,172 @@ new class extends Component {
 
             <div wire:ignore x-ref="calendar"
                 class="schedule-calendar rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"></div>
+
+            {{-- ── Schedule Table ──────────────────────────── --}}
+            <div class="mt-10">
+                <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm font-semibold text-slate-700">All Schedules</p>
+                        <p class="mt-0.5 text-xs text-slate-400">Grouped by presentation type, status, or venue.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="mr-1 text-xs font-medium text-slate-400">Group by:</span>
+                        <template
+                            x-for="opt in [{key:'type',label:'Type'},{key:'status',label:'Status'},{key:'venue',label:'Venue'}]"
+                            :key="opt.key">
+                            <button @click="tableGroupBy = opt.key"
+                                :class="tableGroupBy === opt.key ? 'bg-blue-600 text-white border-blue-600 shadow-sm' :
+                                    'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
+                                class="rounded-lg border px-3 py-1 text-xs font-semibold transition-colors"
+                                x-text="opt.label"></button>
+                        </template>
+                    </div>
+                </div>
+
+                <template x-if="schedules.length === 0">
+                    <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-10 text-center">
+                        <p class="font-semibold text-slate-600">No schedules found</p>
+                        <p class="mt-1 text-xs text-slate-400">No active semester schedules to display.</p>
+                    </div>
+                </template>
+
+                <template x-if="schedules.length > 0">
+                    <div class="space-y-5">
+                        <template x-for="[groupKey, items] in groupedSchedules()" :key="groupKey">
+                            <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                <div
+                                    class="flex items-center gap-2 border-b border-slate-100 bg-slate-50/70 px-4 py-2.5">
+                                    <template x-if="tableGroupBy === 'type'">
+                                        <span class="h-2 w-2 shrink-0 rounded-full"
+                                            :style="'background:' + colorForType(groupKey).bg"></span>
+                                    </template>
+                                    <template x-if="tableGroupBy === 'status'">
+                                        <span class="h-2 w-2 shrink-0 rounded-full"
+                                            :style="'background:' + statusStyle(groupKey).color"></span>
+                                    </template>
+                                    <span class="text-xs font-semibold text-slate-700"
+                                        x-text="tableGroupBy === 'status' ? statusStyle(groupKey).label : groupKey"></span>
+                                    <span class="text-[10px] text-slate-400"
+                                        x-text="'(' + items.length + ' slot' + (items.length !== 1 ? 's' : '') + ')'"></span>
+                                </div>
+                                {{-- Desktop table --}}
+                                <div class="hidden overflow-x-auto sm:block">
+                                    <table class="w-full">
+                                        <thead>
+                                            <tr class="border-b border-slate-100">
+                                                <th
+                                                    class="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                                                    Section / Group</th>
+                                                <th
+                                                    class="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                                                    Venue</th>
+                                                <th
+                                                    class="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                                                    Date</th>
+                                                <th
+                                                    class="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                                                    Time</th>
+                                                <th
+                                                    class="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                                                    Type</th>
+                                                <th
+                                                    class="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                                                    Status</th>
+                                                <th
+                                                    class="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                                                    Panelists</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template x-for="sched in items" :key="sched.id">
+                                                <tr
+                                                    class="border-b border-slate-50 transition-colors last:border-0 hover:bg-slate-50/60">
+                                                    <td class="px-4 py-3">
+                                                        <p class="text-xs font-semibold text-slate-800"
+                                                            x-text="sched.section?.name ?? '—'"></p>
+                                                        <p class="text-[11px] text-slate-400"
+                                                            x-text="sched.group?.name ?? '—'"></p>
+                                                    </td>
+                                                    <td class="px-4 py-3 text-xs text-slate-600"
+                                                        x-text="sched.venue_label ?? '—'"></td>
+                                                    <td class="whitespace-nowrap px-4 py-3 text-xs text-slate-600"
+                                                        x-text="formatDate(sched.calendar_date)"></td>
+                                                    <td class="whitespace-nowrap px-4 py-3 text-xs text-slate-600"
+                                                        x-text="formatTimeLabel(sched.calendar_start_time) + ' – ' + formatTimeLabel(sched.calendar_end_time)">
+                                                    </td>
+                                                    <td class="px-4 py-3">
+                                                        <span
+                                                            class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                                                            :style="'background:' + colorForType(sched.presentation_type_label)
+                                                                .bg + '22; color:' + colorForType(sched
+                                                                    .presentation_type_label).bg +
+                                                                '; border:1px solid ' + colorForType(sched
+                                                                    .presentation_type_label).bg + '55'"
+                                                            x-text="sched.presentation_type_label ?? '—'"></span>
+                                                    </td>
+                                                    <td class="px-4 py-3">
+                                                        <span
+                                                            class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                                                            :style="'background:' + statusStyle(sched.status).bg + '; color:' +
+                                                                statusStyle(sched.status).color +
+                                                                '; border:1px solid ' + statusStyle(sched.status).border"
+                                                            x-text="statusStyle(sched.status).label"></span>
+                                                    </td>
+                                                    <td class="px-4 py-3 text-xs text-slate-500"
+                                                        x-text="sched.panelist_names ?? '—'"></td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {{-- Mobile cards --}}
+                                <div class="divide-y divide-slate-50 sm:hidden">
+                                    <template x-for="sched in items" :key="'m' + sched.id">
+                                        <div class="px-4 py-3 space-y-2">
+                                            <div class="flex items-start justify-between gap-2">
+                                                <div>
+                                                    <p class="text-xs font-semibold text-slate-800"
+                                                        x-text="sched.section?.name ?? '—'"></p>
+                                                    <p class="text-[11px] text-slate-400"
+                                                        x-text="sched.group?.name ?? '—'"></p>
+                                                </div>
+                                                <span
+                                                    class="inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                                                    :style="'background:' + statusStyle(sched.status).bg + '; color:' +
+                                                        statusStyle(sched.status).color +
+                                                        '; border:1px solid ' + statusStyle(sched.status).border"
+                                                    x-text="statusStyle(sched.status).label"></span>
+                                            </div>
+                                            <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                                                <span x-text="formatDate(sched.calendar_date)"></span>
+                                                <span
+                                                    x-text="formatTimeLabel(sched.calendar_start_time) + ' – ' + formatTimeLabel(sched.calendar_end_time)"></span>
+                                            </div>
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <span
+                                                    class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                                                    :style="'background:' + colorForType(sched.presentation_type_label).bg +
+                                                        '22; color:' +
+                                                        colorForType(sched.presentation_type_label).bg +
+                                                        '; border:1px solid ' + colorForType(sched
+                                                            .presentation_type_label).bg + '55'"
+                                                    x-text="sched.presentation_type_label ?? '—'"></span>
+                                                <span class="text-xs text-slate-500"
+                                                    x-text="sched.venue_label ?? '—'"></span>
+                                            </div>
+                                            <template x-if="sched.panelist_names">
+                                                <p class="text-[11px] text-slate-400" x-text="sched.panelist_names">
+                                                </p>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </div>
         </div>
     </div>
 </div>
