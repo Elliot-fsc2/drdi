@@ -73,58 +73,59 @@ new #[Title('Home')] class extends Component {
 
         {{-- ── Stats Cards ──────────────────────────────── --}}
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8 sm:mb-10">
-
-            <div class="rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-px hover:shadow-lg"
-                style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="min-w-0">
-                        <p
-                            style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
-                            Active Classes</p>
-                        <p class="text-2xl font-bold" style="color: #0F172A">{{ $activeClasses }}</p>
+            @island(defer: true)
+                <div class="rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-px hover:shadow-lg"
+                    style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="min-w-0">
+                            <p
+                                style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
+                                Active Classes</p>
+                            <p class="text-2xl font-bold" style="color: #0F172A">{{ $activeClasses }}</p>
+                        </div>
                     </div>
+                    <p class="text-xs" style="color: #94A3B8">Currently running sections</p>
                 </div>
-                <p class="text-xs" style="color: #94A3B8">Currently running sections</p>
-            </div>
 
-            <div class="rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-px hover:shadow-lg"
-                style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="min-w-0">
-                        <p
-                            style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
-                            Total Students</p>
-                        <p class="text-2xl font-bold" style="color: #0F172A">{{ $totalStudents }}</p>
+                <div class="rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-px hover:shadow-lg"
+                    style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="min-w-0">
+                            <p
+                                style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
+                                Total Students</p>
+                            <p class="text-2xl font-bold" style="color: #0F172A">{{ $totalStudents }}</p>
+                        </div>
                     </div>
+                    <p class="text-xs" style="color: #94A3B8">Across all active classes</p>
                 </div>
-                <p class="text-xs" style="color: #94A3B8">Across all active classes</p>
-            </div>
 
-            <div class="rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-px hover:shadow-lg"
-                style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="min-w-0">
-                        <p
-                            style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
-                            Total Groups</p>
-                        <p class="text-2xl font-bold" style="color: #0F172A">{{ $totalGroups }}</p>
+                <div class="rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-px hover:shadow-lg"
+                    style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="min-w-0">
+                            <p
+                                style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
+                                Total Groups</p>
+                            <p class="text-2xl font-bold" style="color: #0F172A">{{ $totalGroups }}</p>
+                        </div>
                     </div>
+                    <p class="text-xs" style="color: #94A3B8">Research groups enrolled</p>
                 </div>
-                <p class="text-xs" style="color: #94A3B8">Research groups enrolled</p>
-            </div>
 
-            <div class="rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-px hover:shadow-lg"
-                style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="min-w-0">
-                        <p
-                            style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
-                            Pending Proposals</p>
-                        <p class="text-2xl font-bold" style="color: #0F172A">{{ $pendingProposals }}</p>
+                <div class="rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-px hover:shadow-lg"
+                    style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="min-w-0">
+                            <p
+                                style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
+                                Pending Proposals</p>
+                            <p class="text-2xl font-bold" style="color: #0F172A">{{ $pendingProposals }}</p>
+                        </div>
                     </div>
+                    <p class="text-xs" style="color: #94A3B8">Awaiting your review</p>
                 </div>
-                <p class="text-xs" style="color: #94A3B8">Awaiting your review</p>
-            </div>
+            @endisland
 
         </div>
 
