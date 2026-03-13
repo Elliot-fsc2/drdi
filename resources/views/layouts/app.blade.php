@@ -154,6 +154,16 @@
                         <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
                         <span class="font-medium">My Groups</span>
                     </a>
+                    <a href="{{ route('instructor.schedule-management') }}" wire:navigate @class([
+                        'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
+                        'bg-white/15 text-white border border-white/25' => request()->routeIs(
+                            'instructor.schedule-management'),
+                        'text-blue-200 hover:text-white hover:bg-blue-700/50' => !request()->routeIs(
+                            'instructor.schedule-management'),
+                    ])>
+                        <x-heroicon-o-calendar class="w-6 h-6 flex-shrink-0" />
+                        <span class="font-medium">Schedules</span>
+                    </a>
                 @elseif($isStudent)
                     {{-- Student Navigation --}}
                     <a href="{{ route('student.home') }}" wire:navigate @class([
@@ -227,6 +237,16 @@
                     ])>
                         <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
                         <span class="font-medium">My Groups</span>
+                    </a>
+                    <a href="{{ route('rdo.schedule-management') }}" wire:navigate @class([
+                        'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
+                        'bg-white/15 text-white border border-white/25' => request()->routeIs(
+                            'rdo.schedule-management'),
+                        'text-blue-200 hover:text-white hover:bg-blue-700/50' => !request()->routeIs(
+                            'rdo.schedule-management'),
+                    ])>
+                        <x-heroicon-o-calendar class="w-6 h-6 flex-shrink-0" />
+                        <span class="font-medium">Schedules</span>
                     </a>
                     {{-- Management Dropdown --}}
                     <div>
@@ -359,9 +379,21 @@
                             'text-blue-200 hover:text-white hover:bg-blue-700/50' => !request()->routeIs(
                                 'instructor.groups*'),
                         ])
-                        :title="!sidebarOpen ? 'My Classes' : null">
+                        :title="!sidebarOpen ? 'My Groups' : null">
                         <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
                         <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">My Groups</span>
+                    </a>
+                    <a href="{{ route('instructor.schedule-management') }}" wire:navigate
+                        :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'" @class([
+                            'flex items-center gap-3 py-2 rounded-xl transition-all group',
+                            'bg-white/15 text-white border border-white/25' => request()->routeIs(
+                                'instructor.schedule-management'),
+                            'text-blue-200 hover:text-white hover:bg-blue-700/50' => !request()->routeIs(
+                                'instructor.schedule-management'),
+                        ])
+                        :title="!sidebarOpen ? 'Schedules' : null">
+                        <x-heroicon-o-calendar class="w-6 h-6 flex-shrink-0" />
+                        <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Schedules</span>
                     </a>
                 @elseif($isStudent)
                     {{-- Student Navigation --}}
@@ -462,9 +494,22 @@
                             'text-blue-200 hover:text-white hover:bg-blue-700/50' => !request()->routeIs(
                                 'rdo.groups*'),
                         ])
-                        :title="!sidebarOpen ? 'My Classes' : null">
+                        :title="!sidebarOpen ? 'My Groups' : null">
                         <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
                         <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">My Groups</span>
+                    </a>
+
+                    <a href="{{ route('rdo.schedule-management') }}" wire:navigate
+                        :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'" @class([
+                            'flex items-center gap-3 py-2 rounded-xl transition-all group',
+                            'bg-white/15 text-white border border-white/25' => request()->routeIs(
+                                'rdo.schedule-management'),
+                            'text-blue-200 hover:text-white hover:bg-blue-700/50' => !request()->routeIs(
+                                'rdo.schedule-management'),
+                        ])
+                        :title="!sidebarOpen ? 'Schedules' : null">
+                        <x-heroicon-o-calendar class="w-6 h-6 flex-shrink-0" />
+                        <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Schedules</span>
                     </a>
 
                     {{-- Management Dropdown --}}

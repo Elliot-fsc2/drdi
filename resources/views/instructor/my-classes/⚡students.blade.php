@@ -57,7 +57,9 @@ new class extends Component implements HasActions, HasSchemas {
             ->modalDescription(fn() => "Select students from {$this->section->program->name} to add to this section.")
             ->form(function () {
                 $availableStudents = Student::whereDoesntHave('sections', function ($query) {
-                    $query->where('section_id', $this->section->id);
+                    $query->whereHas('semester', function ($q) {
+                        $q->active();
+                    });
                 })
                     ->where('program_id', $this->section->program_id)
                     ->orderBy('last_name')

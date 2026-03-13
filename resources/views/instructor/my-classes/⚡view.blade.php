@@ -446,6 +446,17 @@ new class extends Component {
                         <div class="py-4">
                             <p class="mb-1.5"
                                 style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
+                                Semester Details</p>
+                            <p class="font-semibold" style="font-size: 0.95rem; color: #0F172A; line-height: 1.4">
+                                {{ $section->semester->name ?? 'Not set' }}</p>
+                            <p class="text-xs mt-1" style="color: #64748B">
+                                {{ optional($section->semester?->start_date)->format('M d, Y') ?? 'TBD' }} -
+                                {{ optional($section->semester?->end_date)->format('M d, Y') ?? 'TBD' }}
+                            </p>
+                        </div>
+                        <div class="py-4">
+                            <p class="mb-1.5"
+                                style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
                                 Total Students</p>
                             <p class="font-bold" style="font-size: 2rem; color: #0F172A; line-height: 1">
                                 {{ $this->classData['students_count'] }}</p>

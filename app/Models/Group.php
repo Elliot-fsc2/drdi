@@ -72,11 +72,8 @@ class Group extends Model
     return $query->where('status', 'passed');
   }
 
-  public function isEligibleForLibrary()
+  public function isEligibleForLibrary(): bool
   {
-    if ($this->status !== 'passed') {
-      return false;
-    }
     return $this->schedules()
       ->where('presentation_type', PresentationType::THESIS_B_FINAL)
       ->where('status', PresentationStatus::PASSED)

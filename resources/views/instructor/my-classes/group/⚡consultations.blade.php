@@ -233,7 +233,7 @@ new class extends Component implements HasActions, HasSchemas {
                     };
                 @endphp
                 <div
-                    class="relative overflow-hidden rounded-xl border border-slate-200 bg-white transition-all duration-200 hover:border-blue-200 hover:shadow-md">
+                    class="relative rounded-xl border border-slate-200 bg-white transition-all duration-200 hover:border-blue-200 hover:shadow-md">
                     <div class="absolute bottom-0 left-0 top-0 w-[3px] rounded-l-xl {{ $statusConfig['stripe'] }}"
                         @if (!$statusConfig['stripe']) style="background: linear-gradient(to bottom, #0052FF, #4D7CFF);" @endif>
                     </div>

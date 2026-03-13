@@ -23,6 +23,7 @@ class Schedule extends Model
   public function casts()
   {
     return [
+      'date' => 'date',
       'panelists' => 'array',
       'status' => PresentationStatus::class,
       'presentation_type' => PresentationType::class,

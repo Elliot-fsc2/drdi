@@ -147,6 +147,12 @@ new class extends Component implements HasActions, HasSchemas {
         return $this->group->members()->count();
     }
 
+    #[Computed]
+    public function isEligibleForLibrary(): bool
+    {
+        return $this->group->isEligibleForLibrary();
+    }
+
     public function deleteGroupAction(): Action
     {
         return Action::make('deleteGroup')
@@ -264,11 +270,13 @@ new class extends Component implements HasActions, HasSchemas {
                             </button>
                         </x-slot>
                         <x-filament::dropdown.list>
-                            <x-filament::dropdown.list.item tag="a" wire:navigate
-                                href="{{ route('repository-requirement', ['group' => $this->group->id]) }}"
-                                icon="heroicon-o-check" color="success">
-                                Turn Over to Library
-                            </x-filament::dropdown.list.item>
+                            @if ($this->isEligibleForLibrary())
+                                <x-filament::dropdown.list.item tag="a" wire:navigate
+                                    href="{{ route('repository-requirement', ['group' => $this->group->id]) }}"
+                                    icon="heroicon-o-check" color="success">
+                                    Turn Over to Library
+                                </x-filament::dropdown.list.item>
+                            @endif
                             <x-filament::dropdown.list.item wire:click="mountAction('deleteGroupAction')"
                                 icon="heroicon-o-trash" color="danger">
                                 Delete Group
@@ -461,6 +469,22 @@ new class extends Component implements HasActions, HasSchemas {
                                     Course</p>
                                 <p class="text-sm font-semibold" style="color: #0F172A">
                                     {{ $this->section->program->name }}</p>
+                            </div>
+
+                            {{-- Semester --}}
+                            <div class="pb-4 border-b" style="border-color: #F1F5F9">
+                                <p class="text-xs mb-1.5 uppercase tracking-widest"
+                                    style="font-family: 'JetBrains Mono', monospace; color: #94A3B8; font-size: 10px">
+                                    Semester</p>
+                                <p class="text-sm font-semibold" style="color: #0F172A">
+                                    {{ $this->section->semester?->name ?? 'N/A' }}
+                                </p>
+                                @if ($this->section->semester?->start_date && $this->section->semester?->end_date)
+                                    <p class="text-xs mt-1" style="color: #94A3B8">
+                                        {{ $this->section->semester->start_date->format('M d, Y') }} -
+                                        {{ $this->section->semester->end_date->format('M d, Y') }}
+                                    </p>
+                                @endif
                             </div>
 
                             {{-- Section --}}

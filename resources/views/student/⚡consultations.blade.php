@@ -167,7 +167,7 @@ new #[Title('Group Consultations')] class extends Component implements HasAction
                         </div>
 
                         <div class="sm:text-right text-sm text-slate-500 hidden sm:block">
-                            Instructor #{{ $consultation->instructor_id }}
+                            Instructor: {{ $consultation->instructor->full_name }}
                         </div>
                     </div>
                 @endforeach
