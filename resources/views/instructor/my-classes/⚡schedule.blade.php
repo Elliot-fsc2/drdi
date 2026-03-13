@@ -75,7 +75,25 @@ new class extends Component implements HasActions, HasSchemas {
                         ->columnSpanFull(),
                 ]),
             ])
+            ->before(function (Action $action, array $data): void {
+                $selectedDate = Carbon::parse($data['date'])->toDateString();
+                $startTime = Carbon::parse($data['start_time'])->format('H:i:s');
+                $endTime = Carbon::parse($data['end_time'])->format('H:i:s');
+
+                $hasConflict = Schedule::query()
+                    ->whereDate('date', $selectedDate)
+                    ->where('start_time', '<', $endTime)
+                    ->where('end_time', '>', $startTime)
+                    ->exists();
+
+                if ($hasConflict) {
+                    Notification::make()->title('Time slot already taken')->body('This section already has a schedule that overlaps with the selected date and time.')->danger()->send();
+
+                    $action->halt();
+                }
+            })
             ->action(function (array $data): void {
+                $selectedDate = Carbon::parse($data['date'])->toDateString();
                 $start = Carbon::parse($data['date'] . ' ' . $data['start_time']);
                 $end = Carbon::parse($data['date'] . ' ' . $data['end_time']);
 
@@ -96,7 +114,7 @@ new class extends Component implements HasActions, HasSchemas {
                     Schedule::create([
                         'section_id' => $this->section->id,
                         'group_id' => $groupId,
-                        'date' => $data['date'],
+                        'date' => $selectedDate,
                         'start_time' => $groupStart->format('H:i:s'),
                         'end_time' => $groupEnd->format('H:i:s'),
                         'venue' => $data['venue'],
@@ -146,10 +164,32 @@ new class extends Component implements HasActions, HasSchemas {
                     'panelists' => $schedule->panelists ?? [],
                 ];
             })
+            ->before(function (Action $action, array $data, array $arguments): void {
+                $schedule = Schedule::findOrFail($arguments['schedule']);
+
+                $selectedDate = Carbon::parse($data['date'])->toDateString();
+                $startTime = Carbon::parse($data['start_time'])->format('H:i:s');
+                $endTime = Carbon::parse($data['end_time'])->format('H:i:s');
+
+                $hasConflict = Schedule::query()
+                    ->whereDate('date', $selectedDate)
+                    ->where('id', '!=', $schedule->id)
+                    ->where('start_time', '<', $endTime)
+                    ->where('end_time', '>', $startTime)
+                    ->exists();
+
+                if ($hasConflict) {
+                    Notification::make()->title('Time slot already taken')->body('This section already has a schedule that overlaps with the selected date and time.')->danger()->send();
+
+                    $action->halt();
+                }
+            })
             ->action(function (array $data, array $arguments): void {
                 $schedule = Schedule::findOrFail($arguments['schedule']);
+                $selectedDate = Carbon::parse($data['date'])->toDateString();
+
                 $schedule->update([
-                    'date' => $data['date'],
+                    'date' => $selectedDate,
                     'start_time' => $data['start_time'],
                     'end_time' => $data['end_time'],
                     'venue' => $data['venue'],
