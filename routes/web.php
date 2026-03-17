@@ -48,7 +48,7 @@ Route::middleware('auth')->group(function () {
 
   Route::livewire('/profile', 'pages::profile')->name('profile');
   Route::livewire('/repository', 'pages::repository')->name('repository');
-  Route::livewire('/repository/{index}', 'pages::repository.details')->name('repository.details');
+  Route::livewire('/repository/{researchlibrary:title}', 'pages::repository.details')->name('repository.details');
 
   Route::livewire('/groups/{group}/repository-form', 'instructor::library-requirement')->name('repository-requirement');
 });
@@ -96,6 +96,7 @@ Route::middleware(['auth', 'rdo'])
     Route::livewire('/thesis-fees', 'rdo::management.thesis-fees')->name('thesis-fees');
     Route::livewire('/semester-management', 'rdo::management.semester-tracking')->name('semester-management');
     Route::livewire('/schedule-management', 'rdo::management.schedules')->name('schedule-management');
+    Route::livewire('/repository-management', 'rdo::management.repository-management')->name('repository-management');
 
     Route::livewire('/groups', 'instructor::groups')->name('groups');
     Route::livewire('/groups/{group}', 'instructor::groups.assigned.view')->name('groups.assigned.view');
