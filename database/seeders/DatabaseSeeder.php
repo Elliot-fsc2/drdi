@@ -14,6 +14,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+
+     $this->call([
+            SemesterSeeder::class,
+            DepartmentSeeder::class,
+            ProgramSeeder::class,
+            InstructorSeeder::class,
+            StudentSeeder::class,
+        ]);
         User::factory()->create([
             'name' => 'Administrator',
             'email' => 'admin@example.com',
@@ -49,12 +57,6 @@ class DatabaseSeeder extends Seeder
             'profileable_type' => Student::class,
         ]);
 
-        $this->call([
-            SemesterSeeder::class,
-            DepartmentSeeder::class,
-            ProgramSeeder::class,
-            InstructorSeeder::class,
-            StudentSeeder::class,
-        ]);
+
     }
 }

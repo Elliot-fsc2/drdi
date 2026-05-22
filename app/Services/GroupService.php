@@ -2,7 +2,11 @@
 
 namespace App\Services;
 
+use App\Enums\PersonnelRole;
 use App\Models\Group;
+use App\Models\Instructor;
+use App\Models\Personnel;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class GroupService
@@ -20,6 +24,18 @@ class GroupService
             if (isset($data['member_ids']) && is_array($data['member_ids'])) {
                 $group->members()->attach($data['member_ids']);
             }
+
+            $this->assignRandomPersonnel($group);
+
+            activity('Group Creation')
+                ->performedOn($group)
+                ->causedBy(Auth::user())
+                ->withProperties([
+                    'group_id' => $group->id,
+                    'section_id' => $group->section_id,
+                    'leader_id' => $group->leader_id,
+                ])
+                ->log(sprintf('Created group %s in section %s.', $group->name, $group->section->name));
 
             return $group->load(['section', 'leader', 'members']);
         });
@@ -107,5 +123,83 @@ class GroupService
                 $group->members()->detach($studentId);
             }
         });
+    }
+
+    private function assignRandomPersonnel(Group $group): void
+    {
+        $assignedInstructorIds = [];
+
+        foreach ($this->personnelRolesToAssign() as $role) {
+            $instructor = $this->findRandomEligibleInstructor($group, $assignedInstructorIds);
+
+            if (! $instructor) {
+                continue;
+            }
+
+            $personnel = $this->createPersonnelAssignment($group, $instructor, $role);
+
+            $assignedInstructorIds[] = $instructor->id;
+
+            $this->logPersonnelAssignment($group, $personnel, $instructor, $role);
+        }
+    }
+
+    /**
+     * @return array<int, PersonnelRole>
+     */
+    private function personnelRolesToAssign(): array
+    {
+        return [
+            PersonnelRole::STATISTICIAN,
+            PersonnelRole::LANGUAGE_CRITIC,
+        ];
+    }
+
+    /**
+     * @param  array<int, int>  $excludedInstructorIds
+     */
+    private function findRandomEligibleInstructor(Group $group, array $excludedInstructorIds = []): ?Instructor
+    {
+        return Instructor::query()
+            ->whereDoesntHave('personnel', function ($query) use ($group) {
+                $query->where('group_id', $group->id);
+            })
+            ->whereNotIn('id', $excludedInstructorIds)
+            ->inRandomOrder()
+            ->first();
+    }
+
+    private function createPersonnelAssignment(Group $group, Instructor $instructor, PersonnelRole $role): Personnel
+    {
+        return Personnel::create([
+            'instructor_id' => $instructor->id,
+            'group_id' => $group->id,
+            'role' => $role,
+        ]);
+    }
+
+    private function logPersonnelAssignment(
+        Group $group,
+        Personnel $personnel,
+        Instructor $instructor,
+        PersonnelRole $role,
+    ): void {
+        activity('Personnel Assignment')
+            ->performedOn($group)
+            ->causedBy(Auth::user())
+            ->withProperties([
+                'personnel_id' => $personnel->id,
+                'personnel_name' => $instructor->full_name,
+                'group_id' => $group->id,
+                'section' => $group->section->name,
+                'thesis_advisor' => $group->section->instructor->full_name,
+                'role' => $role->value,
+            ])
+            ->log(sprintf(
+                'Automatically assigned %s to group %s using instructor %s.',
+                $role->getLabel(),
+                $group->name,
+                $instructor->full_name,
+            ));
     }
 }

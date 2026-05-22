@@ -51,25 +51,52 @@ new class extends Component implements HasActions, HasSchemas {
             ->modalHeading('Assign Personnel to Group')
             ->modalDescription('Select an instructor and assign them a role for this group.')
             ->form([
+                // Role first so instructor list can react to selected role
+                Select::make('role')
+                    ->label('Role')
+                    ->reactive()
+                    ->options(function () {
+                        $roles = collect(PersonnelRole::cases());
+
+                        $deptName = $this->section->program->department->name ?? '';
+
+                        // Only include Technical Adviser when the section's department is "Computer Studies"
+                        if (trim($deptName) !== 'CSD') {
+                            $roles = $roles->reject(fn ($r) => $r === PersonnelRole::TECHNICAL_ADVISER);
+                        }
+
+                        return $roles->mapWithKeys(fn ($r) => [$r->value => $r->getLabel()])->toArray();
+                    })
+                    ->required()
+                    ->live()
+                    ->native(false),
+
+                // Instructor options depend on selected role
                 Select::make('instructor_id')
                     ->label('Instructor')
-                    ->options(function () {
-                        return Instructor::query()
-                            ->with('department')
+                    ->options(function (callable $get) {
+                        $selectedRole = $get('role');
+
+                        $query = Instructor::query()->with('department')
                             ->whereDoesntHave('personnel', function ($query) {
                                 $query->where('group_id', $this->group->id);
-                            })
-                            ->get()
-                            ->mapWithKeys(function ($instructor) {
-                                $dept = $instructor->department->name ?? 'N/A';
-                                return [$instructor->id => "{$instructor->first_name} {$instructor->last_name} ({$dept})"];
-                            })
-                            ->toArray();
+                            });
+
+                        // If Technical Adviser is selected, limit to Computer Studies instructors
+                        if ($selectedRole === PersonnelRole::TECHNICAL_ADVISER->value) {
+                            $query->whereHas('department', function ($q) {
+                                $q->whereRaw('name = ?', ['CSD']);
+                            });
+                        }
+
+                        return $query->get()->mapWithKeys(function ($instructor) {
+                            $dept = $instructor->department->name ?? 'N/A';
+                            return [$instructor->id => "{$instructor->first_name} {$instructor->last_name} ({$dept})"];
+                        })->toArray();
                     })
                     ->required()
                     ->searchable()
                     ->native(false),
-                Select::make('role')->label('Role')->options(PersonnelRole::class)->required()->native(false),
             ])
             ->successNotificationTitle('Personnel assigned successfully')
             ->action(function (array $data): void {
