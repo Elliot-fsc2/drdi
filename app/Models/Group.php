@@ -5,9 +5,12 @@ namespace App\Models;
 use App\Enums\PresentationStatus;
 use App\Enums\PresentationType;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Group extends Model
 {
+  use LogsActivity;
   protected $fillable = [
     'name',
     'section_id',
@@ -16,6 +19,14 @@ class Group extends Model
     'status',
     'final_grade',
   ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+        ->useLogName('Group')
+        ->logOnly(['name', 'section_id', 'leader_id', 'final_title_id', 'status', 'final_grade'])
+        ->setDescriptionForEvent(fn(string $eventName) => "This model has been {$eventName} by :causer.name");
+    }
 
   public function section()
   {

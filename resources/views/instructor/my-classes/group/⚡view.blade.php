@@ -277,9 +277,10 @@ new class extends Component implements HasActions, HasSchemas {
                                     Turn Over to Library
                                 </x-filament::dropdown.list.item>
                             @endif
-                            <x-filament::dropdown.list.item wire:click="mountAction('deleteGroupAction')"
-                                icon="heroicon-o-trash" color="danger">
-                                Delete Group
+                            <x-filament::dropdown.list.item tag="a" wire:navigate
+                                href="{{ route($this->routePrefix . '.group.settings', ['section' => $this->section->id, 'group' => $this->group->id]) }}"
+                                icon="heroicon-o-cog-6-tooth">
+                                Group Settings
                             </x-filament::dropdown.list.item>
                         </x-filament::dropdown.list>
                     </x-filament::dropdown>

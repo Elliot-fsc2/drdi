@@ -25,6 +25,8 @@ Route::get('/', function () {
     return redirect()->route('instructor.home');
   } elseif ($user->profileable_type === \App\Models\Student::class) {
     return redirect()->route('student.home');
+  } elseif ($user->is_admin) {
+    return redirect('admin');
   }
 
   // Fallback to login if no valid role
@@ -64,6 +66,7 @@ Route::middleware(['auth', 'instructor'])
     Route::livewire('/classes/{section}/group/{group}', 'instructor::my-classes.group.view')->name('classes.group.view');
     Route::livewire('/classes/{section}/group/{group}/proposals', 'instructor::my-classes.group.proposals')->name('classes.group.proposals');
     Route::livewire('/classes/{section}/group/{group}/schedule', 'instructor::my-classes.schedule')->name('classes.schedule');
+    Route::livewire('/classes/{section}/group/{group}/settings', 'instructor::groups.settings')->name('group.settings');
 
     Route::livewire('/groups', 'instructor::groups')->name('groups');
     Route::livewire('/groups/{group}', 'instructor::groups.assigned.view')->name('groups.assigned.view');
@@ -92,6 +95,8 @@ Route::middleware(['auth', 'rdo'])
     Route::livewire('/classes/{section}/group/{group}', 'instructor::my-classes.group.view')->name('classes.group.view');
     Route::livewire('/classes/{section}/group/{group}/proposals', 'instructor::my-classes.group.proposals')->name('classes.group.proposals');
     Route::livewire('/classes/{section}/group/{group}/schedule', 'instructor::my-classes.schedule')->name('classes.schedule');
+    Route::livewire('/classes/{section}/group/{group}/settings', 'instructor::groups.settings')->name('group.settings');
+
     Route::livewire('/group-masterlist', 'rdo::management.group-masterlist')->name('group-masterlist');
     Route::livewire('/thesis-fees', 'rdo::management.thesis-fees')->name('thesis-fees');
     Route::livewire('/semester-management', 'rdo::management.semester-tracking')->name('semester-management');

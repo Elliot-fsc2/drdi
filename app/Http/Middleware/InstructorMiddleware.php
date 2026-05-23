@@ -18,6 +18,7 @@ class InstructorMiddleware
         if (!auth()->check() || auth()->user()->profileable_type !== \App\Models\Instructor::class) {
             abort(403, 'Unauthorized');
         }
+
         return $next($request);
     }
 }

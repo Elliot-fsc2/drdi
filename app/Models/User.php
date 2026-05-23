@@ -9,9 +9,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
+use Spatie\Activitylog\Traits\CausesActivity;
 
 class User extends Authenticatable implements FilamentUser
 {
+    use CausesActivity;
+
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
@@ -69,10 +72,9 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->is_admin;
     }
-    
+
     public function profileable(): \Illuminate\Database\Eloquent\Relations\MorphTo
     {
         return $this->morphTo();
     }
-
 }

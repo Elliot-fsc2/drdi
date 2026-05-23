@@ -22,28 +22,18 @@ class GroupService
 
             // Attach members if provided
             if (isset($data['member_ids']) && is_array($data['member_ids'])) {
-                $group->members()->attach($data['member_ids']);
+                $this->attachGroupMembers($group, $data['member_ids']);
             }
 
             $this->assignRandomPersonnel($group);
-
-            activity('Group Creation')
-                ->performedOn($group)
-                ->causedBy(Auth::user())
-                ->withProperties([
-                    'group_id' => $group->id,
-                    'section_id' => $group->section_id,
-                    'leader_id' => $group->leader_id,
-                ])
-                ->log(sprintf('Created group %s in section %s.', $group->name, $group->section->name));
 
             return $group->load(['section', 'leader', 'members']);
         });
     }
 
-    public function update(Group $group, array $data): Group
+    public function update(Group $group, array $data)
     {
-        return DB::transaction(function () use ($group, $data) {
+        DB::transaction(function () use ($group, $data) {
             $group->update([
                 'name' => $data['name'] ?? $group->name,
                 'section_id' => $data['section_id'] ?? $group->section_id,
@@ -52,16 +42,16 @@ class GroupService
 
             // Sync members if provided
             if (isset($data['member_ids']) && is_array($data['member_ids'])) {
-                $group->members()->sync($data['member_ids']);
+                $this->syncGroupMembers($group, $data['member_ids']);
             }
 
             return $group->fresh(['section', 'leader', 'members']);
         });
     }
 
-    public function delete(Group $group): bool
+    public function delete(Group $group)
     {
-        return DB::transaction(function () use ($group) {
+        DB::transaction(function () use ($group) {
             $group->members()->detach();
 
             $group->consultations()->delete();
@@ -123,11 +113,22 @@ class GroupService
                 $group->members()->detach($studentId);
             }
         });
+
+        /*
+        activity('Student Removal')
+            ->causedBy(Auth::user())
+            ->withProperties([
+                'student_id' => $studentId,
+                'section_id' => $sectionId,
+            ])
+            ->log(sprintf('Removed student ID %d from all groups in section ID %d. (by %s)', $studentId, $sectionId, Auth::user()?->name ?? 'system'));
+        */
     }
 
     private function assignRandomPersonnel(Group $group): void
     {
         $assignedInstructorIds = [];
+        $assignedPersonnel = [];
 
         foreach ($this->personnelRolesToAssign() as $role) {
             $instructor = $this->findRandomEligibleInstructor($group, $assignedInstructorIds);
@@ -139,8 +140,15 @@ class GroupService
             $personnel = $this->createPersonnelAssignment($group, $instructor, $role);
 
             $assignedInstructorIds[] = $instructor->id;
+            $assignedPersonnel[] = [
+                'personnel_id' => $personnel->id,
+                'personnel_name' => $instructor->full_name,
+                'role' => $role->value,
+            ];
+        }
 
-            $this->logPersonnelAssignment($group, $personnel, $instructor, $role);
+        if ($assignedPersonnel !== []) {
+            $this->logPersonnelAssignments($group, $assignedPersonnel);
         }
     }
 
@@ -178,28 +186,47 @@ class GroupService
         ]);
     }
 
-    private function logPersonnelAssignment(
-        Group $group,
-        Personnel $personnel,
-        Instructor $instructor,
-        PersonnelRole $role,
-    ): void {
+    private function attachGroupMembers(Group $group, array $memberIds): void
+    {
+        $group->members()->attach($memberIds);
+
+        activity('Group members attachment')
+            ->performedOn($group)
+            ->causedBy(Auth::user())
+            ->withProperties([
+                'members' => $memberIds,
+            ])
+            ->log('Attached members to group: :members');
+    }
+
+    private function syncGroupMembers(Group $group, array $memberIds): void
+    {
+        $group->members()->sync($memberIds);
+
+        activity('Group members synchronization')
+            ->performedOn($group)
+            ->causedBy(Auth::user())
+            ->withProperties([
+                'members' => $memberIds,
+            ])
+            ->log('Synced members for group: :members');
+    }
+
+    private function logPersonnelAssignments(Group $group, array $assignedPersonnel): void
+    {
         activity('Personnel Assignment')
             ->performedOn($group)
             ->causedBy(Auth::user())
             ->withProperties([
-                'personnel_id' => $personnel->id,
-                'personnel_name' => $instructor->full_name,
                 'group_id' => $group->id,
                 'section' => $group->section->name,
                 'thesis_advisor' => $group->section->instructor->full_name,
-                'role' => $role->value,
+                'assigned_personnel' => $assignedPersonnel,
             ])
             ->log(sprintf(
-                'Automatically assigned %s to group %s using instructor %s.',
-                $role->getLabel(),
+                'Automatically assigned personnel to group %s. (by %s)',
                 $group->name,
-                $instructor->full_name,
+                Auth::user()?->name ?? 'system',
             ));
     }
 }
