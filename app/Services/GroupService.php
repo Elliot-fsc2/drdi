@@ -54,13 +54,16 @@ class GroupService
         DB::transaction(function () use ($group) {
             $group->members()->detach();
 
+            $group->updateQuietly(['final_title_id' => null]);
+
             $group->consultations()->delete();
             $group->personnel()->delete();
-            $group->proposals()?->delete();
+            $group->proposals()->delete();
             $group->fee()?->delete();
 
             return $group->delete();
         });
+
     }
 
     public function find(int $id): ?Group

@@ -3,6 +3,7 @@
 use App\Enums\ProposalStatus;
 use App\Models\Group;
 use App\Models\Proposal;
+use App\Services\ProposalService;
 use App\Models\Section;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
@@ -163,10 +164,19 @@ new class extends Component implements HasActions, HasSchemas {
             ->form([\Filament\Forms\Components\Textarea::make('feedback')->label('Feedback / Reason for Rejection')->placeholder('Please explain why this title is being rejected to help the students.')->required()->rows(3)])
             ->successNotificationTitle('Proposal Rejected')
             ->action(function ($arguments, array $data) {
-                Proposal::find($arguments['id'])->update([
-                    'status' => ProposalStatus::REJECTED,
-                    'feedback' => $data['feedback'] ?? null,
-                ]);
+                $proposalId = $arguments['id'] ?? null;
+
+                if (! $proposalId) {
+                    return;
+                }
+
+                $proposal = Proposal::find($proposalId);
+
+                if (! $proposal) {
+                    return;
+                }
+
+                app(ProposalService::class)->reject($proposal, $data['feedback'] ?? null);
             });
     }
 
@@ -212,12 +222,19 @@ new class extends Component implements HasActions, HasSchemas {
             ->successNotificationTitle('Title approved successfully')
             ->action(function ($arguments, array $data): void {
                 $proposalId = $arguments['id'] ?? null;
-                Proposal::query()
-                    ->where('id', $proposalId)
-                    ->update([
-                        'status' => ProposalStatus::APPROVED,
-                        'feedback' => $data['feedback'] ?? null,
-                    ]);
+
+                if (! $proposalId) {
+                    return;
+                }
+
+                $proposal = Proposal::find($proposalId);
+
+                if (! $proposal) {
+                    return;
+                }
+
+                // Use the service to set the approved status and persist optional feedback
+                app(ProposalService::class)->approve($proposal, $data['feedback'] ?? null);
             });
     }
 

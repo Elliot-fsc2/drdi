@@ -7,7 +7,10 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('Home')] class extends Component {
+new
+ #[Title('Home')]
+class extends Component
+{
     public $user;
 
     public function mount()
@@ -20,7 +23,7 @@ new #[Title('Home')] class extends Component {
     {
         $section = $this->user->profileable->sections()->withCount('students', 'groups')->active()->first();
 
-        if (!$section) {
+        if (! $section) {
             return null;
         }
 
@@ -42,7 +45,7 @@ new #[Title('Home')] class extends Component {
 
         $sectionId = $sections['id'] ?? null;
 
-        if (!$sectionId) {
+        if (! $sectionId) {
             return null;
         }
 
@@ -56,7 +59,7 @@ new #[Title('Home')] class extends Component {
                 'leader_id' => $group->leader_id,
                 'members' => $group->members
                     ->map(
-                        fn($member) => [
+                        fn ($member) => [
                             'id' => $member->id,
                             'name' => $member->full_name,
                         ],
@@ -80,7 +83,7 @@ new #[Title('Home')] class extends Component {
         $group = $this->group();
 
         // Fixed: Check if group exists and has an id
-        if (!$group || !$group['id']) {
+        if (! $group || ! $group['id']) {
             return [];
         }
 
@@ -88,7 +91,7 @@ new #[Title('Home')] class extends Component {
 
         return $proposals
             ->map(
-                fn($proposal) => [
+                fn ($proposal) => [
                     'id' => $proposal->id,
                     'title' => $proposal->title,
                     'description' => $proposal->description,
@@ -107,7 +110,7 @@ new #[Title('Home')] class extends Component {
         $group = $this->group();
 
         // Fixed: Check if group exists and has an id
-        if (!$group || !$group['id']) {
+        if (! $group || ! $group['id']) {
             return [];
         }
 
@@ -115,7 +118,7 @@ new #[Title('Home')] class extends Component {
             ->orderBy('scheduled_at', 'asc')
             ->get()
             ->map(
-                fn($consultation) => [
+                fn ($consultation) => [
                     'id' => $consultation->id,
                     'group_id' => $consultation->group_id,
                     'instructor_id' => $consultation->instructor_id,
