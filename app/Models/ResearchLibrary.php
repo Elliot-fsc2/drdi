@@ -3,26 +3,45 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class ResearchLibrary extends Model
 {
-  protected $fillable = [
-    'group_id',
-    'title',
-    'academic_year',
-    'abstract',
-    'file_path',
-    'is_published',
-    'published_at',
-  ];
+    use LogsActivity;
 
-  public function group()
-  {
-    return $this->belongsTo(Group::class);
-  }
+    protected $fillable = [
+        'group_id',
+        'title',
+        'academic_year',
+        'abstract',
+        'file_path',
+        'is_published',
+        'published_at',
+    ];
 
-  public function getRouteKeyName(): string
-  {
-    return 'title';
-  }
+    protected function casts(): array
+    {
+        return [
+            'is_published' => 'boolean',
+            'published_at' => 'datetime',
+        ];
+    }
+
+      public function getActivitylogOptions(): LogOptions
+      {
+          return LogOptions::defaults()
+          ->useLogName('ResearchLibrary')
+          ->setDescriptionForEvent(fn(string $eventName) => "This model has been {$eventName} by :causer.name");
+      }
+
+    public function group()
+    {
+        return $this->belongsTo(Group::class);
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'title';
+    }
 }
