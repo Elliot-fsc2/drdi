@@ -2,11 +2,12 @@
 
 use App\Enums\PresentationStatus;
 use App\Enums\PresentationType;
+use App\Enums\PanelistRole;
 use App\Models\Instructor;
 use App\Models\Schedule;
 use App\Models\Section;
+use App\Services\PresentationService;
 use Carbon\Carbon;
-use Illuminate\Support\Str;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
@@ -20,23 +21,26 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Livewire\Attributes\Computed;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
-new class extends Component implements HasActions, HasSchemas {
+new class extends Component implements HasActions, HasSchemas
+{
     use InteractsWithActions;
     use InteractsWithSchemas;
 
     public Section $section;
 
-    // --- Computed ---
-
     #[Computed]
     public function schedules()
     {
-        return Schedule::where('section_id', $this->section->id)->with('group')->orderBy('date', 'asc')->orderBy('start_time', 'asc')->get()->groupBy(fn($schedule) => $schedule->presentation_type?->value ?? '');
+        return Schedule::where('section_id', $this->section->id)
+            ->with('group')
+            ->orderBy('date', 'asc')
+            ->orderBy('start_time', 'asc')
+            ->get()
+            ->groupBy(fn ($schedule) => $schedule->presentation_type?->value ?? '');
     }
-
-    // --- Livewire Methods ---
 
     public function openStatusModal(int $scheduleId): void
     {
@@ -61,13 +65,30 @@ new class extends Component implements HasActions, HasSchemas {
                         ->maxDate($this->section->semester->end_date)
                         ->helperText('Must be within the active semester time range.')
                         ->columnSpanFull(),
-                    TimePicker::make('start_time')->seconds(false)->required(),
-                    TimePicker::make('end_time')->seconds(false)->required()->after('start_time'),
+                    TimePicker::make('start_time')
+                        ->seconds(false)
+                        ->required()
+                        ->datalist(
+                            collect(range(6, 18))->flatMap(fn($h) => [
+                                sprintf('%02d:00', $h),
+                                sprintf('%02d:30', $h),
+                            ])->unique()->values()->all()
+                        ),
+                    TimePicker::make('end_time')
+                        ->seconds(false)
+                        ->required()
+                        ->after('start_time')
+                        ->datalist(
+                            collect(range(6, 18))->flatMap(fn($h) => [
+                                sprintf('%02d:00', $h),
+                                sprintf('%02d:30', $h),
+                            ])->unique()->values()->all()
+                        ),
                     TextInput::make('venue')->required()->maxLength(255),
                     Select::make('presentation_type')->options(PresentationType::class),
                     Repeater::make('presenting_groups')
                         ->label('Presentation Order')
-                        ->schema([Select::make('group_id')->label('Group')->options(fn() => $this->section->groups->pluck('name', 'id'))->required()->distinct()->disableOptionsWhenSelectedInSiblingRepeaterItems()->live()])
+                        ->schema([Select::make('group_id')->label('Group')->options(fn () => $this->section->groups->pluck('name', 'id'))->required()->distinct()->disableOptionsWhenSelectedInSiblingRepeaterItems()->live()])
                         ->minItems(1)
                         ->reorderableWithButtons()
                         ->addActionLabel('Add a Group')
@@ -76,55 +97,121 @@ new class extends Component implements HasActions, HasSchemas {
                 ]),
             ])
             ->before(function (Action $action, array $data): void {
-                $selectedDate = Carbon::parse($data['date'])->toDateString();
-                $startTime = Carbon::parse($data['start_time'])->format('H:i:s');
-                $endTime = Carbon::parse($data['end_time'])->format('H:i:s');
+                $start = Carbon::parse($data['start_time']);
+                $end = Carbon::parse($data['end_time']);
 
-                $hasConflict = Schedule::query()
-                    ->whereDate('date', $selectedDate)
-                    ->where('venue', $data['venue'])
-                    ->where('start_time', '<', $endTime)
-                    ->where('end_time', '>', $startTime)
-                    ->exists();
+                $min = 6 * 60; // 06:00
+                $max = 18 * 60; // 18:00
 
-                if ($hasConflict) {
-                    Notification::make()->title('Time slot already taken')->body('The venue is already booked for another schedule that overlaps with the selected date and time.')->danger()->send();
+                $startMinutes = $start->hour * 60 + $start->minute;
+                $endMinutes = $end->hour * 60 + $end->minute;
+
+                if ($startMinutes < $min || $startMinutes > $max || $endMinutes < $min || $endMinutes > $max) {
+                    Notification::make()
+                        ->title('Invalid time range')
+                        ->body('Start and end times must be between 06:00 and 18:00.')
+                        ->danger()
+                        ->send();
 
                     $action->halt();
                 }
             })
-            ->action(function (array $data): void {
-                $selectedDate = Carbon::parse($data['date'])->toDateString();
-                $start = Carbon::parse($data['date'] . ' ' . $data['start_time']);
-                $end = Carbon::parse($data['date'] . ' ' . $data['end_time']);
+            ->before(function (Action $action, array $data): void {
+                $groupIds = collect($data['presenting_groups'] ?? [])
+                    ->pluck('group_id')
+                    ->filter()
+                    ->values()
+                    ->all();
 
-                $totalMinutes = $start->diffInMinutes($end);
-                $groupsCount = count($data['presenting_groups']);
-                $minutesPerGroup = $groupsCount > 0 ? floor($totalMinutes / $groupsCount) : 0;
+                $start = Carbon::parse($data['date'].' '.$data['start_time']);
+                $end = Carbon::parse($data['date'].' '.$data['end_time']);
+                $totalMinutes = max(1, $start->diffInMinutes($end));
+                $groupsCount = count($groupIds);
+                $slotMinutes = $groupsCount > 0 ? max(1, (int) floor($totalMinutes / $groupsCount)) : 0;
 
-                foreach ($data['presenting_groups'] as $index => $groupItem) {
-                    $groupId = $groupItem['group_id'];
-                    $groupStart = $start->copy()->addMinutes($index * $minutesPerGroup);
+                try {
+                    if ($groupsCount === 1) {
+                        $schedule = app(PresentationService::class)->create([
+                            'section_id' => $this->section->id,
+                            'group_id' => $groupIds[0],
+                            'date' => $data['date'],
+                            'start_time' => $data['start_time'],
+                            'end_time' => $data['end_time'],
+                            'venue' => $data['venue'],
+                            'presentation_type' => $data['presentation_type'],
+                            'status' => PresentationStatus::SCHEDULED,
+                        ]);
 
-                    if ($index == $groupsCount - 1) {
-                        $groupEnd = $end;
-                    } else {
-                        $groupEnd = $groupStart->copy()->addMinutes($minutesPerGroup);
+                        Notification::make()
+                            ->title('Section schedule saved successfully.')
+                            ->body('Scheduled '.$schedule->group?->name.' successfully.')
+                            ->success()
+                            ->send();
+
+                        return;
                     }
 
-                    Schedule::create([
+                    $result = app(PresentationService::class)->bulkSchedule([
                         'section_id' => $this->section->id,
-                        'group_id' => $groupId,
-                        'date' => $selectedDate,
-                        'start_time' => $groupStart->format('H:i:s'),
-                        'end_time' => $groupEnd->format('H:i:s'),
+                        'group_ids' => $groupIds,
+                        'date' => $data['date'],
+                        'start_time' => $data['start_time'],
+                        'end_time' => $data['end_time'],
                         'venue' => $data['venue'],
                         'presentation_type' => $data['presentation_type'],
                         'status' => PresentationStatus::SCHEDULED,
+                        'slot_minutes' => $slotMinutes,
+                        'gap_minutes' => 0,
                     ]);
-                }
 
-                Notification::make()->title('Section schedule saved successfully.')->success()->send();
+                    $scheduledCount = $result['scheduled']->count();
+                    $skippedCount = $result['skipped']->count();
+                    $skipMessage = $result['messages']->first();
+
+                    if ($scheduledCount === 0) {
+                        Notification::make()
+                            ->title('No schedules were created')
+                            ->body($skipMessage ?? 'No groups were scheduled; all selected groups were skipped.')
+                            ->danger()
+                            ->send();
+
+                        $action->halt();
+
+                        return;
+                    }
+
+                    if ($skippedCount > 0) {
+                        Notification::make()
+                            ->title('Partial schedule created')
+                            ->body($skipMessage ? "{$scheduledCount} scheduled. {$skipMessage}" : "{$scheduledCount} scheduled, {$skippedCount} skipped due to conflicts or existing schedules.")
+                            ->warning()
+                            ->send();
+
+                        return;
+                    }
+
+                    Notification::make()
+                        ->title('Section schedule saved successfully.')
+                        ->success()
+                        ->send();
+                } catch (ValidationException $e) {
+                    $message = collect($e->errors())->flatten()->filter()->first() ?? 'Validation failed while scheduling.';
+
+                    Notification::make()
+                        ->title('Scheduling validation failed')
+                        ->body($message)
+                        ->danger()
+                        ->send();
+
+                    $action->halt();
+
+                    return;
+                } catch (\Throwable $e) {
+
+                    $action->halt();
+
+                    return;
+                }
             });
     }
 
@@ -143,14 +230,35 @@ new class extends Component implements HasActions, HasSchemas {
                         ->minDate(now()->startOfDay())
                         ->maxDate($this->section->semester->end_date)
                         ->columnSpanFull(),
-                    TimePicker::make('start_time')->required(),
-                    TimePicker::make('end_time')->required()->after('start_time'),
-                    TextInput::make('venue')->required()->maxLength(255)->columnSpanFull(),
-                    Select::make('panelists')
+                    TimePicker::make('start_time')
+                        ->seconds(false)
+                        ->required()
+                        ->datalist(collect(range(6, 18))->flatMap(fn($h) => [sprintf('%02d:00', $h), sprintf('%02d:30', $h)])->unique()->values()->all()),
+                    TimePicker::make('end_time')
+                        ->seconds(false)
+                        ->required()
+                        ->after('start_time')
+                        ->datalist(collect(range(6, 18))->flatMap(fn($h) => [sprintf('%02d:00', $h), sprintf('%02d:30', $h)])->unique()->values()->all()),
+                    TextInput::make('venue')
+                        ->required()
+                        ->maxLength(255)
+                        ->columnSpanFull(),
+                    Repeater::make('panelists')
                         ->label('Panelists')
-                        ->multiple()
-                        ->searchable()
-                        ->options(Instructor::query()->orderBy('last_name')->get()->mapWithKeys(fn(Instructor $i) => [$i->id => $i->full_name]))
+                        ->schema([
+                            Select::make('id')
+                                ->label('Instructor')
+                                ->searchable()
+                                ->options(fn () => Instructor::query()->orderBy('last_name')->get()->mapWithKeys(fn (Instructor $i) => [$i->id => $i->full_name]))
+                                ->required(),
+                            Select::make('role')
+                                ->label('Role')
+                                ->options(PanelistRole::class)
+                                ->required(),
+                        ])
+                        ->minItems(1)
+                        ->reorderableWithButtons()
+                        ->addActionLabel('Add a Panelist')
                         ->columnSpanFull(),
                 ]),
             ])
@@ -162,43 +270,68 @@ new class extends Component implements HasActions, HasSchemas {
                     'start_time' => Carbon::parse($schedule->start_time)->format('H:i'),
                     'end_time' => Carbon::parse($schedule->end_time)->format('H:i'),
                     'venue' => $schedule->venue,
-                    'panelists' => $schedule->panelists ?? [],
+                    'panelists' => collect($schedule->panelists ?? [])
+                        ->map(fn (string $role, string|int $id): array => [
+                            'id' => (string) $id,
+                            'role' => $role,
+                        ])
+                        ->values()
+                        ->all(),
                 ];
             })
             ->before(function (Action $action, array $data, array $arguments): void {
                 $schedule = Schedule::findOrFail($arguments['schedule']);
 
-                $selectedDate = Carbon::parse($data['date'])->toDateString();
-                $startTime = Carbon::parse($data['start_time'])->format('H:i:s');
-                $endTime = Carbon::parse($data['end_time'])->format('H:i:s');
+                try {
+                    $min = 6 * 60; // 06:00
+                    $max = 18 * 60; // 18:00
 
-                $hasConflict = Schedule::query()
-                    ->whereDate('date', $selectedDate)
-                    ->where('venue', $data['venue'])
-                    ->where('id', '!=', $schedule->id)
-                    ->where('start_time', '<', $endTime)
-                    ->where('end_time', '>', $startTime)
-                    ->exists();
+                    $start = Carbon::parse($data['start_time']);
+                    $end = Carbon::parse($data['end_time']);
+                    $startMinutes = $start->hour * 60 + $start->minute;
+                    $endMinutes = $end->hour * 60 + $end->minute;
 
-                if ($hasConflict) {
-                    Notification::make()->title('Time slot already taken')->body('The venue is already booked for another schedule that overlaps with the selected date and time.')->danger()->send();
+                    if ($startMinutes < $min || $startMinutes > $max || $endMinutes < $min || $endMinutes > $max) {
+                        Notification::make()
+                            ->title('Invalid time range')
+                            ->body('Start and end times must be between 06:00 and 18:00.')
+                            ->danger()
+                            ->send();
+
+                        $action->halt();
+
+                        return;
+                    }
+
+                    app(PresentationService::class)->update($data, $schedule);
+
+                    Notification::make()->title('Schedule updated successfully.')->success()->send();
+                } catch (ValidationException $e) {
+                    $message = collect($e->errors())->flatten()->filter()->first() ?? 'Validation failed while updating the schedule.';
+
+                    Notification::make()
+                        ->title('Scheduling validation failed')
+                        ->body($message)
+                        ->danger()
+                        ->send();
 
                     $action->halt();
+
+                    return;
+                } catch (\Throwable $e) {
+                    Notification::make()
+                        ->title('Scheduling error')
+                        ->body($e->getMessage())
+                        ->danger()
+                        ->send();
+
+                    $action->halt();
+
+                    return;
                 }
             })
-            ->action(function (array $data, array $arguments): void {
-                $schedule = Schedule::findOrFail($arguments['schedule']);
-                $selectedDate = Carbon::parse($data['date'])->toDateString();
-
-                $schedule->update([
-                    'date' => $selectedDate,
-                    'start_time' => $data['start_time'],
-                    'end_time' => $data['end_time'],
-                    'venue' => $data['venue'],
-                    'panelists' => $data['panelists'] ?? [],
-                ]);
-
-                Notification::make()->title('Schedule updated successfully.')->success()->send();
+            ->action(function (): void {
+                // The save is handled in the before hook so the modal can be halted on failure.
             });
     }
 
@@ -211,14 +344,27 @@ new class extends Component implements HasActions, HasSchemas {
             ->schema([Grid::make(2)->schema([TextInput::make('_group')->label('Group')->disabled()->dehydrated(false), TextInput::make('_type')->label('Presentation Type')->disabled()->dehydrated(false), TextInput::make('_date')->label('Date')->disabled()->dehydrated(false), TextInput::make('_time')->label('Time')->disabled()->dehydrated(false), TextInput::make('_venue')->label('Venue')->disabled()->dehydrated(false)->columnSpanFull(), TextInput::make('_panelists')->label('Panelists')->disabled()->dehydrated(false)->columnSpanFull(), Select::make('status')->label('Update Status')->options(PresentationStatus::class)->required()->columnSpanFull()])])
             ->fillForm(function (array $arguments): array {
                 $schedule = Schedule::with('group')->findOrFail($arguments['schedule']);
-                $panelists = $schedule->panelists ?? [];
-                $panelistNames = count($panelists) ? Instructor::whereIn('id', $panelists)->orderBy('last_name')->get()->map(fn(Instructor $i) => $i->full_name)->join(', ') : 'None assigned';
+                $panelists = collect($schedule->panelists ?? []);
+                $panelistMap = $panelists->isNotEmpty()
+                    ? Instructor::query()
+                        ->whereIn('id', array_keys($schedule->panelists ?? []))
+                        ->get()
+                        ->keyBy('id')
+                    : collect();
+                $panelistNames = $panelists->isNotEmpty()
+                    ? $panelists->map(function (string $role, string|int $id) use ($panelistMap): string {
+                        $instructor = $panelistMap->get((int) $id);
+                        $roleLabel = str_replace('_', ' ', $role);
+
+                        return trim(($instructor?->full_name ?? 'Unknown Instructor')." ({$roleLabel})");
+                    })->join(', ')
+                    : 'None assigned';
 
                 return [
                     '_group' => $schedule->group?->name ?? 'Unknown Group',
                     '_type' => $schedule->presentation_type?->getLabel() ?? '—',
                     '_date' => Carbon::parse($schedule->date)->format('M d, Y'),
-                    '_time' => Carbon::parse($schedule->start_time)->format('h:i A') . ' – ' . Carbon::parse($schedule->end_time)->format('h:i A'),
+                    '_time' => Carbon::parse($schedule->start_time)->format('h:i A').' – '.Carbon::parse($schedule->end_time)->format('h:i A'),
                     '_venue' => $schedule->venue,
                     '_panelists' => $panelistNames,
                     'status' => $schedule->status?->value,
@@ -360,20 +506,30 @@ new class extends Component implements HasActions, HasSchemas {
                                             'label' => 'Scheduled',
                                         ],
                                     };
-                                    $panelists = $schedule->panelists ?? [];
-                                    $panelistNames = count($panelists)
-                                        ? Instructor::whereIn('id', $panelists)
-                                            ->orderBy('last_name')
-                                            ->pluck('last_name', 'first_name')
-                                            ->map(fn($ln, $fn) => $fn . ' ' . $ln)
-                                            ->values()
+                                    $panelists = collect($schedule->panelists ?? []);
+                                    $panelistMap = $panelists->isNotEmpty()
+                                        ? Instructor::query()
+                                            ->whereIn('id', array_keys($schedule->panelists ?? []))
+                                            ->get()
+                                            ->keyBy('id')
                                         : collect();
+                                    $panelistDetails = $panelists->map(function (string $role, string|int $id) use ($panelistMap): array {
+                                        $instructor = $panelistMap->get((int) $id);
+
+                                        return [
+                                            'name' => $instructor?->full_name ?? 'Unknown Instructor',
+                                            'role' => str_replace('_', ' ', $role),
+                                        ];
+                                    })->values();
                                 @endphp
-                                <div wire:click="openStatusModal({{ $schedule->id }})"
-                                    class="group relative cursor-pointer rounded-xl border border-slate-200 bg-white transition-all duration-200 hover:border-slate-300 hover:shadow-md">
-                                    <div class="absolute bottom-0 left-0 top-0 w-[3px] rounded-l-xl"
+                                <div class="group relative overflow-hidden rounded-xl border border-slate-200 bg-white transition-all duration-200 hover:border-slate-300 hover:shadow-md">
+                                    <a href="{{ route('instructor.classes.schedule.details', ['section' => $this->section->id, 'group' => $schedule->group_id, 'schedule' => $schedule->id]) }}"
+                                        wire:navigate
+                                        class="absolute inset-0 z-0 rounded-xl"
+                                        aria-label="View schedule details for {{ $schedule->group?->name ?? 'Unknown Group' }}"></a>
+                                    <div class="absolute bottom-0 left-0 top-0 w-0.75 rounded-l-xl"
                                         style="background: {{ $style['bar'] }}"></div>
-                                    <div class="flex items-start justify-between gap-4 py-4 pl-5 pr-4">
+                                    <div class="relative z-10 pointer-events-none flex items-start justify-between gap-4 py-4 pl-5 pr-4">
                                         <div class="min-w-0 flex-1">
                                             <div class="flex flex-wrap items-center gap-2">
                                                 <p class="text-[0.9375rem] font-semibold text-slate-900">
@@ -419,16 +575,18 @@ new class extends Component implements HasActions, HasSchemas {
                                                     {{ \Carbon\Carbon::parse($schedule->end_time)->format('h:i A') }}
                                                 </span>
                                             </div>
-                                            @if ($panelistNames->isNotEmpty())
+                                            @if ($panelistDetails->isNotEmpty())
                                                 <div class="mt-2 flex flex-wrap gap-1.5">
-                                                    @foreach ($panelistNames as $name)
-                                                        <span
-                                                            class="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">{{ $name }}</span>
+                                                    @foreach ($panelistDetails as $panelist)
+                                                        <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
+                                                            <span>{{ $panelist['name'] }}</span>
+                                                            <span class="text-[9px] uppercase tracking-wide text-slate-400">{{ ucwords($panelist['role']) }}</span>
+                                                        </span>
                                                     @endforeach
                                                 </div>
                                             @endif
                                         </div>
-                                        <div class="flex shrink-0 items-center gap-1" @click.stop>
+                                        <div class="relative z-20 pointer-events-auto flex shrink-0 items-center gap-1" @click.stop>
                                             {{ ($this->editScheduleAction)(['schedule' => $schedule->id]) }}
                                             {{ ($this->deleteScheduleAction)(['schedule' => $schedule->id]) }}
                                         </div>
@@ -483,19 +641,29 @@ new class extends Component implements HasActions, HasSchemas {
                                         'label' => 'Scheduled',
                                     ],
                                 };
-                                $panelists = $schedule->panelists ?? [];
-                                $panelistNames = count($panelists)
-                                    ? Instructor::whereIn('id', $panelists)
-                                        ->orderBy('last_name')
-                                        ->pluck('last_name', 'first_name')
-                                        ->map(fn($ln, $fn) => $fn . ' ' . $ln)
-                                        ->values()
+                                $panelists = collect($schedule->panelists ?? []);
+                                $panelistMap = $panelists->isNotEmpty()
+                                    ? Instructor::query()
+                                        ->whereIn('id', array_keys($schedule->panelists ?? []))
+                                        ->get()
+                                        ->keyBy('id')
                                     : collect();
+                                $panelistDetails = $panelists->map(function (string $role, string|int $id) use ($panelistMap): array {
+                                    $instructor = $panelistMap->get((int) $id);
+
+                                    return [
+                                        'name' => $instructor?->full_name ?? 'Unknown Instructor',
+                                        'role' => str_replace('_', ' ', $role),
+                                    ];
+                                })->values();
                             @endphp
-                            <div wire:click="openStatusModal({{ $schedule->id }})"
-                                class="group relative cursor-pointer rounded-xl border border-slate-200 bg-white transition-all duration-200 hover:border-slate-300 hover:shadow-md">
-                                <div class="absolute bottom-0 left-0 top-0 w-[3px] rounded-l-xl bg-slate-300"></div>
-                                <div class="flex items-start justify-between gap-4 py-4 pl-5 pr-4">
+                            <div class="group relative overflow-hidden rounded-xl border border-slate-200 bg-white transition-all duration-200 hover:border-slate-300 hover:shadow-md">
+                                <a href="{{ route('instructor.classes.schedule.details', ['section' => $this->section->id, 'group' => $schedule->group_id, 'schedule' => $schedule->id]) }}"
+                                    wire:navigate
+                                    class="absolute inset-0 z-0 rounded-xl"
+                                    aria-label="View schedule details for {{ $schedule->group?->name ?? 'Unknown Group' }}"></a>
+                                <div class="absolute bottom-0 left-0 top-0 w-0.75 rounded-l-xl bg-slate-300"></div>
+                                <div class="relative z-10 pointer-events-none flex items-start justify-between gap-4 py-4 pl-5 pr-4">
                                     <div class="min-w-0 flex-1">
                                         <div class="flex flex-wrap items-center gap-2">
                                             <p class="text-[0.9375rem] font-semibold text-slate-900">
@@ -540,16 +708,18 @@ new class extends Component implements HasActions, HasSchemas {
                                                 {{ \Carbon\Carbon::parse($schedule->end_time)->format('h:i A') }}
                                             </span>
                                         </div>
-                                        @if ($panelistNames->isNotEmpty())
+                                        @if ($panelistDetails->isNotEmpty())
                                             <div class="mt-2 flex flex-wrap gap-1.5">
-                                                @foreach ($panelistNames as $name)
-                                                    <span
-                                                        class="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">{{ $name }}</span>
+                                                @foreach ($panelistDetails as $panelist)
+                                                    <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
+                                                        <span>{{ $panelist['name'] }}</span>
+                                                        <span class="text-[9px] uppercase tracking-wide text-slate-400">{{ ucwords($panelist['role']) }}</span>
+                                                    </span>
                                                 @endforeach
                                             </div>
                                         @endif
                                     </div>
-                                    <div class="flex shrink-0 items-center gap-1" @click.stop>
+                                    <div class="relative z-20 pointer-events-auto flex shrink-0 items-center gap-1" @click.stop>
                                         {{ ($this->editScheduleAction)(['schedule' => $schedule->id]) }}
                                         {{ ($this->deleteScheduleAction)(['schedule' => $schedule->id]) }}
                                     </div>

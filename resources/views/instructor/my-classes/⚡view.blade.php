@@ -3,14 +3,10 @@
 use App\Models\Group;
 use App\Models\Section;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Url;
 use Livewire\Component;
 
 new class extends Component {
     public Section $section;
-
-    #[Url]
-    public $tab = 'groups';
 
     #[Computed]
     public function routePrefix(): string
@@ -57,7 +53,7 @@ new class extends Component {
 
 <x-slot name="title">{{ $section->name }} – {{ $section->semester->name }}</x-slot>
 
-<div class="min-h-screen relative" style="background: #F8FAFC">
+<div class="min-h-screen relative" x-data="{ tab: 'groups' }" style="background: #F8FAFC">
 
     {{-- Ambient background glows --}}
     <div class="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
@@ -107,17 +103,17 @@ new class extends Component {
                     <div class="inline-flex items-center gap-1 rounded-xl p-1"
                         style="background: #EEF2FF; border: 1px solid rgba(0,82,255,0.12)">
                         @foreach ([['key' => 'groups', 'label' => 'Groups', 'icon' => 'rectangle-group'], ['key' => 'students', 'label' => 'Students', 'icon' => 'users'], ['key' => 'schedule', 'label' => 'Schedule', 'icon' => 'calendar-days']] as $t)
-                            <a href="?tab={{ $t['key'] }}" wire:navigate
+                            <button type="button" @click="tab = '{{ $t['key'] }}'"
                                 class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200"
-                                style="{{ $tab === $t['key'] ? 'background: linear-gradient(to right, #0052FF, #4D7CFF); color: white; box-shadow: 0 2px 8px rgba(0,82,255,0.3)' : 'color: #64748B' }}">
+                                :style="tab === '{{ $t['key'] }}' ? 'background: linear-gradient(to right, #0052FF, #4D7CFF); color: white; box-shadow: 0 2px 8px rgba(0,82,255,0.3)' : 'color: #64748B'">
                                 <x-dynamic-component :component="'heroicon-o-' . $t['icon']" class="h-4 w-4" />
                                 {{ $t['label'] }}
-                            </a>
+                            </button>
                         @endforeach
                     </div>
 
                     {{-- Add Group button (groups tab only) --}}
-                    @if ($tab === 'groups')
+                    <template x-if="tab === 'groups'">
                         <a href="{{ route($this->routePrefix . '.classes.group.create', ['section' => $section->id]) }}"
                             wire:navigate
                             class="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5"
@@ -125,7 +121,7 @@ new class extends Component {
                             <x-heroicon-o-plus class="h-4 w-4" />
                             Add Group
                         </a>
-                    @endif
+                    </template>
                 </div>
             </div>
         </div>
@@ -142,8 +138,7 @@ new class extends Component {
                         style="background: linear-gradient(to right, #0052FF, #4D7CFF)"></div>
 
                     {{-- ── Groups Tab ──────────────────────────────────────────────────── --}}
-                    @if ($tab === 'groups')
-                        <div class="p-5 md:p-6">
+                    <div x-show="tab === 'groups'" x-cloak class="p-5 md:p-6">
                             @if (count($this->groups) === 0)
                                 <div class="flex flex-col items-center justify-center py-16 px-8 text-center">
                                     <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-5"
@@ -411,18 +406,17 @@ new class extends Component {
                                     @endforeach
                                 </div>
                             @endif
-                        </div>
-                    @endif
+                    </div>
 
                     {{-- ── Students Tab ────────────────────────────────────────────────── --}}
-                    @if ($tab === 'students')
+                    <div x-show="tab === 'students'" x-cloak>
                         <livewire:instructor::my-classes.students :section="$section" />
-                    @endif
+                    </div>
 
                     {{-- ── Schedule Tab ────────────────────────────────────────────────── --}}
-                    @if ($tab === 'schedule')
+                    <div x-show="tab === 'schedule'" x-cloak>
                         <livewire:instructor::my-classes.schedule :section="$section" />
-                    @endif
+                    </div>
                 </div>
             </div>
 

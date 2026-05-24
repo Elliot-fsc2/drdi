@@ -58,9 +58,9 @@ new class extends Component {
 
   {{-- Ambient background glows --}}
   <div class="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-    <div class="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full"
+    <div class="absolute -top-32 -right-32 h-125 w-125 rounded-full"
       style="background: radial-gradient(circle, rgba(0,82,255,0.07), transparent 70%); filter: blur(60px)"></div>
-    <div class="absolute bottom-1/3 -left-24 w-[400px] h-[400px] rounded-full"
+    <div class="absolute bottom-1/3 -left-24 h-100 w-100 rounded-full"
       style="background: radial-gradient(circle, rgba(77,124,255,0.05), transparent 70%); filter: blur(80px)">
     </div>
   </div>
@@ -71,7 +71,24 @@ new class extends Component {
             schedules: @js($this->schedules),
             calendarInstance: null,
             hoverTooltipEl: null,
+        currentCalendarView: null,
             tableGroupBy: 'type',
+        isMobileCalendar() {
+          return window.matchMedia('(max-width: 640px)').matches;
+        },
+        getInitialCalendarView() {
+          return this.isMobileCalendar() ? 'listMonth' : 'dayGridMonth';
+        },
+        syncCalendarView() {
+          const nextView = this.getInitialCalendarView();
+
+          if (this.currentCalendarView === nextView) {
+            return;
+          }
+
+          this.currentCalendarView = nextView;
+          this.createCalendar(nextView);
+        },
             normalizeDate(value) {
                 if (!value) {
                     return null;
@@ -338,7 +355,11 @@ new class extends Component {
                 this.$nextTick(() => this.removeToolbarTooltips());
             },
             initCalendar() {
-                this.createCalendar('dayGridMonth');
+              this.syncCalendarView();
+
+              window.addEventListener('resize', () => {
+                this.syncCalendarView();
+              });
             },
         }" x-init="initCalendar()">
 
@@ -368,7 +389,7 @@ new class extends Component {
       </div>
 
       <div wire:ignore x-ref="calendar"
-        class="schedule-calendar rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"></div>
+        class="schedule-calendar overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-sm sm:p-4"></div>
 
       {{-- ── Schedule Table ──────────────────────────── --}}
       <div class="mt-10">
@@ -576,6 +597,40 @@ new class extends Component {
   .schedule-calendar .ec-button {
     border-radius: 0.65rem;
     font-weight: 600;
+  }
+
+  @media (max-width: 640px) {
+    .schedule-calendar {
+      padding: 0.75rem;
+    }
+
+    .schedule-calendar .ec-toolbar {
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .schedule-calendar .ec-toolbar .ec-title {
+      width: 100%;
+      margin-bottom: 0.25rem;
+    }
+
+    .schedule-calendar .ec-button {
+      padding: 0.35rem 0.55rem;
+      font-size: 0.75rem;
+    }
+
+    .schedule-calendar .ec-view-harness,
+    .schedule-calendar .ec-list-view,
+    .schedule-calendar .ec-list,
+    .schedule-calendar .ec-time-grid,
+    .schedule-calendar .ec-day-grid {
+      min-width: 100%;
+    }
+
+    .schedule-calendar .ec-event {
+      padding: 2px 4px;
+    }
   }
 
   .schedule-calendar .ec-day-head,

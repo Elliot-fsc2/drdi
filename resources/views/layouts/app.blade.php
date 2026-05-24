@@ -585,96 +585,88 @@
         <!-- Main Content -->
         <div class="flex-1 flex flex-col overflow-hidden">
             <!-- Top Header -->
-            <header class="bg-white border-b border-gray-200 px-6 py-4">
-                <div class="flex items-center justify-between">
-                    <!-- Mobile Menu & Search -->
-                    <div class="flex items-center gap-4 flex-1">
-                        <!-- Mobile Menu Toggle -->
-                        <button @click="mobileMenuOpen = !mobileMenuOpen"
-                            class="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                            <x-heroicon-o-bars-3 class="w-6 h-6 text-gray-600" />
-                        </button>
-
-                        <!-- Desktop Sidebar Toggle -->
-                        <button @click="sidebarOpen = !sidebarOpen"
-                            class="hidden lg:block p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                            title="Toggle Sidebar">
-                            <x-heroicon-o-bars-3 class="w-6 h-6 text-gray-600" />
-                        </button>
-
-                        <div class="hidden md:block flex-1 max-w-md">
-                            <!-- <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <x-heroicon-o-magnifying-glass class="h-5 w-5 text-gray-400" />
-                </div>
-                <input type="search" placeholder="Search projects, documents..."
-                  class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none bg-gray-50">
-              </div> -->
-                        </div>
-                    </div>
-
-                    <!-- Right Actions -->
-                    <div class="flex items-center gap-3">
-                        <!-- Notifications -->
-                        {{-- <button class="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                            <x-heroicon-o-bell class="w-6 h-6 text-gray-600" />
-                            <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                        </button> --}}
-
-                        <!-- Profile Dropdown -->
-                        <div class="relative" x-data="{ open: false }" @click.away="open = false">
-                            <button @click="open = !open"
-                                class="flex items-center gap-3 pl-3 border-l border-gray-200 hover:bg-gray-50 rounded-lg transition-colors py-1 pr-2">
-                                <div class="hidden md:block text-right">
-                                    <p class="text-sm font-semibold text-gray-900">{{ auth()->user()->name }}</p>
-                                    <p class="text-xs text-gray-500">
-                                        {{ auth()->user()->profileable->role ?? 'Student' }}</p>
-                                </div>
-                                <div
-                                    class="w-10 h-10 bg-gradient-to-br from-orange-400 to-pink-500 rounded-lg flex items-center justify-center shadow-md">
-                                    <span
-                                        class="text-white font-bold text-sm">{{ substr(auth()->user()->name, 0, 1) }}</span>
-                                </div>
-                                <x-heroicon-o-chevron-down class="hidden md:block w-4 h-4 text-gray-500" />
+            <header
+                class="sticky top-0 z-20 border-b border-slate-200/70 bg-white/85 backdrop-blur-xl shadow-[0_1px_0_rgba(148,163,184,0.12)]">
+                <div class="px-4 sm:px-6">
+                    <div class="flex items-center justify-between gap-4 py-3">
+                        <div class="flex min-w-0 items-center gap-3">
+                            <button @click="mobileMenuOpen = !mobileMenuOpen"
+                                class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-cyan-200 hover:text-cyan-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-cyan-500/40 lg:hidden"
+                                aria-label="Open navigation menu">
+                                <x-heroicon-o-bars-3 class="h-6 w-6" />
                             </button>
 
-                            <!-- Dropdown Menu -->
-                            <div x-show="open" x-transition:enter="transition ease-out duration-100" x-cloak
-                                x-transition:enter-start="transform opacity-0 scale-95"
-                                x-transition:enter-end="transform opacity-100 scale-100"
-                                x-transition:leave="transition ease-in duration-75"
-                                x-transition:leave-start="transform opacity-100 scale-100"
-                                x-transition:leave-end="transform opacity-0 scale-95"
-                                class="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
-                                <div class="py-1">
-                                    <!-- User Info -->
-                                    <div class="px-4 py-3 border-b border-gray-100">
-                                        <p class="text-sm font-semibold text-gray-900">{{ auth()->user()->name }}</p>
-                                        <p class="text-xs text-gray-500 truncate">{{ auth()->user()->email }}</p>
+                            <button @click="sidebarOpen = !sidebarOpen"
+                                class="hidden h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-cyan-200 hover:text-cyan-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-cyan-500/40 lg:inline-flex"
+                                title="Toggle Sidebar" aria-label="Toggle sidebar">
+                                <x-heroicon-o-bars-3 class="h-6 w-6" />
+                            </button>
+
+                            
+                        </div>
+
+                        <div class="flex min-w-0 items-center gap-3">
+                            <div class="hidden md:flex items-center gap-2 rounded-full border border-cyan-100 bg-cyan-50 px-3 py-1.5 text-xs font-medium text-cyan-800">
+                                <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                                <span class="truncate">{{ auth()->user()->profileable->role ?? 'Student' }}</span>
+                            </div>
+
+                            <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                                <button @click="open = !open"
+                                    class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm transition hover:-translate-y-0.5 hover:border-cyan-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
+                                    <div class="hidden md:block text-right">
+                                        <p class="text-sm font-semibold text-slate-900">{{ auth()->user()->name }}</p>
+                                        <p class="text-xs text-slate-500 truncate">{{ auth()->user()->email }}</p>
+                                    </div>
+                                    <div
+                                        class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-600 text-white shadow-md ring-1 ring-white/60">
+                                        <span class="text-sm font-bold">{{ substr(auth()->user()->name, 0, 1) }}</span>
+                                    </div>
+                                    <x-heroicon-o-chevron-down
+                                        class="hidden h-4 w-4 text-slate-400 transition-transform md:block"
+                                        x-bind:class="open ? 'rotate-180' : ''" />
+                                </button>
+
+                                <!-- Dropdown Menu -->
+                                <div x-show="open" x-transition:enter="transition ease-out duration-100" x-cloak
+                                    x-transition:enter-start="transform opacity-0 scale-95"
+                                    x-transition:enter-end="transform opacity-100 scale-100"
+                                    x-transition:leave="transition ease-in duration-75"
+                                    x-transition:leave-start="transform opacity-100 scale-100"
+                                    x-transition:leave-end="transform opacity-0 scale-95"
+                                    class="absolute right-0 mt-3 w-64 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl ring-1 ring-black/5 z-50">
+                                    <div class="border-b border-slate-100 bg-slate-50/80 px-4 py-3">
+                                        <p class="text-sm font-semibold text-slate-900">{{ auth()->user()->name }}</p>
+                                        <p class="text-xs text-slate-500 truncate">{{ auth()->user()->email }}</p>
+                                        <div class="mt-2 inline-flex items-center rounded-full bg-cyan-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-cyan-800">
+                                            {{ auth()->user()->profileable->role ?? 'Student' }}
+                                        </div>
                                     </div>
 
-                                    <!-- Menu Items -->
-                                    <a href="{{ route('profile') }}" wire:navigate
-                                        class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                        <x-heroicon-o-user class="w-4 h-4" />
-                                        My Profile
-                                    </a>
-                                    <a href="#"
-                                        class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                        <x-heroicon-o-cog-6-tooth class="w-4 h-4" />
-                                        Settings
-                                    </a>
+                                    <div class="py-2">
+                                        <!-- Menu Items -->
+                                        <a href="{{ route('profile') }}" wire:navigate
+                                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 transition hover:bg-slate-50 hover:text-slate-950">
+                                            <x-heroicon-o-user class="h-4 w-4 text-slate-500" />
+                                            My Profile
+                                        </a>
+                                        <a href="#"
+                                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 transition hover:bg-slate-50 hover:text-slate-950">
+                                            <x-heroicon-o-cog-6-tooth class="h-4 w-4 text-slate-500" />
+                                            Settings
+                                        </a>
 
-                                    <div class="border-t border-gray-100 my-1"></div>
+                                        <div class="my-2 border-t border-slate-100"></div>
 
-                                    <form method="POST" action="{{ route('logout') }}">
-                                        @csrf
-                                        <button type="submit"
-                                            class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
-                                            <x-heroicon-o-arrow-right-on-rectangle class="w-4 h-4" />
-                                            Logout
-                                        </button>
-                                    </form>
+                                        <form method="POST" action="{{ route('logout') }}">
+                                            @csrf
+                                            <button type="submit"
+                                                class="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-red-600 transition hover:bg-red-50">
+                                                <x-heroicon-o-arrow-right-on-rectangle class="h-4 w-4" />
+                                                Logout
+                                            </button>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>

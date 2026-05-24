@@ -10,7 +10,6 @@ use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Support\Icons\Heroicon;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Url;
 use Livewire\Component;
 use App\Services\GroupService;
 
@@ -21,9 +20,6 @@ new class extends Component implements HasActions, HasSchemas {
     public Group $group;
     public Section $section;
     private GroupService $groupService;
-
-    #[Url]
-    public $tab = 'members';
 
     public bool $selectingLeader = false;
 
@@ -55,6 +51,16 @@ new class extends Component implements HasActions, HasSchemas {
             ->select('students.id', 'students.first_name', 'students.last_name', 'students.student_number')
             ->orderByRaw('students.id = ? DESC', [$this->group->leader_id])
             ->get();
+    }
+
+    #[Computed]
+    public function presentationHistory()
+    {
+      return $this->group
+        ->schedules()
+        ->orderByDesc('date')
+        ->orderByDesc('start_time')
+        ->get();
     }
 
     public function addMembersAction(): Action
@@ -174,336 +180,410 @@ new class extends Component implements HasActions, HasSchemas {
 ?>
 
 @assets
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Calistoga&family=JetBrains+Mono:wght@400;500&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="{{ Vite::asset('resources/css/filament.css') }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Calistoga&family=JetBrains+Mono:wght@400;500&display=swap"
+  rel="stylesheet">
+<link rel="stylesheet" href="{{ Vite::asset('resources/css/filament.css') }}">
 @endassets
 
 <x-slot name="title">{{ $this->group->name }} - {{ $this->section->name }}</x-slot>
 
-<div class="min-h-screen relative" style="background: #F8FAFC">
+<div class="min-h-screen relative" x-data="{ tab: 'members' }" style="background: #F8FAFC">
 
-    {{-- Ambient glows --}}
-    <div class="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-        <div class="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full"
-            style="background: radial-gradient(circle, rgba(0,82,255,0.07), transparent 70%); filter: blur(60px)"></div>
-        <div class="absolute bottom-1/3 -left-24 w-[400px] h-[400px] rounded-full"
-            style="background: radial-gradient(circle, rgba(77,124,255,0.05), transparent 70%); filter: blur(80px)">
+  {{-- Ambient glows --}}
+  <div class="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+    <div class="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full"
+      style="background: radial-gradient(circle, rgba(0,82,255,0.07), transparent 70%); filter: blur(60px)"></div>
+    <div class="absolute bottom-1/3 -left-24 w-[400px] h-[400px] rounded-full"
+      style="background: radial-gradient(circle, rgba(77,124,255,0.05), transparent 70%); filter: blur(80px)">
+    </div>
+  </div>
+
+  <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12">
+
+    {{-- ── Page Header ──────────────────────────────────────────────────────────────── --}}
+    <div class="mb-8 sm:mb-10">
+
+      {{-- Breadcrumb --}}
+      <div class="flex items-center gap-2 mb-5 text-sm" style="color: #94A3B8">
+        <a href="{{ route($this->routePrefix . '.classes') }}" wire:navigate
+          class="transition-colors duration-150 hover:text-blue-500 font-medium">My Classes</a>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd"
+            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+            clip-rule="evenodd" />
+        </svg>
+        <a href="{{ route($this->routePrefix . '.classes.view', ['section' => $this->section->id]) }}" wire:navigate
+          class="transition-colors duration-150 hover:text-blue-500 font-medium">{{ $this->section->name }}</a>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd"
+            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+            clip-rule="evenodd" />
+        </svg>
+        <span style="color: #0F172A; font-weight: 600">{{ $this->group->name }}</span>
+      </div>
+
+      <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-5">
+        <div>
+          {{-- Section label badge --}}
+          <div class="inline-flex items-center gap-2 rounded-full border px-4 py-1.5 mb-4"
+            style="border-color: rgba(0,82,255,0.25); background: rgba(0,82,255,0.05)">
+            <span class="w-1.5 h-1.5 rounded-full" style="background: #0052FF"></span>
+            <span
+              style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: #0052FF; text-transform: uppercase">
+              My Classes
+            </span>
+          </div>
+
+          <h1 class="leading-tight"
+            style="font-family: 'Calistoga', Georgia, serif; font-size: clamp(1.85rem, 4vw, 2.75rem); letter-spacing: -0.015em; color: #0F172A">
+            {{ $this->group->name }}
+          </h1>
+          <p class="mt-2 text-sm" style="color: #64748B">
+            {{ $this->section->name }} &bull; {{ $this->section->program->name }}
+          </p>
         </div>
+
+        <div class="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap lg:w-auto">
+          {{-- Mobile tab dropdown --}}
+          <div class="md:hidden w-full">
+            <label class="sr-only" for="group-tabs">Select tab</label>
+            <div class="relative">
+              <select id="group-tabs" x-model="tab"
+                class="w-full appearance-none rounded-xl border bg-white px-4 py-3 pr-10 text-sm font-semibold text-slate-700 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                style="border-color: rgba(0,82,255,0.12)">
+                <option value="members">Members</option>
+                <option value="presentation">Presentation</option>
+                <option value="title">Proposed Title</option>
+                <option value="personnel">Personnel</option>
+                <option value="consultation">Consultation</option>
+                <option value="fees">Fees</option>
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400">
+                <x-heroicon-o-chevron-down class="h-4 w-4" />
+              </div>
+            </div>
+          </div>
+
+          {{-- Desktop tab switcher --}}
+          <div class="hidden items-center gap-1 rounded-xl p-1 flex-wrap md:inline-flex"
+            style="background: #EEF2FF; border: 1px solid rgba(0,82,255,0.12)">
+            @foreach ([
+            'members' => 'Members',
+            'presentation' => 'Presentation',
+            'title' => 'Proposed Title',
+            'personnel' => 'Personnel',
+            'consultation' => 'Consultation',
+            'fees' => 'Fees',
+            ] as $key => $label)
+            <button type="button" @click="tab = '{{ $key }}'"
+              class="inline-flex items-center px-3.5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap"
+              :style="tab === '{{ $key }}' ? 'background: linear-gradient(to right, #0052FF, #4D7CFF); color: white; box-shadow: 0 2px 8px rgba(0,82,255,0.3)' : 'color: #64748B'">
+              {{ $label }}
+            </button>
+            @endforeach
+          </div>
+
+          {{-- Group Settings --}}
+          <x-filament::dropdown placement="bottom-end">
+            <x-slot name="trigger">
+              <button
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                style="background: white; border: 1px solid #E2E8F0; color: #475569; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+                <x-heroicon-o-cog-6-tooth class="h-4 w-4" />
+                Settings
+              </button>
+            </x-slot>
+            <x-filament::dropdown.list>
+              @if ($this->isEligibleForLibrary())
+              <x-filament::dropdown.list.item tag="a" wire:navigate
+                href="{{ route('repository-requirement', ['group' => $this->group->id]) }}" icon="heroicon-o-check"
+                color="success">
+                Turn Over to Library
+              </x-filament::dropdown.list.item>
+              @endif
+              <x-filament::dropdown.list.item tag="a" wire:navigate
+                href="{{ route($this->routePrefix . '.group.settings', ['section' => $this->section->id, 'group' => $this->group->id]) }}"
+                icon="heroicon-o-cog-6-tooth">
+                Group Settings
+              </x-filament::dropdown.list.item>
+            </x-filament::dropdown.list>
+          </x-filament::dropdown>
+        </div>
+      </div>
     </div>
 
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12">
+    {{-- ── Two-column layout ────────────────────────────────────────────────────────── --}}
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-5 lg:gap-6">
 
-        {{-- ── Page Header ──────────────────────────────────────────────────────────────── --}}
-        <div class="mb-8 sm:mb-10">
+      {{-- ── Main panel ──────────────────────────────────────────────────────────────── --}}
+      <div class="lg:col-span-3">
+        <div class="bg-white rounded-2xl border overflow-hidden"
+          style="border-color: #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
 
-            {{-- Breadcrumb --}}
-            <div class="flex items-center gap-2 mb-5 text-sm" style="color: #94A3B8">
-                <a href="{{ route($this->routePrefix . '.classes') }}" wire:navigate
-                    class="transition-colors duration-150 hover:text-blue-500 font-medium">My Classes</a>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd"
-                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                        clip-rule="evenodd" />
-                </svg>
-                <a href="{{ route($this->routePrefix . '.classes.view', ['section' => $this->section->id]) }}"
-                    wire:navigate
-                    class="transition-colors duration-150 hover:text-blue-500 font-medium">{{ $this->section->name }}</a>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd"
-                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                        clip-rule="evenodd" />
-                </svg>
-                <span style="color: #0F172A; font-weight: 600">{{ $this->group->name }}</span>
+          {{-- Gradient top stripe --}}
+          <div class="h-[3px]" style="background: linear-gradient(to right, #0052FF, #4D7CFF)"></div>
+
+          <div class="p-5 sm:p-6" x-show="tab === 'members'" x-cloak>
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5">
+              <h3 class="font-bold text-base" style="color: #0F172A">Group Members</h3>
+              <div class="flex gap-2">
+                @if ($selectingLeader)
+                <button wire:click="toggleSelectLeader"
+                  class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5"
+                  style="background: white; border: 1px solid #E2E8F0; color: #64748B; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+                  <x-heroicon-o-x-mark class="h-4 w-4" />
+                  Cancel
+                </button>
+                @else
+                <button wire:click="toggleSelectLeader"
+                  class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5"
+                  style="background: white; border: 1px solid #E2E8F0; color: #64748B; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+                  <x-heroicon-o-star class="h-4 w-4" />
+                  Select Leader
+                </button>
+                <button wire:click="mountAction('addMembers')"
+                  class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm text-white transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+                  style="background: linear-gradient(to right, #0052FF, #4D7CFF); box-shadow: 0 4px 12px rgba(0,82,255,0.25)">
+                  <x-heroicon-o-user-plus class="h-4 w-4" />
+                  Add Member
+                </button>
+                @endif
+              </div>
             </div>
 
-            <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-5">
-                <div>
-                    {{-- Section label badge --}}
-                    <div class="inline-flex items-center gap-2 rounded-full border px-4 py-1.5 mb-4"
-                        style="border-color: rgba(0,82,255,0.25); background: rgba(0,82,255,0.05)">
-                        <span class="w-1.5 h-1.5 rounded-full" style="background: #0052FF"></span>
-                        <span
-                            style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: #0052FF; text-transform: uppercase">
-                            My Classes
-                        </span>
-                    </div>
-
-                    <h1 class="leading-tight"
-                        style="font-family: 'Calistoga', Georgia, serif; font-size: clamp(1.85rem, 4vw, 2.75rem); letter-spacing: -0.015em; color: #0F172A">
-                        {{ $this->group->name }}
-                    </h1>
-                    <p class="mt-2 text-sm" style="color: #64748B">
-                        {{ $this->section->name }} &bull; {{ $this->section->program->name }}
-                    </p>
-                </div>
-
-                <div class="flex items-center gap-3 shrink-0 flex-wrap">
-                    {{-- Tab switcher --}}
-                    <div class="inline-flex items-center gap-1 rounded-xl p-1 flex-wrap"
-                        style="background: #EEF2FF; border: 1px solid rgba(0,82,255,0.12)">
-                        @foreach ([
-        'members' => 'Members',
-        'title' => 'Proposed Title',
-        'personnel' => 'Personnel',
-        'consultation' => 'Consultation',
-        'fees' => 'Fees',
-    ] as $key => $label)
-                            <a href="?tab={{ $key }}" wire:navigate
-                                class="inline-flex items-center px-3.5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap"
-                                style="{{ $tab === $key ? 'background: linear-gradient(to right, #0052FF, #4D7CFF); color: white; box-shadow: 0 2px 8px rgba(0,82,255,0.3)' : 'color: #64748B' }}">
-                                {{ $label }}
-                            </a>
-                        @endforeach
-                    </div>
-
-                    {{-- Group Settings --}}
-                    <x-filament::dropdown placement="bottom-end">
-                        <x-slot name="trigger">
-                            <button
-                                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
-                                style="background: white; border: 1px solid #E2E8F0; color: #475569; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
-                                <x-heroicon-o-cog-6-tooth class="h-4 w-4" />
-                                Settings
-                            </button>
-                        </x-slot>
-                        <x-filament::dropdown.list>
-                            @if ($this->isEligibleForLibrary())
-                                <x-filament::dropdown.list.item tag="a" wire:navigate
-                                    href="{{ route('repository-requirement', ['group' => $this->group->id]) }}"
-                                    icon="heroicon-o-check" color="success">
-                                    Turn Over to Library
-                                </x-filament::dropdown.list.item>
-                            @endif
-                            <x-filament::dropdown.list.item tag="a" wire:navigate
-                                href="{{ route($this->routePrefix . '.group.settings', ['section' => $this->section->id, 'group' => $this->group->id]) }}"
-                                icon="heroicon-o-cog-6-tooth">
-                                Group Settings
-                            </x-filament::dropdown.list.item>
-                        </x-filament::dropdown.list>
-                    </x-filament::dropdown>
-                </div>
+            @if ($selectingLeader)
+            <div class="mb-5 flex items-start gap-3 rounded-xl border px-4 py-3"
+              style="border-color: rgba(0,82,255,0.2); background: rgba(0,82,255,0.04)">
+              <x-heroicon-o-information-circle class="mt-0.5 h-4 w-4 shrink-0" style="color: #0052FF" />
+              <p class="text-sm" style="color: #1E40AF">
+                <strong>Select New Leader:</strong> Click on any member below to assign them as the group leader.
+              </p>
             </div>
-        </div>
+            @endif
 
-        {{-- ── Two-column layout ────────────────────────────────────────────────────────── --}}
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-5 lg:gap-6">
-
-            {{-- ── Main panel ──────────────────────────────────────────────────────────────── --}}
-            <div class="lg:col-span-3">
-                <div class="bg-white rounded-2xl border overflow-hidden"
-                    style="border-color: #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
-
-                    {{-- Gradient top stripe --}}
-                    <div class="h-[3px]" style="background: linear-gradient(to right, #0052FF, #4D7CFF)"></div>
-
-                    {{-- ── Members Tab ─────────────────────────────────────────────────────────── --}}
-                    @if ($tab === 'members')
-                        <div class="p-5 sm:p-6">
-                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5">
-                                <h3 class="font-bold text-base" style="color: #0F172A">Group Members</h3>
-                                <div class="flex gap-2">
-                                    @if ($selectingLeader)
-                                        <button wire:click="toggleSelectLeader"
-                                            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5"
-                                            style="background: white; border: 1px solid #E2E8F0; color: #64748B; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
-                                            <x-heroicon-o-x-mark class="h-4 w-4" />
-                                            Cancel
-                                        </button>
-                                    @else
-                                        <button wire:click="toggleSelectLeader"
-                                            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5"
-                                            style="background: white; border: 1px solid #E2E8F0; color: #64748B; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
-                                            <x-heroicon-o-star class="h-4 w-4" />
-                                            Select Leader
-                                        </button>
-                                        <button wire:click="mountAction('addMembers')"
-                                            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm text-white transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
-                                            style="background: linear-gradient(to right, #0052FF, #4D7CFF); box-shadow: 0 4px 12px rgba(0,82,255,0.25)">
-                                            <x-heroicon-o-user-plus class="h-4 w-4" />
-                                            Add Member
-                                        </button>
-                                    @endif
-                                </div>
-                            </div>
-
-                            @if ($selectingLeader)
-                                <div class="mb-5 flex items-start gap-3 rounded-xl border px-4 py-3"
-                                    style="border-color: rgba(0,82,255,0.2); background: rgba(0,82,255,0.04)">
-                                    <x-heroicon-o-information-circle class="mt-0.5 h-4 w-4 shrink-0"
-                                        style="color: #0052FF" />
-                                    <p class="text-sm" style="color: #1E40AF">
-                                        <strong>Select New Leader:</strong> Click on any member below to assign them as
-                                        the group leader.
-                                    </p>
-                                </div>
-                            @endif
-
-                            @if ($this->members->isEmpty())
-                                <div class="rounded-xl border py-16 flex flex-col items-center text-center"
-                                    style="border-color: #E2E8F0">
-                                    <div class="w-14 h-14 rounded-xl flex items-center justify-center mb-4"
-                                        style="background: #F1F5F9">
-                                        <x-heroicon-o-users class="h-7 w-7" style="color: #94A3B8" />
-                                    </div>
-                                    <p class="text-sm font-medium" style="color: #64748B">No members yet</p>
-                                </div>
-                            @else
-                                <div class="space-y-3">
-                                    @foreach ($this->members as $member)
-                                        <div class="flex items-center gap-4 p-4 rounded-xl border transition-all duration-200
-                      {{ $selectingLeader ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md' : 'hover:-translate-y-0.5 hover:shadow-md' }}"
-                                            style="border-color: #F1F5F9; background: #FAFAFA"
-                                            @if ($selectingLeader) wire:click="selectLeader({{ $member->id }})" @endif>
-                                            <div class="min-w-0 flex-1">
-                                                <div class="flex items-center gap-2 flex-wrap">
-                                                    <span class="font-semibold text-sm" style="color: #0F172A">
-                                                        {{ $member->first_name }} {{ $member->last_name }}
-                                                    </span>
-                                                    @if ($member->id === $this->group->leader_id)
-                                                        <span
-                                                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold"
-                                                            style="background: rgba(124,58,237,0.08); color: #7C3AED; border: 1px solid rgba(124,58,237,0.2)">
-                                                            <x-heroicon-s-star class="h-2.5 w-2.5" />
-                                                            Leader
-                                                        </span>
-                                                    @endif
-                                                </div>
-                                                <p class="text-xs mt-0.5" style="color: #94A3B8">
-                                                    {{ $member->student_number }}</p>
-                                            </div>
-
-                                            @if (!$selectingLeader)
-                                                <x-filament::dropdown placement="bottom-end">
-                                                    <x-slot name="trigger">
-                                                        <button
-                                                            class="p-1.5 rounded-lg transition-colors duration-150 hover:bg-slate-100 shrink-0">
-                                                            <x-heroicon-o-ellipsis-vertical class="h-4 w-4"
-                                                                style="color: #94A3B8" />
-                                                        </button>
-                                                    </x-slot>
-                                                    <x-filament::dropdown.list>
-                                                        <x-filament::dropdown.list.item icon="heroicon-o-trash"
-                                                            color="danger"
-                                                            wire:click="mountAction('removeMember', { studentId: {{ $member->id }} })">
-                                                            Remove from Group
-                                                        </x-filament::dropdown.list.item>
-                                                    </x-filament::dropdown.list>
-                                                </x-filament::dropdown>
-                                            @endif
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @endif
-                        </div>
+            @if ($this->members->isEmpty())
+            <div class="rounded-xl border py-16 flex flex-col items-center text-center" style="border-color: #E2E8F0">
+              <div class="w-14 h-14 rounded-xl flex items-center justify-center mb-4" style="background: #F1F5F9">
+                <x-heroicon-o-users class="h-7 w-7" style="color: #94A3B8" />
+              </div>
+              <p class="text-sm font-medium" style="color: #64748B">No members yet</p>
+            </div>
+            @else
+            <div class="space-y-3">
+              @foreach ($this->members as $member)
+              <div
+                class="flex items-center gap-4 p-4 rounded-xl border transition-all duration-200 {{ $selectingLeader ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md' : 'hover:-translate-y-0.5 hover:shadow-md' }}"
+                style="border-color: #F1F5F9; background: #FAFAFA" @if ($selectingLeader)
+                wire:click="selectLeader({{ $member->id }})" @endif>
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="font-semibold text-sm" style="color: #0F172A">
+                      {{ $member->first_name }} {{ $member->last_name }}
+                    </span>
+                    @if ($member->id === $this->group->leader_id)
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold"
+                      style="background: rgba(124,58,237,0.08); color: #7C3AED; border: 1px solid rgba(124,58,237,0.2)">
+                      <x-heroicon-s-star class="h-2.5 w-2.5" />
+                      Leader
+                    </span>
                     @endif
-
-                    {{-- ── Proposed Title Tab ──────────────────────────────────────────────────── --}}
-                    @if ($tab === 'title')
-                        <livewire:instructor::my-classes.group.proposals :section="$this->section" :group="$this->group" />
-                    @endif
-
-                    {{-- ── Personnel Tab ───────────────────────────────────────────────────────── --}}
-                    @if ($tab === 'personnel')
-                        <livewire:instructor::my-classes.group.personnels :section="$this->section" :group="$this->group" />
-                    @endif
-
-                    {{-- ── Consultation Tab ────────────────────────────────────────────────────── --}}
-                    @if ($tab === 'consultation')
-                        <livewire:instructor::my-classes.group.consultations :section="$this->section" :group="$this->group" />
-                    @endif
-
-                    {{-- ── Fees Tab ────────────────────────────────────────────────────────────── --}}
-                    @if ($tab === 'fees')
-                        <livewire:instructor::my-classes.group.fees :section="$this->section" :group="$this->group" />
-                    @endif
-
+                  </div>
+                  <p class="text-xs mt-0.5" style="color: #94A3B8">{{ $member->student_number }}</p>
                 </div>
+
+                @if (! $selectingLeader)
+                <x-filament::dropdown placement="bottom-end">
+                  <x-slot name="trigger">
+                    <button class="p-1.5 rounded-lg transition-colors duration-150 hover:bg-slate-100 shrink-0">
+                      <x-heroicon-o-ellipsis-vertical class="h-4 w-4" style="color: #94A3B8" />
+                    </button>
+                  </x-slot>
+                  <x-filament::dropdown.list>
+                    <x-filament::dropdown.list.item icon="heroicon-o-trash" color="danger"
+                      wire:click="mountAction('removeMember', { studentId: {{ $member->id }} })">
+                      Remove from Group
+                    </x-filament::dropdown.list.item>
+                  </x-filament::dropdown.list>
+                </x-filament::dropdown>
+                @endif
+              </div>
+              @endforeach
+            </div>
+            @endif
+          </div>
+
+          <div class="p-5 sm:p-6" x-show="tab === 'presentation'" x-cloak>
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5">
+              <div>
+                <h3 class="font-bold text-base" style="color: #0F172A">Presentation History</h3>
+                <p class="mt-1 text-sm" style="color: #64748B">All schedules recorded for this group.</p>
+              </div>
+              <div class="inline-flex items-center gap-2 rounded-full px-3 py-1.5"
+                style="background: rgba(0,82,255,0.06); border: 1px solid rgba(0,82,255,0.14)">
+                <x-heroicon-o-calendar-days class="h-4 w-4" style="color: #0052FF" />
+                <span class="text-xs font-semibold" style="color: #0052FF">{{ $this->presentationHistory->count() }}
+                  schedule{{ $this->presentationHistory->count() === 1 ? '' : 's' }}</span>
+              </div>
             </div>
 
-            {{-- ── Sidebar ──────────────────────────────────────────────────────────────────── --}}
-            <div class="lg:col-span-1">
-                <div class="bg-white rounded-2xl border overflow-hidden lg:sticky lg:top-6"
-                    style="border-color: #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
-                    <div class="h-[3px]" style="background: linear-gradient(to right, #0052FF, #4D7CFF)"></div>
-
-                    <div class="p-5">
-                        <p class="font-bold mb-5 text-sm"
-                            style="font-family: 'JetBrains Mono', monospace; letter-spacing: 0.06em; text-transform: uppercase; color: #94A3B8">
-                            Group Overview
-                        </p>
-
-                        <div class="space-y-4">
-
-                            {{-- Leader --}}
-                            <div class="pb-4 border-b" style="border-color: #F1F5F9">
-                                <p class="text-xs mb-2 uppercase tracking-widest"
-                                    style="font-family: 'JetBrains Mono', monospace; color: #94A3B8; font-size: 10px">
-                                    Leader</p>
-                                @if ($this->leader)
-                                    <div class="flex items-center gap-2.5">
-                                        <span class="text-sm font-semibold" style="color: #0F172A">
-                                            {{ $this->leader->first_name }} {{ $this->leader->last_name }}
-                                        </span>
-                                    </div>
-                                @else
-                                    <p class="text-sm italic" style="color: #94A3B8">No leader assigned</p>
-                                @endif
-                            </div>
-
-                            {{-- Members count --}}
-                            <div class="pb-4 border-b" style="border-color: #F1F5F9">
-                                <p class="text-xs mb-1.5 uppercase tracking-widest"
-                                    style="font-family: 'JetBrains Mono', monospace; color: #94A3B8; font-size: 10px">
-                                    Members</p>
-                                <p class="font-bold" style="font-size: 2rem; color: #0052FF; line-height: 1">
-                                    {{ $this->membersCount }}
-                                </p>
-                            </div>
-
-                            {{-- Course --}}
-                            <div class="pb-4 border-b" style="border-color: #F1F5F9">
-                                <p class="text-xs mb-1.5 uppercase tracking-widest"
-                                    style="font-family: 'JetBrains Mono', monospace; color: #94A3B8; font-size: 10px">
-                                    Course</p>
-                                <p class="text-sm font-semibold" style="color: #0F172A">
-                                    {{ $this->section->program->name }}</p>
-                            </div>
-
-                            {{-- Semester --}}
-                            <div class="pb-4 border-b" style="border-color: #F1F5F9">
-                                <p class="text-xs mb-1.5 uppercase tracking-widest"
-                                    style="font-family: 'JetBrains Mono', monospace; color: #94A3B8; font-size: 10px">
-                                    Semester</p>
-                                <p class="text-sm font-semibold" style="color: #0F172A">
-                                    {{ $this->section->semester?->name ?? 'N/A' }}
-                                </p>
-                                @if ($this->section->semester?->start_date && $this->section->semester?->end_date)
-                                    <p class="text-xs mt-1" style="color: #94A3B8">
-                                        {{ $this->section->semester->start_date->format('M d, Y') }} -
-                                        {{ $this->section->semester->end_date->format('M d, Y') }}
-                                    </p>
-                                @endif
-                            </div>
-
-                            {{-- Section --}}
-                            <div>
-                                <p class="text-xs mb-1.5 uppercase tracking-widest"
-                                    style="font-family: 'JetBrains Mono', monospace; color: #94A3B8; font-size: 10px">
-                                    Section</p>
-                                <p class="text-sm font-semibold" style="color: #0F172A">{{ $this->section->name }}
-                                </p>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
+            @if ($this->presentationHistory->isEmpty())
+            <div class="rounded-xl border border-dashed py-16 text-center"
+              style="border-color: #E2E8F0; background: #FAFAFA">
+              <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl"
+                style="background: #EEF2FF">
+                <x-heroicon-o-calendar-days class="h-7 w-7" style="color: #0052FF" />
+              </div>
+              <p class="text-sm font-semibold" style="color: #0F172A">No presentation history yet</p>
+              <p class="mt-1 text-sm" style="color: #64748B">This group has not been scheduled yet.</p>
             </div>
+            @else
+            <div class="space-y-3">
+              @foreach ($this->presentationHistory as $schedule)
+              @php
+              $statusStyle = match ($schedule->status) {
+              \App\Enums\PresentationStatus::PASSED => ['bg' => 'rgba(5,150,105,0.08)', 'border' =>
+              'rgba(5,150,105,0.2)', 'color' => '#059669', 'label' => 'Passed'],
+              \App\Enums\PresentationStatus::REDEFENSE => ['bg' => 'rgba(217,119,6,0.08)', 'border' =>
+              'rgba(217,119,6,0.2)', 'color' => '#D97706', 'label' => 'Re-defense'],
+              \App\Enums\PresentationStatus::FAILED => ['bg' => 'rgba(239,68,68,0.08)', 'border' =>
+              'rgba(239,68,68,0.2)', 'color' => '#DC2626', 'label' => 'Failed'],
+              default => ['bg' => 'rgba(100,116,139,0.07)', 'border' => 'rgba(100,116,139,0.15)', 'color' => '#64748B',
+              'label' => 'Scheduled'],
+              };
+              @endphp
+              <a href="{{ route('instructor.classes.schedule.details', ['section' => $this->section->id, 'group' => $schedule->group_id, 'schedule' => $schedule->id]) }}"
+                wire:navigate
+                class="group flex items-center justify-between gap-4 rounded-xl border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                style="border-color: #E2E8F0; background: #FAFAFA">
+                <div class="min-w-0 flex-1">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-sm font-semibold" style="color: #0F172A">{{
+                      $schedule->presentation_type?->getLabel() ?? 'Unknown Presentation' }}</span>
+                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                      style="background: {{ $statusStyle['bg'] }}; border: 1px solid {{ $statusStyle['border'] }}; color: {{ $statusStyle['color'] }}">
+                      {{ $statusStyle['label'] }}
+                    </span>
+                  </div>
+                  <div class="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs" style="color: #64748B">
+                    <span>{{ \Carbon\Carbon::parse($schedule->date)->format('M d, Y') }}</span>
+                    <span>{{ \Carbon\Carbon::parse($schedule->start_time)->format('h:i A') }} - {{
+                      \Carbon\Carbon::parse($schedule->end_time)->format('h:i A') }}</span>
+                    <span>{{ $schedule->venue }}</span>
+                  </div>
+                </div>
+                <div class="flex shrink-0 items-center gap-2 text-xs font-medium" style="color: #64748B">
+                  View details
+                  <x-heroicon-o-arrow-right
+                    class="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                </div>
+              </a>
+              @endforeach
+            </div>
+            @endif
+          </div>
+
+          <div x-show="tab === 'title'" x-cloak>
+            <livewire:instructor::my-classes.group.proposals :section="$this->section" :group="$this->group" />
+          </div>
+
+          <div x-show="tab === 'personnel'" x-cloak>
+            <livewire:instructor::my-classes.group.personnels :section="$this->section" :group="$this->group" />
+          </div>
+
+          <div x-show="tab === 'consultation'" x-cloak>
+            <livewire:instructor::my-classes.group.consultations :section="$this->section" :group="$this->group" />
+          </div>
+
+          <div x-show="tab === 'fees'" x-cloak>
+            <livewire:instructor::my-classes.group.fees :section="$this->section" :group="$this->group" />
+          </div>
 
         </div>
+      </div>
+
+      {{-- ── Sidebar ──────────────────────────────────────────────────────────────────── --}}
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-2xl border overflow-hidden lg:sticky lg:top-6"
+          style="border-color: #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+          <div class="h-[3px]" style="background: linear-gradient(to right, #0052FF, #4D7CFF)"></div>
+
+          <div class="p-5">
+            <p class="font-bold mb-5 text-sm"
+              style="font-family: 'JetBrains Mono', monospace; letter-spacing: 0.06em; text-transform: uppercase; color: #94A3B8">
+              Group Overview
+            </p>
+
+            <div class="space-y-4">
+
+              {{-- Leader --}}
+              <div class="pb-4 border-b" style="border-color: #F1F5F9">
+                <p class="text-xs mb-2 uppercase tracking-widest"
+                  style="font-family: 'JetBrains Mono', monospace; color: #94A3B8; font-size: 10px">
+                  Leader</p>
+                @if ($this->leader)
+                <div class="flex items-center gap-2.5">
+                  <span class="text-sm font-semibold" style="color: #0F172A">
+                    {{ $this->leader->first_name }} {{ $this->leader->last_name }}
+                  </span>
+                </div>
+                @else
+                <p class="text-sm italic" style="color: #94A3B8">No leader assigned</p>
+                @endif
+              </div>
+
+              {{-- Members count --}}
+              <div class="pb-4 border-b" style="border-color: #F1F5F9">
+                <p class="text-xs mb-1.5 uppercase tracking-widest"
+                  style="font-family: 'JetBrains Mono', monospace; color: #94A3B8; font-size: 10px">
+                  Members</p>
+                <p class="font-bold" style="font-size: 2rem; color: #0052FF; line-height: 1">
+                  {{ $this->membersCount }}
+                </p>
+              </div>
+
+              {{-- Course --}}
+              <div class="pb-4 border-b" style="border-color: #F1F5F9">
+                <p class="text-xs mb-1.5 uppercase tracking-widest"
+                  style="font-family: 'JetBrains Mono', monospace; color: #94A3B8; font-size: 10px">
+                  Course</p>
+                <p class="text-sm font-semibold" style="color: #0F172A">
+                  {{ $this->section->program->name }}</p>
+              </div>
+
+              {{-- Semester --}}
+              <div class="pb-4 border-b" style="border-color: #F1F5F9">
+                <p class="text-xs mb-1.5 uppercase tracking-widest"
+                  style="font-family: 'JetBrains Mono', monospace; color: #94A3B8; font-size: 10px">
+                  Semester</p>
+                <p class="text-sm font-semibold" style="color: #0F172A">
+                  {{ $this->section->semester?->name ?? 'N/A' }}
+                </p>
+                @if ($this->section->semester?->start_date && $this->section->semester?->end_date)
+                <p class="text-xs mt-1" style="color: #94A3B8">
+                  {{ $this->section->semester->start_date->format('M d, Y') }} -
+                  {{ $this->section->semester->end_date->format('M d, Y') }}
+                </p>
+                @endif
+              </div>
+
+              {{-- Section --}}
+              <div>
+                <p class="text-xs mb-1.5 uppercase tracking-widest"
+                  style="font-family: 'JetBrains Mono', monospace; color: #94A3B8; font-size: 10px">
+                  Section</p>
+                <p class="text-sm font-semibold" style="color: #0F172A">{{ $this->section->name }}
+                </p>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
+  </div>
 
-    <x-filament-actions::modals />
+  <x-filament-actions::modals />
 </div>

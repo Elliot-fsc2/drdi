@@ -6,51 +6,56 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('Research Repository')] class extends Component {
-    public string $search = '';
-    public string $filterYear = '';
-    public string $filterProgram = '';
+new
+#[Title('Research Repository')]
+ class extends Component
+ {
+     public string $search = '';
 
-    #[Computed]
-    public function libraries()
-    {
-        return ResearchLibrary::where('is_published', true)
-            ->with(['group.section.program', 'group.leader', 'group.members', 'group.personnel.instructor'])
-            ->when($this->search, function ($query) {
-                $query->where(function ($q) {
-                    $q->where('title', 'like', '%' . $this->search . '%')
-                        ->orWhere('abstract', 'like', '%' . $this->search . '%')
-                        ->orWhereHas('group.leader', function ($q2) {
-                            $q2->where('first_name', 'like', '%' . $this->search . '%')->orWhere('last_name', 'like', '%' . $this->search . '%');
-                        });
-                });
-            })
-            ->when($this->filterYear, fn($q) => $q->where('academic_year', $this->filterYear))
-            ->when($this->filterProgram, function ($query) {
-                $query->whereHas('group.section.program', fn($q) => $q->where('name', $this->filterProgram));
-            })
-            ->orderByDesc('published_at')
-            ->get();
-    }
+     public string $filterYear = '';
 
-    #[Computed]
-    public function totalCount(): int
-    {
-        return ResearchLibrary::where('is_published', true)->count();
-    }
+     public string $filterProgram = '';
 
-    #[Computed]
-    public function availableYears()
-    {
-        return ResearchLibrary::where('is_published', true)->distinct()->orderByDesc('academic_year')->pluck('academic_year');
-    }
+     #[Computed]
+     public function libraries()
+     {
+         return ResearchLibrary::where('is_published', true)
+             ->with(['group.section.program', 'group.leader', 'group.members', 'group.personnel.instructor'])
+             ->when($this->search, function ($query) {
+                 $query->where(function ($q) {
+                     $q->where('title', 'like', '%'.$this->search.'%')
+                         ->orWhere('abstract', 'like', '%'.$this->search.'%')
+                         ->orWhereHas('group.leader', function ($q2) {
+                             $q2->where('first_name', 'like', '%'.$this->search.'%')->orWhere('last_name', 'like', '%'.$this->search.'%');
+                         });
+                 });
+             })
+             ->when($this->filterYear, fn ($q) => $q->where('academic_year', $this->filterYear))
+             ->when($this->filterProgram, function ($query) {
+                 $query->whereHas('group.section.program', fn ($q) => $q->where('name', $this->filterProgram));
+             })
+             ->orderByDesc('published_at')
+             ->get();
+     }
 
-    #[Computed]
-    public function availablePrograms()
-    {
-        return Program::whereHas('sections.groups.researchLibrary', fn($q) => $q->where('is_published', true))->orderBy('name')->pluck('name');
-    }
-};
+     #[Computed]
+     public function totalCount(): int
+     {
+         return ResearchLibrary::where('is_published', true)->count();
+     }
+
+     #[Computed]
+     public function availableYears()
+     {
+         return ResearchLibrary::where('is_published', true)->distinct()->orderByDesc('academic_year')->pluck('academic_year');
+     }
+
+     #[Computed]
+     public function availablePrograms()
+     {
+         return Program::whereHas('sections.groups.researchLibrary', fn ($q) => $q->where('is_published', true))->orderBy('name')->pluck('name');
+     }
+ };
 ?>
 
 @assets
