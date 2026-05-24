@@ -1,7 +1,9 @@
 <?php
 
 use App\Models\Group;
+use App\Models\Proposal;
 use App\Models\Section;
+use App\Enums\ProposalStatus;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -20,25 +22,45 @@ new class extends Component {
     #[Computed]
     public function classData(): array
     {
+        $programName = $this->section->program?->name ?? 'N/A';
+        $semesterName = $this->section->semester?->name ?? 'TBD';
+        $studentsCount = $this->section->students()->count();
+        $groupsCount = $this->section->groups()->count();
+
+        $approvedTitles = Proposal::query()
+            ->whereHas('group', fn ($q) => $q->where('section_id', $this->section->id))
+            ->where('status', ProposalStatus::APPROVED)
+            ->count();
+
+        $pendingReview = Proposal::query()
+            ->whereHas('group', fn ($q) => $q->where('section_id', $this->section->id))
+            ->where('status', ProposalStatus::PENDING)
+            ->count();
+
         return [
             'id' => $this->section->id,
             'section' => $this->section->name,
-            'course' => 'Thesis 1',
-            'semester' => '2nd Semester 2025-2026',
-            'students_count' => 32,
-            'groups_count' => 8,
+            'course' => $programName,
+            'semester' => $semesterName,
+            'students_count' => $studentsCount,
+            'groups_count' => $groupsCount,
+            'approved_titles' => $approvedTitles,
+            'pending_review' => $pendingReview,
         ];
     }
 
     #[Computed]
     public function groups()
     {
-        return Group::where('section_id', $this->section->id)
-            ->whereHas('section', function ($query) {
-                $query->where('instructor_id', auth()->user()->profileable->id);
-            })
-            ->with(['leader', 'proposals'])
+        $instructorId = auth()->user()->profileable->id;
+
+        return Group::with([
+            'leader',
+            'proposals' => fn ($q) => $q->orderByDesc('created_at'),
+        ])
             ->withCount('members')
+            ->where('section_id', $this->section->id)
+            ->whereHas('section', fn ($query) => $query->where('instructor_id', $instructorId))
             ->get();
     }
 };
@@ -466,13 +488,13 @@ new class extends Component {
                             <p class="mb-1.5"
                                 style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
                                 Approved Titles</p>
-                            <p class="font-bold" style="font-size: 2rem; color: #059669; line-height: 1">6</p>
+                            <p class="font-bold" style="font-size: 2rem; color: #059669; line-height: 1">{{ $this->classData['approved_titles'] }}</p>
                         </div>
                         <div class="py-4">
                             <p class="mb-1.5"
                                 style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
                                 Pending Review</p>
-                            <p class="font-bold" style="font-size: 2rem; color: #B45309; line-height: 1">2</p>
+                            <p class="font-bold" style="font-size: 2rem; color: #B45309; line-height: 1">{{ $this->classData['pending_review'] }}</p>
                         </div>
                     </div>
                 </div>
