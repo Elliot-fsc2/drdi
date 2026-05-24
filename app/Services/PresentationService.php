@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use App\Enums\PanelistRole;
 use App\Enums\PresentationStatus;
 use App\Enums\PresentationType;
-use App\Enums\PanelistRole;
 use App\Models\Group;
 use App\Models\Schedule;
 use Carbon\Carbon;
@@ -25,6 +25,14 @@ class PresentationService
         $latestSchedule = $this->latestScheduleForPresentationType((int) $data['group_id'], $presentationType);
 
         if ($latestSchedule !== null && ! in_array($latestSchedule->status, [PresentationStatus::FAILED, PresentationStatus::REDEFENSE], true)) {
+            activity('Presentation Scheduling')
+                ->event('failed')
+                ->causedBy(auth()->user())->log(sprintf(
+                    'Attempted to create a "%s" schedule for Group ID %d, but the latest schedule has "%s" status.',
+                    $presentationType->getLabel(),
+                    $data['group_id'],
+                    $this->presentationStatusLabel($latestSchedule->status),
+                ));
             throw ValidationException::withMessages([
                 'group' => sprintf(
                     'This group already has a "%s" schedule with "%s" status. Only failed or re-defense schedules can be created again for the same presentation type.',
@@ -32,6 +40,7 @@ class PresentationService
                     $this->presentationStatusLabel($latestSchedule->status),
                 ),
             ]);
+
         }
 
         $this->ensureNoSchedulingConflict(
@@ -52,6 +61,7 @@ class PresentationService
             'status' => $this->resolvePresentationStatus($data['status'] ?? PresentationStatus::SCHEDULED)->value,
             'panelists' => $this->normalizePanelists($data['panelists'] ?? null),
         ]);
+
     }
 
     public function update(array $data, Schedule $schedule): Schedule
@@ -236,20 +246,20 @@ class PresentationService
             ->first();
     }
 
-    private function hasBlockingScheduleForPresentationType(int $groupId, PresentationType $presentationType): bool
-    {
-        $latestSchedule = $this->latestScheduleForPresentationType($groupId, $presentationType);
+    // private function hasBlockingScheduleForPresentationType(int $groupId, PresentationType $presentationType): bool
+    // {
+    //     $latestSchedule = $this->latestScheduleForPresentationType($groupId, $presentationType);
 
-        if ($latestSchedule === null) {
-            return false;
-        }
+    //     if ($latestSchedule === null) {
+    //         return false;
+    //     }
 
-        return ! in_array(
-            $latestSchedule->status,
-            [PresentationStatus::FAILED, PresentationStatus::REDEFENSE],
-            true,
-        );
-    }
+    //     return ! in_array(
+    //         $latestSchedule->status,
+    //         [PresentationStatus::FAILED, PresentationStatus::REDEFENSE],
+    //         true,
+    //     );
+    // }
 
     private function presentationStatusLabel(PresentationStatus $status): string
     {
@@ -269,9 +279,21 @@ class PresentationService
         ?int $ignoreScheduleId = null,
     ): void {
         if ($this->hasSchedulingConflict($venue, $date, $startTime, $endTime, $ignoreScheduleId)) {
+
+            activity('Presentation Scheduling')
+                ->event('failed')
+                ->causedBy(auth()->user())->log(sprintf(
+                    'Attempted to create/update a schedule on %s at %s-%s in venue "%s", but it conflicts with an existing schedule.',
+                    $date,
+                    $startTime->format('H:i'),
+                    $endTime->format('H:i'),
+                    $venue,
+                ));
+
             throw ValidationException::withMessages([
                 'date' => 'The selected schedule conflicts with an existing schedule.',
             ]);
+
         }
     }
 
