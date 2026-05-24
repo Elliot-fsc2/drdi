@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Http\Responses\LogoutResponse;
 use Carbon\CarbonImmutable;
+use Filament\Auth\Http\Responses\Contracts\LogoutResponse as LogoutResponseContract;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -29,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
             ->in(resource_path('views/rdo'))
             ->in(resource_path('views/instructor'))
             ->in(resource_path('views/student'));
-        // Blaze::debug();
+        $this->app->singleton(LogoutResponseContract::class, LogoutResponse::class);
     }
 
     /**
@@ -52,5 +54,6 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null
         );
+
     }
 }

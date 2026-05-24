@@ -2,26 +2,31 @@
 
 use App\Enums\ProposalStatus;
 use App\Models\Proposal;
+use App\Services\ProposalService;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Schemas\Schema;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Filament\Schemas\Schema;
-use Filament\Notifications\Notification;
 
-new #[Title('Group Proposals')] class extends Component implements HasActions, HasSchemas {
+new
+#[Title('Group Proposals')]
+class extends Component implements HasActions, HasSchemas
+{
     use InteractsWithActions;
     use InteractsWithSchemas;
     use WithPagination;
 
     public $user;
+
     public array $data = [];
 
     public function mount()
@@ -40,7 +45,7 @@ new #[Title('Group Proposals')] class extends Component implements HasActions, H
     {
         $section = $this->section();
 
-        if (!$section) {
+        if (! $section) {
             return null;
         }
 
@@ -52,7 +57,7 @@ new #[Title('Group Proposals')] class extends Component implements HasActions, H
     {
         $group = $this->group();
 
-        if (!$group) {
+        if (! $group) {
             return collect();
         }
 
@@ -96,7 +101,7 @@ new #[Title('Group Proposals')] class extends Component implements HasActions, H
 
                             $classes = $isRejected ? 'p-3 rounded-lg bg-red-50 text-red-700 border border-red-200 text-sm italic mt-1' : 'p-3 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 text-sm italic mt-1';
 
-                            return new \Illuminate\Support\HtmlString('<div class="' . $classes . '">' . nl2br(e($feedback)) . '</div>');
+                            return new \Illuminate\Support\HtmlString('<div class="'.$classes.'">'.nl2br(e($feedback)).'</div>');
                         })
                         ->visible(filled($proposal?->feedback)),
                 ];
@@ -160,20 +165,22 @@ new #[Title('Group Proposals')] class extends Component implements HasActions, H
     {
         $group = $this->group();
 
-        if (!$group) {
+        if (! $group) {
             return;
         }
 
-        Proposal::create([
-            'title' => $this->data['title'] ?? '',
-            'description' => $this->data['description'] ?? '',
-            'group_id' => $group->id,
-            'submitted_by' => $this->user->profileable->id,
-            'status' => ProposalStatus::PENDING->value,
-        ]);
+        app(ProposalService::class)
+            ->create([
+                'title' => $this->data['title'] ?? '',
+                'description' => $this->data['description'] ?? '',
+                'group_id' => $group->id,
+                'submitted_by' => $this->user->profileable->id,
+                'status' => ProposalStatus::PENDING->value,
+            ]);
 
         $this->form->fill([]);
         $this->dispatch('close-modal', id: 'propose_title');
+        $this->resetPage();
 
         Notification::make()->title('Proposal submitted successfully')->success()->send();
     }
@@ -245,56 +252,58 @@ new #[Title('Group Proposals')] class extends Component implements HasActions, H
             @island(name: 'proposals-list')
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     @foreach ($this->proposals as $proposal)
-                        <div class="bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md hover:border-blue-300 transition-all duration-200 overflow-hidden group flex flex-col cursor-pointer"
+                        <div class="bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md hover:border-blue-300 transition-all duration-200 overflow-visible group flex flex-col cursor-pointer"
                             wire:key="{{ $proposal->id }}"
                             wire:click="mountAction('viewProposal', { proposal: '{{ $proposal->id }}' })">
 
-                            <!-- Top Status Bar -->
-                            <div
-                                class="h-1.5 w-full {{ $proposal->status === \App\Enums\ProposalStatus::APPROVED
-                                    ? 'bg-green-500'
-                                    : ($proposal->status === \App\Enums\ProposalStatus::REJECTED
-                                        ? 'bg-red-500'
-                                        : 'bg-yellow-500') }}">
-                            </div>
-
-                            <div class="p-4 flex flex-col flex-1 gap-3">
-                                <!-- Title & Status Badge -->
-                                <div class="flex items-start justify-between gap-2">
-                                    <h3 class="font-bold text-slate-900 group-hover:text-blue-700 transition-colors text-base leading-tight flex-1"
-                                        title="{{ $proposal->title }}">
-                                        {{ $proposal->title }}
-                                    </h3>
-                                    @if ($this->group() && $proposal->id === $this->group()->final_title_id)
-                                        <span
-                                            class="inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium text-green-700 bg-green-50 ring-1 ring-inset ring-green-600/20">
-                                            <x-heroicon-s-star class="h-3 w-3" />
-                                            Final
-                                        </span>
-                                    @else
-                                        <span
-                                            class="inline-flex shrink-0 items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset {{ $this->getStatusBadgeClass($proposal->status) }}">
-                                            {{ $this->getStatusLabel($proposal->status) }}
-                                        </span>
-                                    @endif
+                            <div class="overflow-hidden rounded-lg">
+                                <!-- Top Status Bar -->
+                                <div
+                                    class="h-1.5 w-full {{ $proposal->status === \App\Enums\ProposalStatus::APPROVED
+                                        ? 'bg-green-500'
+                                        : ($proposal->status === \App\Enums\ProposalStatus::REJECTED
+                                            ? 'bg-red-500'
+                                            : 'bg-yellow-500') }}">
                                 </div>
 
-                                <!-- Description -->
-                                <p class="text-sm text-slate-600 line-clamp-3 flex-1">
-                                    {{ $proposal->description }}
-                                </p>
-
-                                <!-- Meta Info -->
-                                <div
-                                    class="flex items-center justify-between text-xs text-slate-500 pt-3 border-t border-slate-100">
-                                    <div class="flex items-center gap-1.5">
-                                        <x-heroicon-s-user class="h-3.5 w-3.5" />
-                                        <span
-                                            class="truncate max-w-[120px]">{{ $proposal->submittedBy->full_name ?? 'Unknown Student' }}</span>
+                                <div class="p-4 flex flex-col flex-1 gap-3">
+                                    <!-- Title & Status Badge -->
+                                    <div class="flex items-start justify-between gap-2">
+                                        <h3 class="font-bold text-slate-900 group-hover:text-blue-700 transition-colors text-base leading-tight flex-1"
+                                            title="{{ $proposal->title }}">
+                                            {{ $proposal->title }}
+                                        </h3>
+                                        @if ($this->group() && $proposal->id === $this->group()->final_title_id)
+                                            <span
+                                                class="inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium text-green-700 bg-green-50 ring-1 ring-inset ring-green-600/20">
+                                                <x-heroicon-s-star class="h-3 w-3" />
+                                                Final
+                                            </span>
+                                        @else
+                                            <span
+                                                class="inline-flex shrink-0 items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset {{ $this->getStatusBadgeClass($proposal->status) }}">
+                                                {{ $this->getStatusLabel($proposal->status) }}
+                                            </span>
+                                        @endif
                                     </div>
-                                    <div class="flex items-center gap-1.5">
-                                        <x-heroicon-s-calendar class="h-3.5 w-3.5" />
-                                        <span>{{ $proposal->created_at->format('M d, Y') }}</span>
+
+                                    <!-- Description -->
+                                    <p class="text-sm text-slate-600 line-clamp-3 flex-1">
+                                        {{ $proposal->description }}
+                                    </p>
+
+                                    <!-- Meta Info -->
+                                    <div
+                                        class="flex items-center justify-between text-xs text-slate-500 pt-3 border-t border-slate-100">
+                                        <div class="flex items-center gap-1.5">
+                                            <x-heroicon-s-user class="h-3.5 w-3.5" />
+                                            <span
+                                                class="truncate max-w-30">{{ $proposal->submittedBy->full_name ?? 'Unknown Student' }}</span>
+                                        </div>
+                                        <div class="flex items-center gap-1.5">
+                                            <x-heroicon-s-calendar class="h-3.5 w-3.5" />
+                                            <span>{{ $proposal->created_at->format('M d, Y') }}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

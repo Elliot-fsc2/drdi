@@ -52,4 +52,21 @@ class ProposalService
             ])
             ->log('rejected proposal by :causer.name');
     }
+
+    public function create(array $data): Proposal
+    {
+        $proposal = Proposal::create($data);
+
+        activity('Title Proposal Created')
+            ->performedOn($proposal)
+            ->causedBy(auth()->user())
+            ->event('created')
+            ->withProperties([
+                'group_id' => $proposal->group_id,
+                'title' => $proposal->title,
+            ])
+            ->log('created proposal by :causer.name');
+
+        return $proposal;
+    }
 }

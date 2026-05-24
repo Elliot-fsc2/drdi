@@ -2,15 +2,17 @@
 
 namespace App\Exports;
 
+use App\Models\Group;
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
-use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use App\Models\Group;
 
 class GroupMasterlist implements FromView, WithEvents, WithColumnWidths, WithStyles
 {
@@ -77,7 +79,7 @@ class GroupMasterlist implements FromView, WithEvents, WithColumnWidths, WithSty
             1 => [
                 'font' => ['bold' => true],
                 'fill' => [
-                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'fillType' => Fill::FILL_SOLID,
                     'startColor' => ['argb' => 'FFE2E8F0'], // Tailwind slate-200 equivalent
                 ],
             ],
@@ -91,13 +93,13 @@ class GroupMasterlist implements FromView, WithEvents, WithColumnWidths, WithSty
                 // Set page orientation and paper size for PDF
                 $event->sheet->getDelegate()->getPageSetup()->setOrientation(PageSetup::ORIENTATION_LANDSCAPE);
                 $event->sheet->getDelegate()->getPageSetup()->setPaperSize(PageSetup::PAPERSIZE_LEGAL);
-                
+
                 $highestRow = $event->sheet->getHighestRow();
-                
+
                 // Apply word wrapping and vertical top alignment to all cells
                 $style = $event->sheet->getDelegate()->getStyle('A1:I' . $highestRow);
                 $style->getAlignment()->setWrapText(true);
-                $style->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
+                $style->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
             },
         ];
     }
