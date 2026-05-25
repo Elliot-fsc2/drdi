@@ -20,9 +20,14 @@ class InstructorStatsService
       ->whereHas('group', fn($q) => $q->whereIn('section_id', $activeSectionIds))
       ->count();
 
-    $consultations = $user->consultations()->where('status', 'scheduled')->with('group')->orderBy('scheduled_at')->get();
+    $consultations = $user->consultations()
+      ->where('status', 'scheduled')
+      ->with('group.section')
+      ->orderBy('scheduled_at')
+      ->get();
+
     $recent_proposals = Proposal::whereHas('group.section', fn($q) => $q->where('instructor_id', $user->id))
-      ->with('group')
+      ->with('group.section')
       ->latest()
       ->take(5)
       ->get();

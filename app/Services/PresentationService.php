@@ -246,21 +246,6 @@ class PresentationService
             ->first();
     }
 
-    // private function hasBlockingScheduleForPresentationType(int $groupId, PresentationType $presentationType): bool
-    // {
-    //     $latestSchedule = $this->latestScheduleForPresentationType($groupId, $presentationType);
-
-    //     if ($latestSchedule === null) {
-    //         return false;
-    //     }
-
-    //     return ! in_array(
-    //         $latestSchedule->status,
-    //         [PresentationStatus::FAILED, PresentationStatus::REDEFENSE],
-    //         true,
-    //     );
-    // }
-
     private function presentationStatusLabel(PresentationStatus $status): string
     {
         return match ($status) {

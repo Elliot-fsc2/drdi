@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Enums\ProposalStatus;
 use App\Models\Proposal;
+use App\Models\Student;
+use App\Models\User;
+use App\Notifications\ApproveProposal;
 
 class ProposalService
 {
@@ -18,7 +21,7 @@ class ProposalService
     public function approve(Proposal $proposal, ?string $feedback = null)
     {
         $proposal->update([
-            'status' => ProposalStatus::Approved,
+            'status' => ProposalStatus::APPROVED,
             'feedback' => $feedback,
         ]);
 
@@ -32,12 +35,26 @@ class ProposalService
                 'feedback' => $feedback,
             ])
             ->log('approved proposal by :causer.name');
+
+        $memberIds = $proposal->group
+            ? $proposal->group->members()->pluck('students.id')
+            : collect();
+
+        /** @var \Illuminate\Database\Eloquent\Collection<int, User> $recipients */
+        $recipients = User::query()
+            ->where('profileable_type', Student::class)
+            ->whereIn('profileable_id', $memberIds)
+            ->get();
+
+        foreach ($recipients as $recipient) {
+            $recipient->notify(new ApproveProposal($proposal));
+        }
     }
 
     public function reject(Proposal $proposal, ?string $feedback = null)
     {
         $proposal->update([
-            'status' => ProposalStatus::Rejected,
+            'status' => ProposalStatus::REJECTED,
             'feedback' => $feedback,
         ]);
 
@@ -51,6 +68,20 @@ class ProposalService
                 'feedback' => $feedback,
             ])
             ->log('rejected proposal by :causer.name');
+
+        $memberIds = $proposal->group
+            ? $proposal->group->members()->pluck('students.id')
+            : collect();
+
+        /** @var \Illuminate\Database\Eloquent\Collection<int, User> $recipients */
+        $recipients = User::query()
+            ->where('profileable_type', Student::class)
+            ->whereIn('profileable_id', $memberIds)
+            ->get();
+
+        foreach ($recipients as $recipient) {
+            $recipient->notify(new \App\Notifications\RejectProposal($proposal));
+        }
     }
 
     public function create(array $data): Proposal
