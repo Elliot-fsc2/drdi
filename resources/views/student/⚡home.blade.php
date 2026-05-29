@@ -175,14 +175,6 @@ class extends Component
 
 <div class="min-h-screen relative" style="background: #F8FAFC">
 
-    {{-- Ambient background glows --}}
-    <div class="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-        <div class="absolute -top-32 -right-32 w-125 h-125 rounded-full"
-            style="background: radial-gradient(circle, rgba(0,82,255,0.07), transparent 70%); filter: blur(60px)"></div>
-        <div class="absolute bottom-1/3 -left-24 w-100 h-100 rounded-full"
-            style="background: radial-gradient(circle, rgba(77,124,255,0.05), transparent 70%); filter: blur(80px)">
-        </div>
-    </div>
 
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12">
 

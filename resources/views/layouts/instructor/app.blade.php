@@ -195,15 +195,6 @@
                     <x-heroicon-o-user-group class="h-6 w-6 shrink-0" />
                     <span x-show="sidebarOpen" x-transition class="whitespace-nowrap font-medium">My Groups</span>
                 </a>
-                {{-- <a href="{{ route('instructor.schedule-management') }}" wire:navigate
-                    :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'" @class([
-                        'group flex items-center gap-3 rounded-xl py-2 transition-all',
-                        'bg-white/15 text-white border border-white/25' => request()->routeIs('instructor.schedule-management'),
-                        'text-blue-200 hover:bg-blue-700/50 hover:text-white' => !request()->routeIs('instructor.schedule-management'),
-                    ]) :title="!sidebarOpen ? 'Schedules' : null">
-                    <x-heroicon-o-calendar class="h-6 w-6 shrink-0" />
-                    <span x-show="sidebarOpen" x-transition class="whitespace-nowrap font-medium">Schedules</span>
-                </a> --}}
                 <a href="{{ route('repository') }}" wire:navigate :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
                     @class([
                         'group flex items-center gap-3 rounded-xl py-2 transition-all',
@@ -245,13 +236,14 @@
                             <div class="relative" x-data="{ open: false }" @click.away="open = false">
                                 <button @click="open = !open"
                                     class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm transition hover:-translate-y-0.5 hover:border-cyan-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
-                                    <div class="hidden text-right md:block">
+                                    {{-- <div class="hidden text-right md:block">
                                         <p class="text-sm font-semibold text-slate-900">{{ auth()->user()->name }}</p>
                                         <p class="truncate text-xs text-slate-500">{{ auth()->user()->email }}</p>
-                                    </div>
+                                    </div> --}}
                                     <div
                                         class="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-cyan-500 via-blue-600 to-indigo-600 text-white shadow-md ring-1 ring-white/60">
-                                        <span class="text-sm font-bold">{{ substr(auth()->user()->name, 0, 1) }}</span>
+                                        <img src="{{ auth()->user()->avatar_url ?? asset('images/default-avatar.png') }}" alt="{{ auth()->user()->name }}"
+                                          class="h-full w-full object-cover">
                                     </div>
                                     <x-heroicon-o-chevron-down
                                         class="hidden h-4 w-4 text-slate-400 transition-transform md:block"

@@ -150,25 +150,16 @@
           </nav>
 
           <div class="flex items-center gap-2 sm:gap-3 ml-auto lg:ml-0">
-            @if(auth()->user()->profileable?->role)
-            <div
-              class="hidden items-center gap-2 rounded-full border border-cyan-100 bg-cyan-50 px-3 py-1.5 text-xs font-medium text-cyan-800 md:flex">
-              <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
-              <span class="truncate">{{ auth()->user()->profileable->role }}</span>
-            </div>
-            @endif
 
             <div class="relative" x-data="{ open: false }" @click.away="open = false">
               <button @click="open = !open"
                 class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm transition hover:-translate-y-0.5 hover:border-cyan-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
-                <div class="hidden text-right md:block">
-                  <p class="text-sm font-semibold text-slate-900">{{ auth()->user()->name }}</p>
-                  <p class="max-w-48 truncate text-xs text-slate-500">{{ auth()->user()->email }}</p>
-                </div>
                 <div
-                  class="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-cyan-500 via-blue-600 to-indigo-600 text-white shadow-md ring-1 ring-white/60">
-                  <span class="text-sm font-bold">{{ substr(auth()->user()->name, 0, 1) }}</span>
+                  class="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden bg-slate-100 shadow-md ring-1 ring-slate-200">
+                  <img src="{{ auth()->user()->avatar_url ?? asset('images/default-avatar.png') }}"
+                    alt="{{ auth()->user()->name }}" class="h-full w-full object-cover">
                 </div>
+
                 <x-heroicon-o-chevron-down class="hidden h-4 w-4 text-slate-400 transition-transform md:block"
                   x-bind:class="open ? 'rotate-180' : ''" />
               </button>
@@ -180,6 +171,11 @@
                 x-transition:leave-start="transform opacity-100 scale-100"
                 x-transition:leave-end="transform opacity-0 scale-95"
                 class="absolute right-0 z-50 mt-3 w-48 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl ring-1 ring-black/5">
+
+                <div class="border-b border-slate-100 bg-slate-50/80 px-4 py-3">
+                  <p class="text-sm font-semibold text-slate-900">{{ auth()->user()->name }}</p>
+                  <p class="truncate text-xs text-slate-500">{{ auth()->user()->email }}</p>
+                </div>
                 <div class="py-1.5">
                   <a href="{{ route('profile') }}" wire:navigate
                     class="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 hover:text-slate-950">
