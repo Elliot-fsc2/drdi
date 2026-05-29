@@ -1,10 +1,11 @@
 <?php
 
 use App\Models\Group;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('Dashboard')] class extends Component {
+new #[Layout('layouts::rdo.app')] #[Title('Dashboard')] class extends Component {
     public function with(): array
     {
         return [

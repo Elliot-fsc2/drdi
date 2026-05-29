@@ -14,7 +14,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-new #[Layout('layouts::instructor.app')] class extends Component implements HasSchemas {
+new #[Layout('layouts::rdo.app')] class extends Component implements HasSchemas {
     use InteractsWithSchemas;
 
     public Section $section;
@@ -119,7 +119,7 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasS
             ->success()
             ->send();
 
-        $this->redirect(route('instructor.classes.view', ['section' => $this->section->id, 'tab' => 'groups']), navigate: true);
+        $this->redirect(route('rdo.classes.view', ['section' => $this->section->id, 'tab' => 'groups']), navigate: true);
     }
 };
 ?>
@@ -153,10 +153,10 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasS
         <div class="mb-8">
             {{-- Breadcrumb --}}
             <div class="mb-5 flex items-center gap-2" style="font-size: 12px; color: #94A3B8">
-                <a href="{{ route('instructor.classes') }}" wire:navigate
+                <a href="{{ route('rdo.classes') }}" wire:navigate
                     class="transition-colors hover:underline" style="color: #64748B">My Classes</a>
                 <span style="color: #CBD5E1">/</span>
-                <a href="{{ route('instructor.classes.view', ['section' => $section->id]) }}" wire:navigate
+                <a href="{{ route('rdo.classes.view', ['section' => $section->id]) }}" wire:navigate
                     class="transition-colors hover:underline" style="color: #64748B">{{ $section->name }}</a>
                 <span style="color: #CBD5E1">/</span>
                 <span style="color: #0052FF; font-weight: 500">Create Group</span>
@@ -182,7 +182,7 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasS
                     </p>
                 </div>
 
-                <a href="{{ route('instructor.classes.view', ['section' => $section->id, 'tab' => 'groups']) }}"
+                <a href="{{ route('rdo.classes.view', ['section' => $section->id, 'tab' => 'groups']) }}"
                     wire:navigate
                     class="inline-flex items-center gap-2 self-start rounded-xl border px-4 py-2 text-sm font-medium transition-all hover:-translate-y-px hover:shadow-md"
                     style="border-color: #E2E8F0; background: white; color: #374151; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">

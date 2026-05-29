@@ -4,19 +4,22 @@ use App\Models\Semester;
 use App\Models\ThesisRate;
 use App\Services\FeeService;
 use Filament\Actions\Action;
-use Filament\Actions\Contracts\HasActions;
 use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
+use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\CheckboxList;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
-use Illuminate\Support\Facades\DB;
 
-new #[Title('Semester Tracking')] class extends Component implements HasActions, HasSchemas {
+new #[Layout('layouts::rdo.app')] #[Title('Semester Tracking')]
+class extends Component implements HasActions, HasSchemas
+{
     use InteractsWithActions;
     use InteractsWithSchemas;
 
@@ -46,9 +49,10 @@ new #[Title('Semester Tracking')] class extends Component implements HasActions,
     #[Computed]
     public function selectedSemester()
     {
-        if (!$this->selectedId) {
+        if (! $this->selectedId) {
             return null;
         }
+
         return Semester::with('rates')->find($this->selectedId);
     }
 
@@ -79,6 +83,7 @@ new #[Title('Semester Tracking')] class extends Component implements HasActions,
             ->modalHeading('Edit Semester Details')
             ->fillForm(function () {
                 $sem = $this->selectedSemester;
+
                 return [
                     'name' => $sem->name,
                     'start_date' => $sem->start_date,
@@ -110,8 +115,8 @@ new #[Title('Semester Tracking')] class extends Component implements HasActions,
                         $assignedIds = DB::table('semester_rates')->where('semester_id', $this->selectedId)->pluck('thesis_rate_id');
 
                         return ThesisRate::whereNotIn('id', $assignedIds)->get()->mapWithKeys(
-                            fn($rate) => [
-                                $rate->id => "{$rate->name} (₱" . number_format($rate->amount, 2) . ')',
+                            fn ($rate) => [
+                                $rate->id => "{$rate->name} (₱".number_format($rate->amount, 2).')',
                             ],
                         );
                     })
@@ -138,7 +143,7 @@ new #[Title('Semester Tracking')] class extends Component implements HasActions,
             ->color('danger')
             ->action(function (array $arguments, FeeService $service) {
                 $rateId = $arguments['rate'] ?? null;
-                if (!$rateId || !$this->selectedId) {
+                if (! $rateId || ! $this->selectedId) {
                     return;
                 }
 

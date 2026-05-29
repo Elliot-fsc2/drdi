@@ -13,10 +13,11 @@ use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-new class extends Component implements HasSchemas {
+new #[Layout('layouts::instructor.app')] class extends Component implements HasSchemas {
     use InteractsWithSchemas;
     use WithFileUploads;
 

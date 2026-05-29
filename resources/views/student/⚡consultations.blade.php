@@ -5,13 +5,14 @@ use App\Models\Consultation;
 use Filament\Actions\Action;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Placeholder;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 
-new #[Title('Group Consultations')] class extends Component implements HasActions, HasSchemas {
+new #[Layout('layouts::student.app')] #[Title('Group Consultations')] class extends Component implements HasActions, HasSchemas {
     use InteractsWithActions;
     use InteractsWithSchemas;
 

@@ -1,10 +1,11 @@
 <?php
 
 use App\Services\InstructorStatsService;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('Home')] class extends Component {
+new #[Layout('layouts::instructor.app')] #[Title('Home')] class extends Component {
     public int $activeClasses = 0;
     public int $totalStudents = 0;
     public int $totalGroups = 0;

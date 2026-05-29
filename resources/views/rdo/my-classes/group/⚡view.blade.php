@@ -14,7 +14,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 use App\Services\GroupService;
 
-new #[Layout('layouts::instructor.app')] class extends Component implements HasActions, HasSchemas {
+new #[Layout('layouts::rdo.app')] class extends Component implements HasActions, HasSchemas {
     use InteractsWithActions;
     use InteractsWithSchemas;
 
@@ -165,7 +165,7 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
             ->successNotificationTitle('Group deleted successfully')
             ->action(function (): void {
                 $this->groupService->delete($this->group);
-                $this->redirectRoute('instructor.classes.view', ['section' => $this->section->id], navigate: true);
+                $this->redirectRoute('rdo.classes.view', ['section' => $this->section->id], navigate: true);
             });
     }
 };
@@ -199,14 +199,14 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
 
       {{-- Breadcrumb --}}
       <div class="flex items-center gap-2 mb-5 text-sm" style="color: #94A3B8">
-        <a href="{{ route('instructor.classes') }}" wire:navigate
+        <a href="{{ route('rdo.classes') }}" wire:navigate
           class="transition-colors duration-150 hover:text-blue-500 font-medium">My Classes</a>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd"
             d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
             clip-rule="evenodd" />
         </svg>
-        <a href="{{ route('instructor.classes.view', ['section' => $this->section->id]) }}" wire:navigate
+        <a href="{{ route('rdo.classes.view', ['section' => $this->section->id]) }}" wire:navigate
           class="transition-colors duration-150 hover:text-blue-500 font-medium">{{ $this->section->name }}</a>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd"
@@ -296,7 +296,7 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
               </x-filament::dropdown.list.item>
               @endif
               <x-filament::dropdown.list.item tag="a" wire:navigate
-                href="{{ route('instructor.group.settings', ['section' => $this->section->id, 'group' => $this->group->id]) }}"
+                href="{{ route('rdo.group.settings', ['section' => $this->section->id, 'group' => $this->group->id]) }}"
                 icon="heroicon-o-cog-6-tooth">
                 Group Settings
               </x-filament::dropdown.list.item>
@@ -445,7 +445,7 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
               'label' => 'Scheduled'],
               };
               @endphp
-              <a href="{{ route('instructor.classes.schedule.details', ['section' => $this->section->id, 'group' => $schedule->group_id, 'schedule' => $schedule->id]) }}"
+              <a href="{{ route('rdo.classes.schedule.details', ['section' => $this->section->id, 'group' => $schedule->group_id, 'schedule' => $schedule->id]) }}"
                 wire:navigate
                 class="group flex items-center justify-between gap-4 rounded-xl border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
                 style="border-color: #E2E8F0; background: #FAFAFA">

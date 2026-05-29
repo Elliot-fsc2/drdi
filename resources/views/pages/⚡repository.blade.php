@@ -1,14 +1,15 @@
 <?php
 
+use App\Models\Instructor;
 use App\Models\Program;
+use App\Enums\InstructorRole;
+use App\Models\Student;
 use App\Models\ResearchLibrary;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new
-#[Title('Research Repository')]
- class extends Component
+new #[Title('Research Repository')] class extends Component
  {
      public string $search = '';
 
@@ -55,6 +56,18 @@ new
      {
          return Program::whereHas('sections.groups.researchLibrary', fn ($q) => $q->where('is_published', true))->orderBy('name')->pluck('name');
      }
+
+     public function render()
+     {
+         $layout = match (true) {
+             auth()->user()?->profileable_type === Student::class => 'layouts::student.app',
+             auth()->user()?->profileable_type === Instructor::class && auth()->user()?->profileable?->role === InstructorRole::RDO => 'layouts::rdo.app',
+             auth()->user()?->profileable_type === Instructor::class => 'layouts::instructor.app',
+             default => 'layouts::app',
+         };
+
+         return $this->view()->layout($layout);
+     }
  };
 ?>
 
@@ -69,9 +82,9 @@ new
 
     {{-- Ambient background glows --}}
     <div class="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
-        <div class="absolute -right-32 -top-32 h-[500px] w-[500px] rounded-full"
+        <div class="absolute -right-32 -top-32 h-125 w-125 rounded-full"
             style="background: radial-gradient(circle, rgba(0,82,255,0.07), transparent 70%); filter: blur(60px)"></div>
-        <div class="absolute bottom-1/3 -left-24 h-[400px] w-[400px] rounded-full"
+        <div class="absolute bottom-1/3 -left-24 h-100 w-100 rounded-full"
             style="background: radial-gradient(circle, rgba(77,124,255,0.05), transparent 70%); filter: blur(80px)">
         </div>
     </div>
@@ -131,7 +144,7 @@ new
             </select>
 
             {{-- Count badge --}}
-            <div class="flex-shrink-0 rounded-xl border px-4 py-2.5 text-sm font-semibold"
+            <div class="shrink-0 rounded-xl border px-4 py-2.5 text-sm font-semibold"
                 style="border-color: #E2E8F0; background: white; color: #0F172A; box-shadow: 0 1px 2px rgba(0,0,0,0.04)">
                 <span style="color: #0052FF">{{ $this->libraries->count() }}</span>
                 <span style="color: #94A3B8"> / {{ $this->totalCount }}</span>
@@ -162,7 +175,7 @@ new
                 style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); text-decoration: none">
 
                 {{-- Gradient top stripe --}}
-                <div class="h-[3px] w-full rounded-t-2xl"
+                <div class="h-0.75 w-full rounded-t-2xl"
                     style="background: linear-gradient(to right, #0052FF, #4D7CFF)"></div>
 
                 <div class="flex flex-1 flex-col p-5">

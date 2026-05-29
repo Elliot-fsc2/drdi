@@ -13,9 +13,10 @@ use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Support\Icons\Heroicon;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-new class extends Component implements HasActions, HasSchemas {
+new #[Layout('layouts::instructor.app')] class extends Component implements HasActions, HasSchemas {
     use InteractsWithActions;
     use InteractsWithSchemas;
 

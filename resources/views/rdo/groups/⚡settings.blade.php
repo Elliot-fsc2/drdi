@@ -17,7 +17,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
-new #[Layout('layouts::instructor.app')] class extends Component implements HasActions, HasSchemas
+new #[Layout('layouts::rdo.app')] class extends Component implements HasActions, HasSchemas
 {
     use InteractsWithActions;
     use InteractsWithSchemas;
@@ -78,7 +78,7 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
 
                 $this->groupService->delete($this->group);
 
-            $this->redirectRoute('instructor.classes.view', ['section' => $sectionId, 'tab' => 'groups'], navigate: true);
+                $this->redirectRoute('rdo.classes.view', ['section' => $sectionId, 'tab' => 'groups'], navigate: true);
             });
     }
 
@@ -118,8 +118,7 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
   <div class="relative mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
     <div class="mb-8">
       <div class="mb-5 flex items-center gap-2 text-sm" style="color: #94A3B8">
-        <a href="{{ route('instructor.classes.view', ['section' => $this->group->section_id, 'tab' => 'groups']) }}"
-          <a href="{{ route('instructor.classes.view', ['section' => $this->group->section_id, 'tab' => 'groups']) }}"
+        <a href="{{ route('rdo.classes.view', ['section' => $this->group->section_id, 'tab' => 'groups']) }}"
           wire:navigate class="font-medium transition-colors hover:text-blue-500" style="color: #64748B">Back to
           Groups</a>
         <span style="color: #CBD5E1">/</span>
@@ -177,9 +176,7 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
                 Save Changes
               </button>
 
-              <a href="{{ route('instructor.classes.view', ['section' => $this->group->section_id, 'tab' => 'groups']) }}"
-                <a href="{{ route('instructor.classes.view', ['section' => $this->group->section_id, 'tab' => 'groups']) }}"
-                <a href="{{ route('instructor.classes.view', ['section' => $this->group->section_id, 'tab' => 'groups']) }}"
+              <a href="{{ route('rdo.classes.view', ['section' => $this->group->section_id, 'tab' => 'groups']) }}"
                 wire:navigate
                 class="inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-all hover:-translate-y-px hover:shadow-md"
                 style="border-color: #E2E8F0; background: white; color: #475569; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">

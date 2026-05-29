@@ -14,7 +14,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-new #[Layout('layouts::instructor.app')] class extends Component implements HasActions, HasSchemas {
+new #[Layout('layouts::rdo.app')] class extends Component implements HasActions, HasSchemas {
     use InteractsWithActions;
     use InteractsWithSchemas;
 

@@ -4,13 +4,14 @@ use App\Exports\GroupMasterlist;
 use App\Models\Group;
 use App\Models\Semester;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
 
-new #[Title('Group Masterlist')] class extends Component {
+new #[Layout('layouts::rdo.app')] #[Title('Group Masterlist')] class extends Component {
     use WithPagination;
 
     #[Url]

@@ -14,7 +14,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Layout('layouts::instructor.app')] #[Title('Presentation Details')] class extends Component
+new #[Layout('layouts::rdo.app')] #[Title('Presentation Details')] class extends Component
 {
     public Section $section;
 
@@ -195,18 +195,18 @@ new #[Layout('layouts::instructor.app')] #[Title('Presentation Details')] class 
 <div class="min-h-screen bg-slate-50">
     <div class="relative mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
         <div class="mb-6 flex flex-wrap items-center gap-2 text-sm text-slate-500">
-            <a href="{{ route('instructor.classes.view', ['section' => $this->section->id]) }}" wire:navigate
+            <a href="{{ route('rdo.classes.view', ['section' => $this->section->id]) }}" wire:navigate
                 class="inline-flex items-center gap-1.5 font-medium text-slate-500 transition hover:text-blue-600">
                 <x-heroicon-o-arrow-left class="h-4 w-4" />
                 Section
             </a>
             <x-heroicon-o-chevron-right class="h-4 w-4 text-slate-300" />
-            <a href="{{ route('instructor.classes.view', ['section' => $this->section->id]) }}" wire:navigate
+            <a href="{{ route('rdo.classes.view', ['section' => $this->section->id]) }}" wire:navigate
                 class="font-medium transition hover:text-blue-600">
                 {{ $this->section->name }}
             </a>
             <x-heroicon-o-chevron-right class="h-4 w-4 text-slate-300" />
-            <a href="{{ route('instructor.classes.group.view', ['section' => $this->section->id, 'group' => $this->group->id]) }}"
+            <a href="{{ route('rdo.classes.group.view', ['section' => $this->section->id, 'group' => $this->group->id]) }}"
                 wire:navigate class="font-medium transition hover:text-blue-600">
                 {{ $this->group->name }}
             </a>

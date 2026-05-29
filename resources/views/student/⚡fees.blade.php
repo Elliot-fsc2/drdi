@@ -1,10 +1,11 @@
 <?php
 
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('Fees')] class extends Component {
+new #[Layout('layouts::student.app')] #[Title('Fees')] class extends Component {
     #[Computed]
     public function feeData()
     {

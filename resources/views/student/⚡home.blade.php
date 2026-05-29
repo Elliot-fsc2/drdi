@@ -4,10 +4,12 @@ use App\Enums\ProposalStatus;
 use App\Models\Consultation;
 use App\Models\Proposal;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
 new
+#[Layout('layouts::student.app')]
  #[Title('Home')]
 class extends Component
 {
@@ -175,9 +177,9 @@ class extends Component
 
     {{-- Ambient background glows --}}
     <div class="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-        <div class="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full"
+        <div class="absolute -top-32 -right-32 w-125 h-125 rounded-full"
             style="background: radial-gradient(circle, rgba(0,82,255,0.07), transparent 70%); filter: blur(60px)"></div>
-        <div class="absolute bottom-1/3 -left-24 w-[400px] h-[400px] rounded-full"
+        <div class="absolute bottom-1/3 -left-24 w-100 h-100 rounded-full"
             style="background: radial-gradient(circle, rgba(77,124,255,0.05), transparent 70%); filter: blur(80px)">
         </div>
     </div>
@@ -363,7 +365,7 @@ class extends Component
                                 @endphp
                                 <div class="relative overflow-hidden rounded-2xl border transition-all duration-200 hover:-translate-y-px hover:shadow-lg"
                                     style="border-color: {{ $borderColor }}; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
-                                    <div class="absolute bottom-0 left-0 top-0 w-[3px] rounded-l-2xl"
+                                    <div class="absolute bottom-0 left-0 top-0 w-0.75 rounded-l-2xl"
                                         style="background: {{ $stripeColor }}"></div>
                                     <div class="py-5 pl-6 pr-5">
                                         <div class="flex items-start justify-between mb-2 gap-3">

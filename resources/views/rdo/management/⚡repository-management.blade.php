@@ -2,10 +2,11 @@
 
 use App\Models\ResearchLibrary;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('Repository Management')] class extends Component {
+new #[Layout('layouts::rdo.app')] #[Title('Repository Management')] class extends Component {
   #[Computed]
   public function pendingRepositories()
   {

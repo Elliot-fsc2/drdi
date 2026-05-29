@@ -15,8 +15,7 @@ class FeeService
      * This method is safe to call even if the group has no existing `fee` record:
      * it will create the fee record with sensible defaults.
      *
-     * @param Group $group The group to initialize the ledger for.
-     * @return void
+     * @param  Group  $group  The group to initialize the ledger for.
      */
     public function initializeGroupLedger(Group $group): void
     {
@@ -57,16 +56,6 @@ class FeeService
         });
     }
 
-    /**
-     * Recalculate and persist the honorarium totals for a group.
-     *
-     * The honorarium is derived from the semester's `per_personnel` rate
-     * multiplied by the number of personnel attached to the group.
-     * This method will create the group's fee record if it does not exist.
-     *
-     * @param Group $group
-     * @return void
-     */
     public function syncHonorarium(Group $group): void
     {
         DB::transaction(function () use ($group) {
@@ -119,8 +108,6 @@ class FeeService
      *
      * Expected `$data` keys: `semester_id`, `fixed_per_group`, `per_personnel`.
      *
-     * @param array $data
-     * @return void
      * @throws InvalidArgumentException When `semester_id` is not valid.
      */
     public function createRates(array $data): void
@@ -162,20 +149,9 @@ class FeeService
         });
     }
 
-    /**
-     * Recalculate fees for every group in the provided semester.
-     *
-     * This method streams sections in chunks to keep memory usage low and
-     * eager-loads `groups.personnel` so we avoid N+1 queries while computing
-     * honorarium totals.
-     *
-     * @param Semester $semester
-     * @return void
-     */
     public function updateAllGroupsInSemester(Semester $semester): void
     {
-        // Aggregate master rates for the semester (may be multiple entries,
-        // sum them defensively so callers can seed multiple rate records).
+
         $baseRateTotal = $semester->rates()
             ->where('type', 'fixed_per_group')
             ->sum('amount');
@@ -184,18 +160,18 @@ class FeeService
             ->where('type', 'per_personnel')
             ->sum('amount');
 
-        // Stream active sections with groups and personnel to avoid loading
-        // the entire semester into memory at once.
+        $updatedGroupCount = 0;
+
         $semester->sections()
             ->active()
             ->with('groups.personnel')
-            ->chunkById(100, function ($sections) use ($baseRateTotal, $perPersonnelRateTotal) {
+            ->chunkById(100, function ($sections) use ($baseRateTotal, $perPersonnelRateTotal, &$updatedGroupCount) {
                 foreach ($sections as $section) {
                     foreach ($section->groups as $group) {
                         $personnelCount = $group->personnel->count();
                         $honorariumTotal = $perPersonnelRateTotal * $personnelCount;
 
-                        $fee = $group->fee()->updateOrCreate(
+                        $group->fee()->updateOrCreate(
                             ['group_id' => $group->id],
                             [
                                 'base_fee' => $baseRateTotal,
@@ -204,21 +180,20 @@ class FeeService
                             ]
                         );
 
-                        // Activity log: record that we updated this group's fee during bulk update.
-                        activity()->useLog('group_fees')
-                            ->performedOn($fee)
-                            ->causedBy(auth()->user())
-                            ->withProperties([
-                                'group_id' => $group->id,
-                                'section_id' => optional($section)->id,
-                                'semester_id' => optional($section->semester)->id ?? null,
-                                'personnel_count' => $personnelCount,
-                                'base_fee' => $baseRateTotal,
-                                'honorarium_total' => $honorariumTotal,
-                            ])
-                            ->log('Updated group fee during semester bulk update');
+                        $updatedGroupCount++;
                     }
                 }
             });
+
+        activity()->useLog('group_fees')
+            ->performedOn($semester)
+            ->causedBy(auth()->user())
+            ->withProperties([
+                'base_fee' => $baseRateTotal,
+                'per_personnel_rate' => $perPersonnelRateTotal,
+                'semester_id' => $semester->id,
+                'updated_groups' => $updatedGroupCount,
+            ])
+            ->log('Updated group fees during semester bulk update');
     }
 }

@@ -8,7 +8,7 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 
 new
-#[Layout('layouts::instructor.app')]
+#[Layout('layouts::rdo.app')]
  #[Title('Groups')]
 class extends Component
 {
@@ -180,11 +180,11 @@ class extends Component
       @php
       $href =
       $tab === 'my_groups'
-      ? route('instructor.classes.group.view', [
+      ? route('rdo.classes.group.view', [
       'section' => $group['section_id'],
       'group' => $group['id'],
       ])
-      : route('instructor.groups.assigned.view', $group['id']);
+      : route('rdo.groups.assigned.view', $group['id']);
       @endphp
 
       <a href="{{ $href }}" wire:key="{{ $tab }}-{{ $group['id'] }}" wire:navigate class="group block h-full">

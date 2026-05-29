@@ -1,10 +1,11 @@
 <?php
 
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('Group Details')] class extends Component {
+new #[Layout('layouts::student.app')] #[Title('Group Details')] class extends Component {
     public $user;
 
     public function mount()

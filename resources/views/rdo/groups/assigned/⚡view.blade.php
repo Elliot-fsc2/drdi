@@ -17,7 +17,7 @@ use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
-new #[Layout('layouts::instructor.app')] #[Title('View Group')] class extends Component implements HasActions, HasSchemas {
+new #[Layout('layouts::rdo.app')] #[Title('View Group')] class extends Component implements HasActions, HasSchemas {
     use InteractsWithActions;
     use InteractsWithSchemas;
 
@@ -267,7 +267,7 @@ new #[Layout('layouts::instructor.app')] #[Title('View Group')] class extends Co
 
             {{-- Breadcrumb --}}
             <div class="flex items-center gap-2 mb-5 text-sm" style="color: #94A3B8">
-                <a href="{{ route('instructor.groups') }}" wire:navigate
+                <a href="{{ route('rdo.groups') }}" wire:navigate
                     class="transition-colors duration-150 hover:text-blue-500 font-medium">
                     Groups
                 </a>

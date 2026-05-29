@@ -4,84 +4,89 @@ use App\Models\Program;
 use App\Models\Section;
 use App\Models\Semester;
 use Filament\Actions\Action;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
-use Livewire\Attributes\Url;
 use Filament\Support\Icons\Heroicon;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
-new #[Layout('layouts::instructor.app')] #[Title('My Classes')] class extends Component implements HasActions, HasSchemas {
-    use InteractsWithActions;
-    use InteractsWithSchemas;
+new
+#[Layout('layouts::rdo.app')]
+ #[Title('My Classes')]
+ class extends Component implements HasActions, HasSchemas
+ {
+     use InteractsWithActions;
+     use InteractsWithSchemas;
 
-    #[Url]
-    public $search = '';
-    public $semester = '2nd Semester 2025-2026';
+     #[Url]
+     public $search = '';
 
-    public function createSectionAction(): Action
-    {
-        return Action::make('createSection')
-            ->modalWidth('lg')
-            ->color('success')
-            ->modalCloseButton(false)
-            ->label('Create Section')
-            ->icon(Heroicon::Plus)
-            ->color('primary')
-            ->form([
-                TextInput::make('name')->label('Section Name')->placeholder('e.g., BSCS-4A')->required()->maxLength(255),
+     public $semester = '2nd Semester 2025-2026';
 
-                Select::make('program_id')->label('Program')->options(Program::pluck('name', 'id'))->required()->searchable(),
+     public function createSectionAction(): Action
+     {
+         return Action::make('createSection')
+             ->modalWidth('lg')
+             ->color('success')
+             ->modalCloseButton(false)
+             ->label('Create Section')
+             ->icon(Heroicon::Plus)
+             ->color('primary')
+             ->form([
+                 TextInput::make('name')->label('Section Name')->placeholder('e.g., BSCS-4A')->required()->maxLength(255),
 
-                Select::make('semester_id')
-                    ->label('Semester')
-                    ->options(Semester::active()->pluck('name', 'id'))
-                    ->required()
-                    ->searchable(),
-            ])
-            ->successNotificationTitle('Section created successfully')
-            ->action(function (array $data): void {
-                Section::create([
-                    'name' => $data['name'],
-                    'program_id' => $data['program_id'],
-                    'semester_id' => $data['semester_id'],
-                    'instructor_id' => auth()->user()->profileable->id,
-                ]);
+                 Select::make('program_id')->label('Program')->options(Program::pluck('name', 'id'))->required()->searchable(),
 
-                unset($this->classes);
-            });
-    }
+                 Select::make('semester_id')
+                     ->label('Semester')
+                     ->options(Semester::active()->pluck('name', 'id'))
+                     ->required()
+                     ->searchable(),
+             ])
+             ->successNotificationTitle('Section created successfully')
+             ->action(function (array $data): void {
+                 Section::create([
+                     'name' => $data['name'],
+                     'program_id' => $data['program_id'],
+                     'semester_id' => $data['semester_id'],
+                     'instructor_id' => auth()->user()->profileable->id,
+                 ]);
 
-    #[Computed]
-    public function classes()
-    {
-        $query = Section::where('instructor_id', auth()->user()->profileable->id)
-            ->whereHas('semester', function ($query) {
-                $query->active();
-            })
-            ->withCount('students')
-            ->withCount('groups')
-            ->when($this->search, function ($query) {
-                $query->where('name', 'like', '%' . $this->search . '%');
-            });
+                 unset($this->classes);
+             });
+     }
 
-        return $query->get()->map(function ($section) {
-            return [
-                'id' => $section->id,
-                'section' => $section->name,
-                'course' => $section->program->name,
-                'students_count' => $section->students_count,
-                'groups_count' => $section->groups_count,
-            ];
-        });
-    }
-};
+     #[Computed]
+     public function classes()
+     {
+         $query = Section::where('instructor_id', auth()->user()->profileable->id)
+             ->whereHas('semester', function ($query) {
+                 $query->active();
+             })
+             ->withCount('students')
+             ->withCount('groups')
+             ->when($this->search, function ($query) {
+                 $query->where('name', 'like', '%'.$this->search.'%');
+             });
+
+         return $query->get()->map(function ($section) {
+             return [
+                 'id' => $section->id,
+                 'section' => $section->name,
+                 'course' => $section->program->name,
+                 'students_count' => $section->students_count,
+                 'groups_count' => $section->groups_count,
+             ];
+         });
+     }
+ };
 ?>
 
 
@@ -233,7 +238,7 @@ new #[Layout('layouts::instructor.app')] #[Title('My Classes')] class extends Co
             {{-- ── Classes Grid ──────────────────────────────────────────────────────── --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
                 @foreach ($this->classes as $class)
-                    <a href="{{ route('instructor.classes.view', ['section' => $class['id']]) }}"
+                    <a href="{{ route('rdo.classes.view', ['section' => $class['id']]) }}"
                         wire:key="{{ $class['section'] }}" wire:navigate class="group block h-full">
 
                         @if ($loop->first)

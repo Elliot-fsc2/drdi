@@ -13,11 +13,13 @@ use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 new
+#[Layout('layouts::student.app')]
 #[Title('Group Proposals')]
 class extends Component implements HasActions, HasSchemas
 {

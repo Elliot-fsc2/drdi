@@ -26,7 +26,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 new
-#[Layout('layouts::instructor.app')]
+#[Layout('layouts::rdo.app')]
 class extends Component implements HasActions, HasSchemas
 {
     use InteractsWithActions;
@@ -526,7 +526,7 @@ class extends Component implements HasActions, HasSchemas
                                     })->values();
                                 @endphp
                                 <div class="group relative overflow-hidden rounded-xl border border-slate-200 bg-white transition-all duration-200 hover:border-slate-300 hover:shadow-md">
-                                    <a href="{{ route('instructor.classes.schedule.details', ['section' => $this->section->id, 'group' => $schedule->group_id, 'schedule' => $schedule->id]) }}"
+                                    <a href="{{ route('rdo.classes.schedule.details', ['section' => $this->section->id, 'group' => $schedule->group_id, 'schedule' => $schedule->id]) }}"
                                         wire:navigate
                                         class="absolute inset-0 z-0 rounded-xl"
                                         aria-label="View schedule details for {{ $schedule->group?->name ?? 'Unknown Group' }}"></a>
@@ -661,7 +661,7 @@ class extends Component implements HasActions, HasSchemas
                                 })->values();
                             @endphp
                             <div class="group relative overflow-hidden rounded-xl border border-slate-200 bg-white transition-all duration-200 hover:border-slate-300 hover:shadow-md">
-                                <a href="{{ route('instructor.classes.schedule.details', ['section' => $this->section->id, 'group' => $schedule->group_id, 'schedule' => $schedule->id]) }}"
+                                <a href="{{ route('rdo.classes.schedule.details', ['section' => $this->section->id, 'group' => $schedule->group_id, 'schedule' => $schedule->id]) }}"
                                     wire:navigate
                                     class="absolute inset-0 z-0 rounded-xl"
                                     aria-label="View schedule details for {{ $schedule->group?->name ?? 'Unknown Group' }}"></a>

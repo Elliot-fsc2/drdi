@@ -3,9 +3,10 @@
 use App\Models\Instructor;
 use App\Models\Schedule;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-new class extends Component {
+new #[Layout('layouts::rdo.app')] class extends Component {
   #[Computed]
   public function schedules()
   {

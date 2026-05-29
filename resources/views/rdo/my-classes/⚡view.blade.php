@@ -8,7 +8,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-new class extends Component
+new #[Layout('layouts::rdo.app')] class extends Component
 {
     public Section $section;
 
@@ -83,7 +83,7 @@ new class extends Component
 
         {{-- ── Breadcrumb ──────────────────────────────────────────────────────────── --}}
         <div class="flex items-center gap-2 mb-6" style="font-size: 12px">
-            <a href="{{ route('instructor.classes') }}" wire:navigate
+            <a href="{{ route('rdo.classes') }}" wire:navigate
                 class="transition-colors hover:text-blue-600" style="color: #94A3B8">My Classes</a>
             <svg class="h-3 w-3" style="color: #CBD5E1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -129,7 +129,7 @@ new class extends Component
 
                     {{-- Add Group button (groups tab only) --}}
                     <template x-if="tab === 'groups'">
-                        <a href="{{ route('instructor.classes.group.create', ['section' => $section->id]) }}"
+                        <a href="{{ route('rdo.classes.group.create', ['section' => $section->id]) }}"
                             wire:navigate
                             class="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5"
                             style="background: linear-gradient(to right, #0052FF, #4D7CFF); box-shadow: 0 4px 12px rgba(0,82,255,0.3)">
@@ -165,7 +165,7 @@ new class extends Component
                                         No research groups yet</h3>
                                     <p class="text-sm mb-5 max-w-xs" style="color: #64748B; line-height: 1.6">
                                         Create the first research group for this section.</p>
-                                    <a href="{{ route('instructor.classes.group.create', ['section' => $section->id]) }}"
+                                    <a href="{{ route('rdo.classes.group.create', ['section' => $section->id]) }}"
                                         wire:navigate
                                         class="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white"
                                         style="background: linear-gradient(135deg, #0052FF, #4D7CFF); box-shadow: 0 4px 12px rgba(0,82,255,0.25)">
@@ -193,7 +193,7 @@ new class extends Component
                                                     : strtolower($latestProposal->status))
                                                 : null;
                                         @endphp
-                                        <a href="{{ route('instructor.classes.group.view', ['section' => $this->classData['id'], 'group' => $group->id]) }}"
+                                        <a href="{{ route('rdo.classes.group.view', ['section' => $this->classData['id'], 'group' => $group->id]) }}"
                                             wire:navigate class="group block h-full">
 
                                             @if ($loop->first)
@@ -425,12 +425,12 @@ new class extends Component
 
                     {{-- ── Students Tab ────────────────────────────────────────────────── --}}
                     <div x-show="tab === 'students'" x-cloak>
-                        <livewire:instructor::my-classes.students :section="$section" />
+                        <livewire:rdo::my-classes.students :section="$section" />
                     </div>
 
                     {{-- ── Schedule Tab ────────────────────────────────────────────────── --}}
                     <div x-show="tab === 'schedule'" x-cloak>
-                        <livewire:instructor::my-classes.schedule :section="$section" />
+                        <livewire:rdo::my-classes.schedule :section="$section" />
                     </div>
                 </div>
             </div>
