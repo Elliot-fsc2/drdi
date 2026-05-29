@@ -1,5 +1,8 @@
 <?php
 
+use App\Enums\InstructorRole;
+use App\Models\Instructor;
+use App\Models\Student;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -29,6 +32,18 @@ new #[Title('My Profile')] class extends Component {
             'isInstructor' => $isInstructor
         ];
     }
+
+     public function render()
+     {
+         $layout = match (true) {
+             auth()->user()?->profileable_type === Student::class => 'layouts::student.app',
+             auth()->user()?->profileable_type === Instructor::class && auth()->user()?->profileable?->role === InstructorRole::RDO => 'layouts::rdo.app',
+             auth()->user()?->profileable_type === Instructor::class => 'layouts::instructor.app',
+             default => 'layouts::app',
+         };
+
+         return $this->view()->layout($layout);
+     }
 };
 ?>
 
