@@ -13,12 +13,14 @@ class Post extends Model
         'author_id',
         'target_type',
         'section_id',
+        'images_path',
     ];
 
-    protected function casts()
+    protected function casts(): array
     {
         return [
             'target_type' => PostType::class,
+            'images_path' => 'array',
         ];
     }
 

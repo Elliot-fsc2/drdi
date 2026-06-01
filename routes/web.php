@@ -99,6 +99,10 @@ Route::middleware(['auth', 'rdo'])
         Route::livewire('/classes/{section}/group/{group}/schedule/{schedule}', 'rdo::my-classes.schedule.details')->name('classes.schedule.details');
         Route::livewire('/classes/{section}/group/{group}/settings', 'rdo::groups.settings')->name('group.settings');
 
+        Route::livewire('/announcements', 'rdo::announcement')->name('announcements');
+        Route::livewire('/announcements/create', 'rdo::announcement.create')->name('announcements.create');
+        Route::livewire('/announcements/{post}/edit', 'rdo::announcement.edit')->name('announcements.edit');
+
         Route::livewire('/group-masterlist', 'rdo::management.group-masterlist')->name('group-masterlist');
         Route::livewire('/thesis-fees', 'rdo::management.thesis-fees')->name('thesis-fees');
         Route::livewire('/semester-management', 'rdo::management.semester-tracking')->name('semester-management');

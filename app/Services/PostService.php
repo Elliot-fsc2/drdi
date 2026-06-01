@@ -12,6 +12,7 @@ class PostService
         $post = Post::create([
             'title' => $data['title'],
             'content' => $data['content'],
+            'images_path' => $data['images_path'] ?? null,
             'author_id' => auth()->id(),
             'target_type' => PostType::INSTRUCTORS,
         ]);
@@ -27,6 +28,7 @@ class PostService
         $post = Post::create([
             'title' => $data['title'],
             'content' => $data['content'],
+            'images_path' => $data['images_path'] ?? null,
             'author_id' => auth()->id(),
             'target_type' => PostType::STUDENTS,
         ]);
@@ -42,6 +44,7 @@ class PostService
         $post = Post::create([
             'title' => $data['title'],
             'content' => $data['content'],
+            'images_path' => $data['images_path'] ?? null,
             'author_id' => auth()->id(),
             'target_type' => PostType::SECTIONS,
         ]);

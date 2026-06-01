@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="DRDI NCST Research Portal - Department of Research Development and Innovation">
     <meta name="theme-color" content="#0891b2">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" href="{{ asset('images/logo.png') }}" type="image/x-icon">
 
     <title>{{ $title ? $title . ' • DRDI NCST' : 'DRDI NCST • Research Portal' }}</title>
@@ -129,6 +130,14 @@
                     <x-heroicon-o-user-group class="h-6 w-6 shrink-0" />
                     <span class="font-medium">My Groups</span>
                 </a>
+                <a href="{{ route('rdo.announcements') }}" wire:navigate @class([
+                    'flex items-center gap-3 rounded-xl px-4 py-2 transition-all',
+                    'bg-white/15 text-white border border-white/25' => request()->routeIs('rdo.announcements*'),
+                    'text-blue-200 hover:bg-blue-700/50 hover:text-white' => !request()->routeIs('rdo.announcements*'),
+                ])>
+                    <x-heroicon-o-user-group class="h-6 w-6 shrink-0" />
+                    <span class="font-medium">Announcements</span>
+                </a>
                 <a href="{{ route('rdo.schedule-management') }}" wire:navigate @class([
                     'flex items-center gap-3 rounded-xl px-4 py-2 transition-all',
                     'bg-white/15 text-white border border-white/25' => request()->routeIs('rdo.schedule-management'),
@@ -233,6 +242,15 @@
                     ]) :title="!sidebarOpen ? 'My Groups' : null">
                     <x-heroicon-o-user-group class="h-6 w-6 shrink-0" />
                     <span x-show="sidebarOpen" x-transition class="whitespace-nowrap font-medium">My Groups</span>
+                </a>
+                <a href="{{ route('rdo.announcements') }}" wire:navigate :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
+                    @class([
+                        'group flex items-center gap-3 rounded-xl py-2 transition-all',
+                        'bg-white/15 text-white border border-white/25' => request()->routeIs('rdo.announcements*'),
+                        'text-blue-200 hover:bg-blue-700/50 hover:text-white' => !request()->routeIs('rdo.announcements*'),
+                    ]) :title="!sidebarOpen ? 'Announcements' : null">
+                    <x-heroicon-o-user-group class="h-6 w-6 shrink-0" />
+                    <span x-show="sidebarOpen" x-transition class="whitespace-nowrap font-medium">Announcements</span>
                 </a>
                 <a href="{{ route('rdo.schedule-management') }}" wire:navigate
                     :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'" @class([
