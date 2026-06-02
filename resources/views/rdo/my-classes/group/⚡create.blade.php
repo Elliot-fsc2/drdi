@@ -37,6 +37,7 @@ new #[Layout('layouts::rdo.app')] class extends Component implements HasSchemas 
                 Select::make('leader_id')
                     ->label('Group Leader')
                     ->placeholder('Select a leader')
+                    ->options(fn () => $this->availableStudents)
                     ->required()
                     ->searchable()
                     ->preload()

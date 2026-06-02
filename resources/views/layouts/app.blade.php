@@ -154,6 +154,7 @@
                         <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
                         <span class="font-medium">My Groups</span>
                     </a>
+                    @if(Route::has('instructor.schedule-management'))
                     <a href="{{ route('instructor.schedule-management') }}" wire:navigate @class([
                         'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
                         'bg-white/15 text-white border border-white/25' => request()->routeIs(
@@ -164,6 +165,7 @@
                         <x-heroicon-o-calendar class="w-6 h-6 flex-shrink-0" />
                         <span class="font-medium">Schedules</span>
                     </a>
+                    @endif
                 @elseif($isStudent)
                     {{-- Student Navigation --}}
                     <a href="{{ route('student.home') }}" wire:navigate @class([
@@ -383,6 +385,7 @@
                         <x-heroicon-o-user-group class="w-6 h-6 flex-shrink-0" />
                         <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">My Groups</span>
                     </a>
+                    @if(Route::has('instructor.schedule-management'))
                     <a href="{{ route('instructor.schedule-management') }}" wire:navigate
                         :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'" @class([
                             'flex items-center gap-3 py-2 rounded-xl transition-all group',
@@ -395,6 +398,7 @@
                         <x-heroicon-o-calendar class="w-6 h-6 flex-shrink-0" />
                         <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Schedules</span>
                     </a>
+                    @endif
                 @elseif($isStudent)
                     {{-- Student Navigation --}}
                     <a href="{{ route('student.home') }}" wire:navigate
@@ -650,7 +654,7 @@
                                             <x-heroicon-o-user class="h-4 w-4 text-slate-500" />
                                             My Profile
                                         </a>
-                                        <a href="#"
+                                        <a href="{{ route('settings') }}" wire:navigate
                                             class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 transition hover:bg-slate-50 hover:text-slate-950">
                                             <x-heroicon-o-cog-6-tooth class="h-4 w-4 text-slate-500" />
                                             Settings

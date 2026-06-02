@@ -8,7 +8,8 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-new class extends Component
+new #[Layout('layouts::instructor.app')] 
+class extends Component
 {
     public Section $section;
 

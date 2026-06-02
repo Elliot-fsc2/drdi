@@ -54,4 +54,14 @@ class PostService
             ->withProperties(['post_id' => $post->id])
             ->log('Created a new post: '.$data['title']);
     }
+
+    public function deletePost(Post $post)
+    {
+        $post->delete();
+
+        activity('Post Deletion by :causer.name')
+            ->performedOn($post)
+            ->withProperties(['post_id' => $post->id])
+            ->log('Deleted post: '.$post->title);
+    }
 }

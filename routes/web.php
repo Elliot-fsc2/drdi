@@ -49,6 +49,7 @@ Route::middleware('auth')->group(function () {
     })->name('logout');
 
     Route::livewire('/profile', 'pages::profile')->name('profile');
+    Route::livewire('/settings', 'pages::account-settings')->name('settings');
     Route::livewire('/repository', 'pages::repository')->name('repository');
     Route::livewire('/repository/{researchlibrary:title}', 'pages::repository.details')->name('repository.details');
 

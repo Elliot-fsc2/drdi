@@ -37,6 +37,7 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasS
                 Select::make('leader_id')
                     ->label('Group Leader')
                     ->placeholder('Select a leader')
+                    ->options(fn () => $this->availableStudents)
                     ->required()
                     ->searchable()
                     ->preload()

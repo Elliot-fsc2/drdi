@@ -14,7 +14,8 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 use App\Services\GroupService;
 
-new #[Layout('layouts::instructor.app')] class extends Component implements HasActions, HasSchemas {
+new #[Layout('layouts::instructor.app')] 
+class extends Component implements HasActions, HasSchemas {
     use InteractsWithActions;
     use InteractsWithSchemas;
 

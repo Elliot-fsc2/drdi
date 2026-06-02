@@ -272,7 +272,7 @@
                                             <x-heroicon-o-user class="h-4 w-4 text-slate-500" />
                                             My Profile
                                         </a>
-                                        <a href="#"
+                                        <a href="{{ route('settings') }}" wire:navigate
                                             class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 transition hover:bg-slate-50 hover:text-slate-950">
                                             <x-heroicon-o-cog-6-tooth class="h-4 w-4 text-slate-500" />
                                             Settings

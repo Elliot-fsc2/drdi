@@ -67,6 +67,7 @@ new
      public function classes()
      {
          $query = Section::where('instructor_id', auth()->user()->profileable->id)
+             ->with('program')
              ->whereHas('semester', function ($query) {
                  $query->active();
              })

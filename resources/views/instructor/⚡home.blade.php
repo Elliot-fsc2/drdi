@@ -7,13 +7,20 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Layout('layouts::instructor.app')] #[Title('Home')] class extends Component {
+new #[Layout('layouts::instructor.app')] #[Title('Home')] class extends Component
+{
     public int $activeClasses = 0;
+
     public int $totalStudents = 0;
+
     public int $totalGroups = 0;
+
     public int $pendingProposals = 0;
+
     public $consultations;
+
     public $recentProposals;
+
     public $announcements;
 
     public function mount(InstructorStatsService $stats): void
@@ -26,6 +33,7 @@ new #[Layout('layouts::instructor.app')] #[Title('Home')] class extends Componen
         $this->consultations = $data['consultations'];
         $this->recentProposals = $data['recent_proposals'];
         $this->announcements = Post::where('target_type', PostType::INSTRUCTORS)
+            ->with('author')
             ->latest()
             ->take(10)
             ->get();

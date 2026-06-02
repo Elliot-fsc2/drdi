@@ -42,7 +42,7 @@ class FeeService
             );
 
             // Activity log: record that we initialized or ensured the group's fee ledger.
-            activity()->useLog('group_fees')
+            activity('Group Fee Initialization')
                 ->performedOn($fee)
                 ->causedBy(auth()->user())
                 ->withProperties([

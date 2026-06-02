@@ -1,42 +1,46 @@
 <?php
 
 use App\Models\Post;
-use Livewire\Attributes\Async;
-use Livewire\Attributes\Computed;
+use App\Services\PostService;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Renderless;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 new
 #[Layout('layouts.rdo.app')]
 #[Title('Announcements')]
 class extends Component
 {
+    use WithPagination;
+
     public $search = '';
 
-    #[Computed]
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
     public function posts()
     {
         return Post::query()
             ->when($this->search, function ($query) {
-                // FIXED: Wrapped the search conditions in a logical closure group
-                // so operator precedence doesn't conflict with global scopes.
                 $query->where(function ($q) {
                     $q->where('title', 'like', '%' . $this->search . '%')
                       ->orWhere('content', 'like', '%' . $this->search . '%');
                 });
             })
             ->latest()
-            ->get();
+            ->paginate(10);
     }
 
     #[Renderless]
     #[On('delete-post')]
-    public function deletePost(Post $post)
+    public function deletePost(Post $post, PostService $postService)
     {
-        $post->delete();
+        $postService->deletePost($post);
     }
 };
 ?>
@@ -125,7 +129,7 @@ class extends Component
 
   {{-- Post Cards Feed Container --}}
   <div class="mt-10">
-    @if($this->posts->isEmpty())
+    @if($this->posts()->isEmpty())
     {{-- Centered Empty State Layout --}}
     <div
       class="max-w-2xl mx-auto flex flex-col items-center justify-center text-center p-12 border border-dashed border-slate-200 rounded-2xl bg-white/50">
@@ -145,13 +149,17 @@ class extends Component
     {{-- Centered Single Column Layout Stack --}}
     {{-- FIXED: Replaced x-for with server loop managed by Alpine visibility masks to preserve your Livewire tags --}}
     <div class="max-w-4xl mx-auto flex flex-col gap-6">
-      @foreach($this->posts as $post)
+      @foreach($this->posts() as $post)
       <div x-show="!deletedIds.includes({{ $post->id }})" x-transition:leave="transition ease-in duration-200"
         x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
         wire:key="post-wrapper-{{ $post->id }}">
         <livewire:post :post="$post" :key="$post->id" />
       </div>
       @endforeach
+    </div>
+
+    <div class="mt-8">
+      {{ $this->posts()->links() }}
     </div>
     @endif
   </div>
