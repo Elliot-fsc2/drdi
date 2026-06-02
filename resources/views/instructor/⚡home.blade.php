@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\PostType;
+use App\Models\Post;
 use App\Services\InstructorStatsService;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -12,6 +14,7 @@ new #[Layout('layouts::instructor.app')] #[Title('Home')] class extends Componen
     public int $pendingProposals = 0;
     public $consultations;
     public $recentProposals;
+    public $announcements;
 
     public function mount(InstructorStatsService $stats): void
     {
@@ -22,6 +25,10 @@ new #[Layout('layouts::instructor.app')] #[Title('Home')] class extends Componen
         $this->pendingProposals = $data['proposals'];
         $this->consultations = $data['consultations'];
         $this->recentProposals = $data['recent_proposals'];
+        $this->announcements = Post::where('target_type', PostType::INSTRUCTORS)
+            ->latest()
+            ->take(10)
+            ->get();
     }
 };
 ?>
@@ -72,147 +79,148 @@ new #[Layout('layouts::instructor.app')] #[Title('Home')] class extends Componen
             </div>
         </div>
 
-        {{-- ── Stats Cards ──────────────────────────────── --}}
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8 sm:mb-10">
-            @island(defer: true)
-                <div class="rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-px hover:shadow-lg"
-                    style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
-                    <div class="flex items-center gap-3 mb-3">
-                        <div class="min-w-0">
-                            <p
-                                style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
-                                Active Classes</p>
-                            <p class="text-2xl font-bold" style="color: #0F172A">{{ $activeClasses }}</p>
-                        </div>
-                    </div>
-                    <p class="text-xs" style="color: #94A3B8">Currently running sections</p>
-                </div>
 
-                <div class="rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-px hover:shadow-lg"
-                    style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
-                    <div class="flex items-center gap-3 mb-3">
-                        <div class="min-w-0">
-                            <p
-                                style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
-                                Total Students</p>
-                            <p class="text-2xl font-bold" style="color: #0F172A">{{ $totalStudents }}</p>
-                        </div>
-                    </div>
-                    <p class="text-xs" style="color: #94A3B8">Across all active classes</p>
-                </div>
 
-                <div class="rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-px hover:shadow-lg"
-                    style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
-                    <div class="flex items-center gap-3 mb-3">
-                        <div class="min-w-0">
-                            <p
-                                style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
-                                Total Groups</p>
-                            <p class="text-2xl font-bold" style="color: #0F172A">{{ $totalGroups }}</p>
-                        </div>
-                    </div>
-                    <p class="text-xs" style="color: #94A3B8">Research groups enrolled</p>
-                </div>
-
-                <div class="rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-px hover:shadow-lg"
-                    style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
-                    <div class="flex items-center gap-3 mb-3">
-                        <div class="min-w-0">
-                            <p
-                                style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
-                                Pending Proposals</p>
-                            <p class="text-2xl font-bold" style="color: #0F172A">{{ $pendingProposals }}</p>
-                        </div>
-                    </div>
-                    <p class="text-xs" style="color: #94A3B8">Awaiting your review</p>
-                </div>
-            @endisland
-
-        </div>
-
-        {{-- ── Main Content ─────────────────────────────── --}}
+        {{-- ── Main Content (Announcements + Sidebar) ───── --}}
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            {{-- Left: Recent Proposals --}}
+            {{-- Left: Announcements --}}
             <div class="lg:col-span-2 space-y-5">
 
-                <div class="flex items-center justify-between">
-                    <div class="inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5"
-                        style="border-color: rgba(0,82,255,0.15); background: rgba(0,82,255,0.04)">
-                        <span class="w-1.5 h-1.5 rounded-full" style="background: #0052FF"></span>
+                @if($announcements->isNotEmpty())
+                    <div class="flex items-center justify-between">
+                        <div class="inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5"
+                             style="border-color: rgba(0,82,255,0.15); background: rgba(0,82,255,0.04)">
+                            <span class="w-1.5 h-1.5 rounded-full" style="background: #0052FF"></span>
+                            <span
+                                style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #0052FF; text-transform: uppercase">
+                                Announcements
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        @foreach($announcements as $announcement)
+                            <livewire-post :post="$announcement" />
+                        @endforeach
+                    </div>
+                @endif
+
+            </div>
+
+            {{-- Right: Sidebar (Stats + Proposals + Consultations) --}}
+            <div class="space-y-5">
+
+                {{-- Stats Cards --}}
+                @island(defer: true)
+                    <div class="rounded-2xl border p-4 transition-all duration-200 hover:-translate-y-px hover:shadow-lg"
+                        style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+                        <p
+                            style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
+                            Active Classes</p>
+                        <p class="text-xl font-bold mt-1" style="color: #0F172A">{{ $activeClasses }}</p>
+                        <p class="text-xs mt-0.5" style="color: #94A3B8">Currently running sections</p>
+                    </div>
+
+                    <div class="rounded-2xl border p-4 transition-all duration-200 hover:-translate-y-px hover:shadow-lg"
+                        style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+                        <p
+                            style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
+                            Total Students</p>
+                        <p class="text-xl font-bold mt-1" style="color: #0F172A">{{ $totalStudents }}</p>
+                        <p class="text-xs mt-0.5" style="color: #94A3B8">Across all active classes</p>
+                    </div>
+
+                    <div class="rounded-2xl border p-4 transition-all duration-200 hover:-translate-y-px hover:shadow-lg"
+                        style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+                        <p
+                            style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
+                            Total Groups</p>
+                        <p class="text-xl font-bold mt-1" style="color: #0F172A">{{ $totalGroups }}</p>
+                        <p class="text-xs mt-0.5" style="color: #94A3B8">Research groups enrolled</p>
+                    </div>
+
+                    <div class="rounded-2xl border p-4 transition-all duration-200 hover:-translate-y-px hover:shadow-lg"
+                        style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+                        <p
+                            style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
+                            Pending Proposals</p>
+                        <p class="text-xl font-bold mt-1" style="color: #0F172A">{{ $pendingProposals }}</p>
+                        <p class="text-xs mt-0.5" style="color: #94A3B8">Awaiting your review</p>
+                    </div>
+                @endisland
+
+                {{-- Recent Proposals --}}
+                <div class="rounded-2xl border overflow-hidden"
+                    style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+                    <div class="px-5 py-4" style="border-bottom: 1px solid #F1F5F9; background: #FAFAFA">
                         <span
-                            style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #0052FF; text-transform: uppercase">
+                            style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #94A3B8; text-transform: uppercase">
                             Recent Proposals
                         </span>
                     </div>
-                </div>
-
-                <div class="space-y-3">
-                    @forelse($recentProposals as $proposal)
-                        @php
-                            $statusStyle = match ($proposal->status) {
-                                \App\Enums\ProposalStatus::APPROVED => [
-                                    'bar' => 'linear-gradient(to bottom, #059669, #34D399)',
-                                    'bg' => '#ECFDF5',
-                                    'color' => '#059669',
-                                    'border' => '#A7F3D0',
-                                ],
-                                \App\Enums\ProposalStatus::REJECTED => [
-                                    'bar' => 'linear-gradient(to bottom, #DC2626, #F87171)',
-                                    'bg' => '#FEF2F2',
-                                    'color' => '#DC2626',
-                                    'border' => '#FECACA',
-                                ],
-                                default => [
-                                    'bar' => 'linear-gradient(to bottom, #EA580C, #FB923C)',
-                                    'bg' => '#FFF7ED',
-                                    'color' => '#EA580C',
-                                    'border' => '#FED7AA',
-                                ],
-                            };
-                        @endphp
-                        <div class="relative overflow-hidden rounded-2xl border transition-all duration-200 hover:-translate-y-px hover:shadow-lg"
-                            style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
-                            <div class="absolute bottom-0 left-0 top-0 w-[3px] rounded-l-2xl"
-                                style="background: {{ $statusStyle['bar'] }}"></div>
-                            <div class="py-5 pl-6 pr-5">
-                                <div class="flex items-start justify-between mb-2 gap-3">
-                                    <h3 class="text-sm font-semibold leading-snug" style="color: #0F172A">
-                                        {{ $proposal->title }}</h3>
-                                    <span
-                                        class="shrink-0 inline-flex items-center rounded-lg px-2.5 py-0.5 text-xs font-medium"
-                                        style="background: {{ $statusStyle['bg'] }}; color: {{ $statusStyle['color'] }}; border: 1px solid {{ $statusStyle['border'] }}">
-                                        {{ ucfirst($proposal->status->value) }}
-                                    </span>
-                                </div>
-                                @if ($proposal->description)
-                                    <p class="text-xs mb-3" style="color: #64748B; line-height: 1.5">
-                                        {{ Str::limit($proposal->description, 120) }}</p>
-                                @endif
-                                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs" style="color: #94A3B8">
-                                    <span class="flex items-center gap-1">
-                                        <x-heroicon-o-user-group class="w-3.5 h-3.5" />
-                                        {{ $proposal->group->name ?? '—' }}
-                                    </span>
-                                    <span class="flex items-center gap-1">
-                                        <x-heroicon-o-clock class="w-3.5 h-3.5" />
-                                        {{ $proposal->created_at->diffForHumans() }}
-                                    </span>
+                    <div class="p-5 space-y-3">
+                        @forelse($recentProposals as $proposal)
+                            @php
+                                $statusStyle = match ($proposal->status) {
+                                    \App\Enums\ProposalStatus::APPROVED => [
+                                        'bar' => 'linear-gradient(to bottom, #059669, #34D399)',
+                                        'bg' => '#ECFDF5',
+                                        'color' => '#059669',
+                                        'border' => '#A7F3D0',
+                                    ],
+                                    \App\Enums\ProposalStatus::REJECTED => [
+                                        'bar' => 'linear-gradient(to bottom, #DC2626, #F87171)',
+                                        'bg' => '#FEF2F2',
+                                        'color' => '#DC2626',
+                                        'border' => '#FECACA',
+                                    ],
+                                    default => [
+                                        'bar' => 'linear-gradient(to bottom, #EA580C, #FB923C)',
+                                        'bg' => '#FFF7ED',
+                                        'color' => '#EA580C',
+                                        'border' => '#FED7AA',
+                                    ],
+                                };
+                            @endphp
+                            <div class="relative overflow-hidden rounded-xl border transition-all duration-200 hover:-translate-y-px hover:shadow-md"
+                                style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+                                <div class="absolute bottom-0 left-0 top-0 w-[3px] rounded-l-xl"
+                                    style="background: {{ $statusStyle['bar'] }}"></div>
+                                <div class="py-3.5 pl-5 pr-4">
+                                    <div class="flex items-start justify-between mb-1.5 gap-2">
+                                        <h3 class="text-sm font-semibold leading-snug" style="color: #0F172A">
+                                            {{ $proposal->title }}</h3>
+                                        <span
+                                            class="shrink-0 inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium"
+                                            style="background: {{ $statusStyle['bg'] }}; color: {{ $statusStyle['color'] }}; border: 1px solid {{ $statusStyle['border'] }}">
+                                            {{ ucfirst($proposal->status->value) }}
+                                        </span>
+                                    </div>
+                                    @if ($proposal->description)
+                                        <p class="text-xs mb-2" style="color: #64748B; line-height: 1.5">
+                                            {{ Str::limit($proposal->description, 90) }}</p>
+                                    @endif
+                                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs" style="color: #94A3B8">
+                                        <span class="flex items-center gap-1">
+                                            <x-heroicon-o-user-group class="w-3 h-3" />
+                                            {{ $proposal->group->name ?? '—' }}
+                                        </span>
+                                        <span class="flex items-center gap-1">
+                                            <x-heroicon-o-clock class="w-3 h-3" />
+                                            {{ $proposal->created_at->diffForHumans() }}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    @empty
-                        <div class="rounded-2xl border p-10 text-center"
-                            style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
-                            <x-heroicon-o-document-text class="w-8 h-8 mx-auto mb-3" style="color: #CBD5E1" />
-                            <p class="text-sm" style="color: #94A3B8">No proposals yet</p>
-                        </div>
-                    @endforelse
+                        @empty
+                            <div class="text-center py-6">
+                                <x-heroicon-o-document-text class="w-6 h-6 mx-auto mb-2" style="color: #CBD5E1" />
+                                <p class="text-xs" style="color: #94A3B8">No proposals yet</p>
+                            </div>
+                        @endforelse
+                    </div>
                 </div>
-            </div>
-
-            {{-- Right: Sidebar --}}
-            <div class="space-y-5">
 
                 {{-- Consultation Schedule --}}
                 <div class="rounded-2xl border overflow-hidden"
@@ -256,11 +264,6 @@ new #[Layout('layouts::instructor.app')] #[Title('Home')] class extends Componen
                         @endforelse
                     </div>
                 </div>
-
-
-
-            </div>
-        </div>
 
     </div>
 </div>

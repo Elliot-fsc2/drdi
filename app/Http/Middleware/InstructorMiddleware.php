@@ -15,7 +15,7 @@ class InstructorMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check() || auth()->user()->profileable_type !== \App\Models\Instructor::class) {
+        if (! auth()->check() || auth()->user()->profileable_type !== \App\Models\Instructor::class) {
             abort(403, 'Unauthorized');
         }
 

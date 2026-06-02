@@ -28,12 +28,12 @@ class ResearchLibrary extends Model
         ];
     }
 
-      public function getActivitylogOptions(): LogOptions
-      {
-          return LogOptions::defaults()
-          ->useLogName('Research Library')
-          ->setDescriptionForEvent(fn(string $eventName) => "This model has been {$eventName} by :causer.name");
-      }
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('Research Library')
+            ->setDescriptionForEvent(fn (string $eventName) => "This model has been {$eventName} by :causer.name");
+    }
 
     public function group()
     {

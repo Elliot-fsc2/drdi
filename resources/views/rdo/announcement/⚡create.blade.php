@@ -92,6 +92,8 @@ class extends Component implements HasActions, HasSchemas
                             ->multiple()
                             ->disk('public')
                             ->directory('post-images')
+                            ->panelLayout('grid')
+                            ->uploadingMessage('Uploading attachment...')
                             ->visibility('public')
                             ->image(),
 
@@ -152,55 +154,59 @@ class extends Component implements HasActions, HasSchemas
 @assets
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Calistoga&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Calistoga&family=JetBrains+Mono:wght@400;500&display=swap"
+  rel="stylesheet">
 <link rel="stylesheet" href="{{ Vite::asset('resources/css/filament.css') }}">
 @endassets
 
 <div>
-    {{-- Decorative Badge --}}
-    <div class="inline-flex items-center gap-2 rounded-full border px-4 py-1.5 mb-5"
-        style="border-color: rgba(0,82,255,0.2); background: rgba(0,82,255,0.05)">
-        <span class="w-1.5 h-1.5 rounded-full animate-pulse" style="background: #0052FF"></span>
-        <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: #0052FF; text-transform: uppercase">
-            System Broadcast
-        </span>
-    </div>
+  {{-- Decorative Badge --}}
+  <div class="inline-flex items-center gap-2 rounded-full border px-4 py-1.5 mb-5"
+    style="border-color: rgba(0,82,255,0.2); background: rgba(0,82,255,0.05)">
+    <span class="w-1.5 h-1.5 rounded-full animate-pulse" style="background: #0052FF"></span>
+    <span
+      style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: #0052FF; text-transform: uppercase">
+      System Broadcast
+    </span>
+  </div>
 
-    {{-- Content Header --}}
-    <div class="mb-8">
-        <h1 class="leading-tight"
-            style="font-family: 'Calistoga', Georgia, serif; font-size: clamp(1.85rem, 4vw, 2.75rem); letter-spacing: -0.015em; color: #0F172A">
-            New Announcement<span style="background: linear-gradient(to right, #0052FF, #4D7CFF); -webkit-background-clip: text; background-clip: text; color: transparent">.</span>
-        </h1>
-        <p class="mt-2 text-sm" style="color: #64748B">
-            Compose your post below. Rich content options allow you to highlight code snippets, link guidelines, and emphasize notes.
-        </p>
-    </div>
+  {{-- Content Header --}}
+  <div class="mb-8">
+    <h1 class="leading-tight"
+      style="font-family: 'Calistoga', Georgia, serif; font-size: clamp(1.85rem, 4vw, 2.75rem); letter-spacing: -0.015em; color: #0F172A">
+      New Announcement<span
+        style="background: linear-gradient(to right, #0052FF, #4D7CFF); -webkit-background-clip: text; background-clip: text; color: transparent">.</span>
+    </h1>
+    <p class="mt-2 text-sm" style="color: #64748B">
+      Compose your post below. Rich content options allow you to highlight code snippets, link guidelines, and emphasize
+      notes.
+    </p>
+  </div>
 
-    {{-- Form Interface Panel --}}
-    <div class="rounded-2xl border border-slate-200 bg-white p-6 md:p-8 shadow-xs">
-        <form wire:submit="create" class="space-y-6">
+  {{-- Form Interface Panel --}}
+  <div class="rounded-2xl border border-slate-200 bg-white p-6 md:p-8 shadow-xs">
+    <form wire:submit="create" class="space-y-6">
 
-            {{-- Standardized live wire form call object --}}
-            <div>
-                {{ $this->form }}
-            </div>
+      {{-- Standardized live wire form call object --}}
+      <div>
+        {{ $this->form }}
+      </div>
 
-            {{-- Action Actions Bar --}}
-            <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-6 mt-6">
-                <a href="/announcements" wire:navigate
-                   class="inline-flex h-10 items-center justify-center px-4 rounded-xl text-sm font-semibold text-slate-600 border border-slate-200 bg-white transition hover:bg-slate-50 active:scale-[0.98]">
-                    Cancel
-                </a>
+      {{-- Action Actions Bar --}}
+      <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-6 mt-6">
+        <a href="/announcements" wire:navigate
+          class="inline-flex h-10 items-center justify-center px-4 rounded-xl text-sm font-semibold text-slate-600 border border-slate-200 bg-white transition hover:bg-slate-50 active:scale-[0.98]">
+          Cancel
+        </a>
 
-                <button type="submit"
-                        class="inline-flex h-10 items-center justify-center gap-2 px-5 rounded-xl font-semibold text-sm text-white transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
-                        style="background: linear-gradient(to right, #0052FF, #4D7CFF); box-shadow: 0 4px 12px rgba(0,82,255,0.2)">
-                    <x-heroicon-o-paper-airplane class="h-4 w-4 transform rotate-45 -translate-y-0.5" />
-                    Publish Announcement
-                </button>
-            </div>
-        </form>
-    </div>
-   <x-filament-actions::modals />
+        <button type="submit" wire:loading.attr="disabled" wire:target="data.images_path"
+          class="inline-flex h-10 items-center justify-center gap-2 px-5 rounded-xl font-semibold text-sm text-white transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+          style="background: linear-gradient(to right, #0052FF, #4D7CFF); box-shadow: 0 4px 12px rgba(0,82,255,0.2)">
+          <x-heroicon-o-paper-airplane class="h-4 w-4 transform rotate-45 -translate-y-0.5" />
+          Publish Announcement
+        </button>
+      </div>
+    </form>
+  </div>
+  <x-filament-actions::modals />
 </div>

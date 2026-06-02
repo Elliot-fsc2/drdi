@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
 
-     $this->call([
+        $this->call([
             SemesterSeeder::class,
             DepartmentSeeder::class,
             ProgramSeeder::class,
@@ -56,7 +56,6 @@ class DatabaseSeeder extends Seeder
             'profileable_id' => $student->id,
             'profileable_type' => Student::class,
         ]);
-
 
     }
 }

@@ -24,5 +24,4 @@ class ThesisRate extends Model
     {
         return $this->belongsToMany(Semester::class, 'semester_rates');
     }
-
 }

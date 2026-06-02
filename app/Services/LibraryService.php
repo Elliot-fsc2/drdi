@@ -37,31 +37,31 @@ class LibraryService
         $library->delete();
     }
 
-      public function publish(ResearchLibrary $library, string $publishedAt)
-      {
-          $library->update([
-              'is_published' => true,
-              'published_at' => $publishedAt ?? now(),
-          ]);
+    public function publish(ResearchLibrary $library, string $publishedAt)
+    {
+        $library->update([
+            'is_published' => true,
+            'published_at' => $publishedAt ?? now(),
+        ]);
 
-          activity('Research has been published')
-              ->performedOn($library)
-              ->causedBy(auth()->user())
-              ->withProperties(['library_id' => $library->id])
-              ->log(sprintf('Research library "%s" has been published by %s', $library->title, auth()->user()->name));
-      }
+        activity('Research has been published')
+            ->performedOn($library)
+            ->causedBy(auth()->user())
+            ->withProperties(['library_id' => $library->id])
+            ->log(sprintf('Research library "%s" has been published by %s', $library->title, auth()->user()->name));
+    }
 
-      public function unpublish(ResearchLibrary $library)
-      {
-          $library->update([
-              'is_published' => false,
-              'published_at' => null,
-          ]);
+    public function unpublish(ResearchLibrary $library)
+    {
+        $library->update([
+            'is_published' => false,
+            'published_at' => null,
+        ]);
 
-          activity('Research has been unpublished')
-              ->performedOn($library)
-              ->causedBy(auth()->user())
-              ->withProperties(['library_id' => $library->id])
-              ->log(sprintf('Research library "%s" has been unpublished by %s', $library->title, auth()->user()->name));
-      }
+        activity('Research has been unpublished')
+            ->performedOn($library)
+            ->causedBy(auth()->user())
+            ->withProperties(['library_id' => $library->id])
+            ->log(sprintf('Research library "%s" has been unpublished by %s', $library->title, auth()->user()->name));
+    }
 }

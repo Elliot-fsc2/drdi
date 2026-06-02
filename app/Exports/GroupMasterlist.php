@@ -14,7 +14,7 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class GroupMasterlist implements FromView, WithEvents, WithColumnWidths, WithStyles
+class GroupMasterlist implements FromView, WithColumnWidths, WithEvents, WithStyles
 {
     public function __construct(
         public ?int $semesterId = null,
@@ -54,7 +54,7 @@ class GroupMasterlist implements FromView, WithEvents, WithColumnWidths, WithSty
             ->get();
 
         return view('components.group-masterlist-export', [
-            'groups' => $groups
+            'groups' => $groups,
         ]);
     }
 
@@ -97,7 +97,7 @@ class GroupMasterlist implements FromView, WithEvents, WithColumnWidths, WithSty
                 $highestRow = $event->sheet->getHighestRow();
 
                 // Apply word wrapping and vertical top alignment to all cells
-                $style = $event->sheet->getDelegate()->getStyle('A1:I' . $highestRow);
+                $style = $event->sheet->getDelegate()->getStyle('A1:I'.$highestRow);
                 $style->getAlignment()->setWrapText(true);
                 $style->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
             },

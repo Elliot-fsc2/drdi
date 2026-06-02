@@ -9,6 +9,7 @@ use Illuminate\Validation\ValidationException;
 class Login
 {
     protected int $maxAttempts = 5;
+
     protected int $decaySeconds = 60;
 
     public function attempt(string $email, string $password, bool $remember = false)

@@ -16,6 +16,4 @@ enum ThesisRatesType: string implements HasLabel
             self::PER_PERSONNEL => 'Per Personnel',
         };
     }
-
-    
 }

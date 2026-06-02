@@ -20,5 +20,4 @@ class GroupFeeCollections extends Collection
     {
         return $this->totalCollectibles() - $this->totalExpenses();
     }
-
 }
