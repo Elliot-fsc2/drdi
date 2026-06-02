@@ -194,9 +194,9 @@ new #[Layout('layouts::rdo.app')] #[Title('Group Masterlist')] class extends Com
                         <div class="p-5 space-y-4 transition-colors duration-150 hover:bg-slate-50/60">
 
                             {{-- Header --}}
-                            <div class="flex items-start justify-between gap-3">
+                            <a href="{{ route('rdo.group-masterlist.view', $group) }}" wire:navigate class="flex items-start justify-between gap-3 group">
                                 <div class="min-w-0">
-                                    <h3 class="truncate font-bold text-base" style="color: #0F172A">{{ $group->name }}
+                                    <h3 class="truncate font-bold text-base group-hover:text-blue-600 transition-colors" style="color: #0F172A">{{ $group->name }}
                                     </h3>
                                     @if ($group->finalTitle)
                                         <p class="mt-0.5 text-xs font-medium leading-snug" style="color: #0052FF">
@@ -218,7 +218,7 @@ new #[Layout('layouts::rdo.app')] #[Title('Group Masterlist')] class extends Com
                                         </span>
                                     </div>
                                 @endif
-                            </div>
+                            </a>
 
                             {{-- Members --}}
                             <div>
@@ -345,27 +345,29 @@ new #[Layout('layouts::rdo.app')] #[Title('Group Masterlist')] class extends Com
 
                                     {{-- Group / Researchers --}}
                                     <td class="px-6 py-5 align-top">
-                                        @if ($group->finalTitle)
-                                            <p class="font-bold mb-2" style="color: #0052FF">
-                                                {{ $group->finalTitle->title }}</p>
-                                        @else
-                                            <p class="font-bold mb-2" style="color: #94A3B8">No finalized
-                                                title</p>
-                                        @endif
-                                        <div class="space-y-1.5">
-                                            @foreach ($group->members as $member)
-                                                <div class="flex items-center gap-2">
-                                                    <span class="text-sm"
-                                                        style="color: #374151">{{ $member->first_name }}
-                                                        {{ $member->last_name }}</span>
-                                                    <span class="text-xs"
-                                                        style="color: #94A3B8">({{ $member->student_number }})</span>
-                                                </div>
-                                            @endforeach
-                                            @if ($group->members->isEmpty())
-                                                <span class="text-sm italic" style="color: #94A3B8">No members</span>
+                                        <a href="{{ route('rdo.group-masterlist.view', $group) }}" wire:navigate class="group">
+                                            @if ($group->finalTitle)
+                                                <p class="font-bold mb-2 group-hover:text-blue-700 transition-colors" style="color: #0052FF">
+                                                    {{ $group->finalTitle->title }}</p>
+                                            @else
+                                                <p class="font-bold mb-2 group-hover:text-slate-600 transition-colors" style="color: #94A3B8">No finalized
+                                                    title</p>
                                             @endif
-                                        </div>
+                                            <div class="space-y-1.5">
+                                                @foreach ($group->members as $member)
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-sm"
+                                                            style="color: #374151">{{ $member->first_name }}
+                                                            {{ $member->last_name }}</span>
+                                                        <span class="text-xs"
+                                                            style="color: #94A3B8">({{ $member->student_number }})</span>
+                                                    </div>
+                                                @endforeach
+                                                @if ($group->members->isEmpty())
+                                                    <span class="text-sm italic" style="color: #94A3B8">No members</span>
+                                                @endif
+                                            </div>
+                                        </a>
                                     </td>
 
                                     {{-- Program --}}

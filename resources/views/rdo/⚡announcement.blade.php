@@ -26,6 +26,7 @@ class extends Component
     public function posts()
     {
         return Post::query()
+            ->with('author', 'section')
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('title', 'like', '%' . $this->search . '%')

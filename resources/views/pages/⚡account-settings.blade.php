@@ -20,9 +20,9 @@ use Spatie\Activitylog\Models\Activity;
 new #[Title('Account Settings')]
 class extends Component implements HasActions, HasSchemas
 {
-  use WithPagination;
     use InteractsWithActions;
     use InteractsWithSchemas;
+    use WithPagination;
 
     private UserSettings $userSettings;
 
