@@ -22,5 +22,4 @@
 
 /* Required by widgets */
 @import '../../vendor/filament/widgets/resources/css/index.css';
-
 @variant dark (&:where(.dark, .dark *));

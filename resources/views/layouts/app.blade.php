@@ -8,7 +8,7 @@
     <meta name="theme-color" content="#0891b2">
     <link rel="icon" href="{{ asset('images/logo.png') }}" type="image/x-icon">
 
-    <title>{{ $title ? $title . ' • DRDI NCST' : 'DRDI NCST • Research Portal' }}</title>
+    <title>{{ isset($title) ? $title . ' • DRDI NCST' : 'DRDI NCST • Research Portal' }}</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -606,7 +606,7 @@
                                 <x-heroicon-o-bars-3 class="h-6 w-6" />
                             </button>
 
-                            
+
                         </div>
 
                         <div class="flex min-w-0 items-center gap-3">

@@ -35,7 +35,7 @@ Route::get('/', function () {
     return redirect()->route('login')->with('error', 'Invalid user role');
 });
 
-Route::livewire('/test', 'rich-editor')->name('test');
+Route::livewire('/test', 'task-board')->name('test');
 
 Route::middleware('guest')->group(function () {
     Route::livewire('/login', 'pages::auth.login')->name('login');

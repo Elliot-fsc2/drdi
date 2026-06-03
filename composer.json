@@ -14,6 +14,7 @@
         "livewire/blaze": "^1.0",
         "livewire/livewire": "^4.0",
         "maatwebsite/excel": "^3.1",
+        "relaticle/flowforge": "^4.0",
         "spatie/laravel-activitylog": "^4.12"
     },
     "require-dev": {

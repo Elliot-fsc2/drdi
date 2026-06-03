@@ -2,6 +2,7 @@
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source "../../../../vendor/relaticle/flowforge/resources/views*.blade.php";
 
 @theme {
   --font-sans:

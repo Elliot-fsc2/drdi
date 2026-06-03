@@ -33,7 +33,7 @@ new #[Layout('layouts::instructor.app')] #[Title('Home')] class extends Componen
         $this->consultations = $data['consultations'];
         $this->recentProposals = $data['recent_proposals'];
         $this->announcements = Post::where('target_type', PostType::INSTRUCTORS)
-            ->with('author')
+            ->with('author','section')
             ->latest()
             ->take(10)
             ->get();
