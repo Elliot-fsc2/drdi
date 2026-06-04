@@ -27,6 +27,30 @@ new class extends Component implements HasActions, HasSchemas
 };
 ?>
 
+@placeholder
+<div class="w-full rounded-2xl border border-slate-200/80 bg-white px-5 pt-5 pb-4 shadow-xs space-y-4">
+  <div class="flex items-center gap-3">
+    <div class="h-10 w-10 shrink-0 rounded-full bg-slate-200 animate-pulse"></div>
+    <div class="flex-1 space-y-2">
+      <div class="h-4 w-32 rounded bg-slate-200 animate-pulse"></div>
+      <div class="h-3 w-20 rounded bg-slate-100 animate-pulse"></div>
+      <div class="h-3 w-16 rounded bg-slate-100 animate-pulse"></div>
+    </div>
+    <div class="h-6 w-16 rounded-lg bg-slate-200 animate-pulse"></div>
+  </div>
+  <div class="space-y-2">
+    <div class="h-5 w-3/4 rounded bg-slate-200 animate-pulse"></div>
+    <div class="space-y-1.5">
+      <div class="h-3 w-full rounded bg-slate-100 animate-pulse"></div>
+      <div class="h-3 w-5/6 rounded bg-slate-100 animate-pulse"></div>
+      <div class="h-3 w-2/3 rounded bg-slate-100 animate-pulse"></div>
+    </div>
+    <div class="h-48 w-full rounded-xl bg-slate-100 animate-pulse"></div>
+  </div>
+  <div class="h-10 w-full rounded-xl bg-slate-50 animate-pulse"></div>
+</div>
+@endplaceholder
+
 <div
   class="w-full rounded-2xl border border-slate-200/80 bg-white px-5 pt-5 pb-4 shadow-xs transition-all duration-200 hover:border-slate-300 hover:shadow-sm space-y-4">
 
@@ -99,9 +123,11 @@ new class extends Component implements HasActions, HasSchemas
     @php
       $content = $post->content ?? '';
 
-      $contentHtml = class_exists(\Filament\Forms\Components\RichEditor\RichContentRenderer::class)
-          ? \Filament\Forms\Components\RichEditor\RichContentRenderer::make($content)->toHtml()
-          : (string) Str::of((string) $content)->sanitizeHtml();
+      $contentHtml = blank($content)
+          ? ''
+          : (class_exists(\Filament\Forms\Components\RichEditor\RichContentRenderer::class)
+              ? \Filament\Forms\Components\RichEditor\RichContentRenderer::make($content)->toHtml()
+              : (string) Str::of((string) $content)->sanitizeHtml());
 
       $contentPlain = (string) Str::of($contentHtml)->stripTags()->squish();
       $shouldToggleContent = Str::length($contentPlain) > 240;
@@ -322,15 +348,19 @@ new class extends Component implements HasActions, HasSchemas
     @endif
   </div>
 
-  @if($post->section)
+  @if($post->relationLoaded('sections') && $post->sections->isNotEmpty())
     <div
       class="rounded-xl border border-slate-100 bg-slate-50/50 px-4 py-2.5 flex items-center justify-between text-xs text-slate-600">
       <span class="flex items-center gap-1.5 font-medium text-slate-700">
         <x-heroicon-o-folder class="h-4 w-4 text-slate-400" />
-        Target Group Section:
+        Target Sections:
       </span>
-      <span class="font-semibold bg-white border px-2 py-0.5 rounded-md text-slate-800 shadow-2xs">
-        {{ $post->section->name ?? 'Section ' . $post->section_id }}
+      <span class="flex items-center gap-1.5">
+        @foreach($post->sections as $section)
+          <span class="font-semibold bg-white border px-2 py-0.5 rounded-md text-slate-800 shadow-2xs">
+            {{ $section->name }}
+          </span>
+        @endforeach
       </span>
     </div>
   @endif

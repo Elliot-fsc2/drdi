@@ -96,7 +96,7 @@ new class extends Component implements HasActions, HasBoard, HasForms
         return Action::make('addTask')
             ->label('Add Task')
             ->color('info')
-                    ->modalCloseButton(false)
+            ->modalCloseButton(false)
             ->icon('heroicon-m-plus')
             ->modalHeading('Create a new task')
             ->modalWidth('md')

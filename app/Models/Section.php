@@ -45,4 +45,9 @@ class Section extends Model
     {
         return $this->hasMany(Group::class);
     }
+
+    public function posts()
+    {
+        return $this->belongsToMany(Post::class);
+    }
 }

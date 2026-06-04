@@ -41,6 +41,8 @@ class PostService
 
     public function createForSection(array $data)
     {
+        $sectionIds = $data['section_ids'] ?? [];
+
         $post = Post::create([
             'title' => $data['title'],
             'content' => $data['content'],
@@ -48,6 +50,8 @@ class PostService
             'author_id' => auth()->id(),
             'target_type' => PostType::SECTIONS,
         ]);
+
+        $post->sections()->attach($sectionIds);
 
         activity('Post Creation by :causer.name')
             ->performedOn($post)

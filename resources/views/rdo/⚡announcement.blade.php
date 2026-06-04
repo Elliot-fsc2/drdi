@@ -26,7 +26,7 @@ class extends Component
     public function posts()
     {
         return Post::query()
-            ->with('author', 'section')
+            ->with('author', 'sections')
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('title', 'like', '%' . $this->search . '%')
@@ -154,7 +154,7 @@ class extends Component
       <div x-show="!deletedIds.includes({{ $post->id }})" x-transition:leave="transition ease-in duration-200"
         x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
         wire:key="post-wrapper-{{ $post->id }}">
-        <livewire:post :post="$post" :key="$post->id" />
+        <livewire:post :post="$post" :key="$post->id" defer />
       </div>
       @endforeach
     </div>

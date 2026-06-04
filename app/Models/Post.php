@@ -12,7 +12,6 @@ class Post extends Model
         'content',
         'author_id',
         'target_type',
-        'section_id',
         'images_path',
     ];
 
@@ -29,8 +28,8 @@ class Post extends Model
         return $this->belongsTo(User::class, 'author_id');
     }
 
-    public function section()
+    public function sections()
     {
-        return $this->belongsTo(Section::class);
+        return $this->belongsToMany(Section::class);
     }
 }

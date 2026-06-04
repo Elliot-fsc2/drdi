@@ -1,9 +1,13 @@
 <?php
 
+use App\Enums\PostType;
+use App\Models\Post;
 use App\Models\Program;
 use App\Models\Section;
 use App\Models\Semester;
 use Filament\Actions\Action;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Cache;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Select;
@@ -63,31 +67,59 @@ new
              });
      }
 
+     public function createAnnouncementAction(): Action
+     {
+         return Action::make('createAnnouncement')
+             ->label('Create Announcement')
+             ->icon(Heroicon::Megaphone)
+             ->color('primary')
+             ->action(function (): void {
+                 $this->redirect(route('rdo.section-create.announcements'), navigate: true);
+             });
+     }
+
      #[Computed]
      public function classes()
      {
          $query = Section::where('instructor_id', auth()->user()->profileable->id)
-             ->with('program')
-             ->whereHas('semester', function ($query) {
-                 $query->active();
-             })
-             ->withCount('students')
-             ->withCount('groups')
-             ->when($this->search, function ($query) {
-                 $query->where('name', 'like', '%'.$this->search.'%');
-             });
+            ->with('program')
+            ->whereHas('semester', function ($query) {
+                $query->active();
+            })
+            ->withCount('students')
+            ->withCount('groups')
+            ->when($this->search, function ($query) {
+                $query->where('name', 'like', '%'.$this->search.'%');
+            });
 
-         return $query->get()->map(function ($section) {
-             return [
-                 'id' => $section->id,
-                 'section' => $section->name,
-                 'course' => $section->program->name,
-                 'students_count' => $section->students_count,
-                 'groups_count' => $section->groups_count,
-             ];
-         });
-     }
- };
+        return $query->get()->map(function ($section) {
+            return [
+                'id' => $section->id,
+                'section' => $section->name,
+                'course' => $section->program->name,
+                'students_count' => $section->students_count,
+                'groups_count' => $section->groups_count,
+            ];
+        });
+    }
+
+    #[Computed]
+    public function announcements(): Collection
+    {
+        $sectionIds = Section::where('instructor_id', auth()->user()->profileable->id)
+            ->whereHas('semester', fn ($q) => $q->active())
+            ->pluck('id');
+
+        return Cache::flexible('rdo_announcements_' . auth()->id(), [600, 1800], fn (): Collection =>
+            Post::where('target_type', PostType::SECTIONS)
+                ->whereHas('sections', fn ($q) => $q->whereIn('sections.id', $sectionIds))
+                ->with('author', 'sections')
+                ->latest()
+                ->take(10)
+                ->get()
+        );
+    }
+  };
 ?>
 
 
@@ -142,9 +174,22 @@ new
 
                 {{-- Action bar --}}
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                    <button wire:click="mountAction('createSection')"
+                    <button wire:click="mountAction('createAnnouncement')"
                         class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-white transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] group shrink-0"
                         style="background: linear-gradient(to right, #0052FF, #4D7CFF); box-shadow: 0 4px 12px rgba(0,82,255,0.3)">
+                        <x-heroicon-o-megaphone class="h-4 w-4" />
+                        Create Announcement
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            class="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5"
+                            viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <button wire:click="mountAction('createSection')"
+                        class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-white transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] group shrink-0"
+                        style="background: #1E293B; box-shadow: 0 4px 12px rgba(0,0,0,0.15)">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd"
                                 d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
@@ -370,6 +415,27 @@ new
                     </a>
                 @endforeach
             </div>
+
+            {{-- ── Announcements Section ─────────────────────────────────────────────── --}}
+            @php $announcements = $this->announcements; @endphp
+            @if ($announcements->isNotEmpty())
+                <div class="mt-10">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                            style="background: linear-gradient(135deg, #0052FF, #4D7CFF); box-shadow: 0 4px 12px rgba(0,82,255,0.25)">
+                            <x-heroicon-o-megaphone class="h-4 w-4 text-white" />
+                        </div>
+                        <h2 class="font-bold text-lg" style="color: #0F172A; font-family: 'Calistoga', Georgia, serif">
+                            Section Announcements
+                        </h2>
+                    </div>
+                    <div class="space-y-4">
+                        @foreach ($announcements as $announcement)
+                            <livewire-post :post="$announcement" defer />
+                        @endforeach
+                    </div>
+                </div>
+            @endif
         @endif
 
     </div>

@@ -70,6 +70,9 @@ Route::middleware(['auth', 'instructor'])
         Route::livewire('/classes/{section}/group/{group}/schedule/{schedule}', 'instructor::my-classes.schedule.details')->name('classes.schedule.details');
         Route::livewire('/classes/{section}/group/{group}/settings', 'instructor::groups.settings')->name('group.settings');
 
+        Route::livewire('/announcements/create', 'instructor::announcement.create')->name('announcements.create');
+        Route::livewire('/section-announcements/create', 'instructor::announcement.section-create')->name('announcements.section-create');
+
         Route::livewire('/groups', 'instructor::groups')->name('groups');
         Route::livewire('/groups/{group}', 'instructor::groups.assigned.view')->name('groups.assigned.view');
         // Route::livewire('/schedule-management', 'rdo::management.schedules')->name('schedule-management');
@@ -102,6 +105,7 @@ Route::middleware(['auth', 'rdo'])
 
         Route::livewire('/announcements', 'rdo::announcement')->name('announcements');
         Route::livewire('/announcements/create', 'rdo::announcement.create')->name('announcements.create');
+        Route::livewire('/section-announcements/create', 'rdo::announcement.section-create')->name('section-create.announcements');
         Route::livewire('/announcements/{post}/edit', 'rdo::announcement.edit')->name('announcements.edit');
 
         Route::livewire('/group-masterlist', 'rdo::management.group-masterlist')->name('group-masterlist');
