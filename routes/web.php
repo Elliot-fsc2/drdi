@@ -72,6 +72,7 @@ Route::middleware(['auth', 'instructor'])
 
         Route::livewire('/announcements/create', 'instructor::announcement.create')->name('announcements.create');
         Route::livewire('/section-announcements/create', 'instructor::announcement.section-create')->name('announcements.section-create');
+        Route::livewire('/section-announcements/{post}/edit', 'instructor::announcement.edit')->name('announcements.edit');
 
         Route::livewire('/groups', 'instructor::groups')->name('groups');
         Route::livewire('/groups/{group}', 'instructor::groups.assigned.view')->name('groups.assigned.view');

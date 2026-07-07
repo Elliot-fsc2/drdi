@@ -48,7 +48,8 @@ new #[Layout('layouts::student.app')] #[Title('Fees')] class extends Component {
 };
 ?>
 
-<div class="space-y-6">
+<div class="p-3 sm:p-4 lg:p-6 bg-slate-50 min-h-screen">
+    <div class="max-w-7xl mx-auto space-y-6">
     <!-- Header -->
     <div class="bg-white border border-gray-200 rounded-lg p-6">
         <h1 class="text-2xl font-bold text-gray-900 mb-1">Group Fees</h1>
@@ -135,4 +136,5 @@ new #[Layout('layouts::student.app')] #[Title('Fees')] class extends Component {
             </div>
         </div>
     @endif
+    </div>
 </div>

@@ -84,29 +84,29 @@
 
   <div class="min-h-screen">
     <header
-      class="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 shadow-[0_1px_0_rgba(148,163,184,0.12)] backdrop-blur-xl">
+      class="sticky top-0 z-30 border-b border-blue-700/50 bg-blue-800">
       <div class="relative">
         <div class="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
 
           <a href="{{ route('student.home') }}" wire:navigate
-            class="hidden lg:flex items-center gap-3 rounded-2xl px-2 py-1 transition hover:bg-slate-100">
+            class="hidden lg:flex items-center gap-3 rounded-2xl px-2 py-1 transition hover:bg-blue-700/50">
             <div
-              class="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-600 shadow-md shadow-cyan-200/60 ring-1 ring-cyan-100">
+              class="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 shadow-md ring-1 ring-white/25">
               <img src="{{ asset('images/logo.png') }}" alt="DRDI Logo" class="h-10 w-10 rounded-xl">
             </div>
             <div class="hidden sm:block">
-              <h1 class="text-sm font-semibold tracking-wide text-slate-900">DRDI NCST</h1>
+              <h1 class="text-sm font-semibold tracking-wide text-white">DRDI NCST</h1>
             </div>
           </a>
 
           <button @click="mobileMenuOpen = !mobileMenuOpen"
-            class="flex lg:hidden items-center gap-3 rounded-2xl px-2 py-1 transition hover:bg-slate-100 focus:outline-none">
+            class="flex lg:hidden items-center gap-3 rounded-2xl px-2 py-1 transition hover:bg-blue-700/50 focus:outline-none">
             <div
-              class="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-600 shadow-md shadow-cyan-200/60 ring-1 ring-cyan-100">
+              class="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 shadow-md ring-1 ring-white/25">
               <img src="{{ asset('images/logo.png') }}" alt="DRDI Logo" class="h-10 w-10 rounded-xl">
             </div>
             <div class="hidden sm:block">
-              <h1 class="text-sm font-semibold tracking-wide text-slate-900">DRDI NCST</h1>
+              <h1 class="text-sm font-semibold tracking-wide text-white">DRDI NCST</h1>
             </div>
           </button>
 
@@ -114,8 +114,8 @@
             @foreach ($navigationItems as $item)
             <a href="{{ $item['url'] }}" wire:navigate
               @class([ 'inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-all'
-              , 'border border-cyan-200 bg-cyan-50 text-cyan-800 shadow-sm'=> request()->routeIs($item['active']),
-              'text-slate-600 hover:border-slate-200 hover:bg-slate-100 hover:text-slate-950' =>
+              , 'bg-white/15 text-white border border-white/25'=> request()->routeIs($item['active']),
+              'text-blue-200 hover:bg-blue-700/50 hover:text-white' =>
               !request()->routeIs($item['active']),
               ])>
               @switch($item['icon'])
@@ -141,8 +141,8 @@
 
             <a href="{{ route('repository') }}" wire:navigate
               @class([ 'inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-all'
-              , 'border border-cyan-200 bg-cyan-50 text-cyan-800 shadow-sm'=> request()->routeIs('repository*'),
-              'text-slate-600 hover:border-slate-200 hover:bg-slate-100 hover:text-slate-950' =>
+              , 'bg-white/15 text-white border border-white/25'=> request()->routeIs('repository*'),
+              'text-blue-200 hover:bg-blue-700/50 hover:text-white' =>
               !request()->routeIs('repository*'),
               ])>
               <x-heroicon-o-book-open class="h-5 w-5 shrink-0" />
@@ -154,14 +154,14 @@
 
             <div class="relative" x-data="{ open: false }" @click.away="open = false">
               <button @click="open = !open"
-                class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm transition hover:-translate-y-0.5 hover:border-cyan-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
+                class="flex items-center gap-3 rounded-2xl border border-blue-600/50 bg-blue-700/30 px-3 py-2 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-400 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400/50">
                 <div
-                  class="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden bg-slate-100 shadow-md ring-1 ring-slate-200">
+                  class="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden bg-white/15 shadow-md ring-1 ring-white/25">
                   <img src="{{ auth()->user()->avatar_url ?? asset('images/default-avatar.png') }}"
                     alt="{{ auth()->user()->name }}" class="h-full w-full object-cover">
                 </div>
 
-                <x-heroicon-o-chevron-down class="hidden h-4 w-4 text-slate-400 transition-transform md:block"
+                <x-heroicon-o-chevron-down class="hidden h-4 w-4 text-blue-300 transition-transform md:block"
                   x-bind:class="open ? 'rotate-180' : ''" />
               </button>
 
@@ -171,7 +171,7 @@
                 x-transition:leave="transition ease-in duration-75"
                 x-transition:leave-start="transform opacity-100 scale-100"
                 x-transition:leave-end="transform opacity-0 scale-95"
-                class="absolute right-0 z-50 mt-3 w-48 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl ring-1 ring-black/5">
+                class="absolute right-0 z-50 mt-3 w-64 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl ring-1 ring-black/5">
 
                 <div class="border-b border-slate-100 bg-slate-50/80 px-4 py-3">
                   <p class="text-sm font-semibold text-slate-900">{{ auth()->user()->name }}</p>
@@ -210,21 +210,21 @@
           x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
           x-transition:leave="transition-opacity ease-linear duration-150" x-transition:leave-start="opacity-100"
           x-transition:leave-end="opacity-0" @click="mobileMenuOpen = false"
-          class="fixed inset-0 z-20 bg-slate-900/30 backdrop-blur-[2px] lg:hidden"></div>
+          class="fixed inset-0 z-20 bg-slate-900/50 backdrop-blur-sm lg:hidden"></div>
 
         <div x-show="mobileMenuOpen" x-cloak x-transition:enter="transition ease-out duration-200"
           x-transition:enter-start="-translate-y-2 opacity-0" x-transition:enter-end="translate-y-0 opacity-100"
           x-transition:leave="transition ease-in duration-150" x-transition:leave-start="translate-y-0 opacity-100"
           x-transition:leave-end="-translate-y-2 opacity-0"
-          class="absolute inset-x-0 top-full z-30 border-b border-slate-200 bg-white/98 shadow-xl lg:hidden">
+          class="absolute inset-x-0 top-full z-30 border-b border-blue-700/50 bg-blue-800 shadow-xl lg:hidden">
           <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
             <nav class="space-y-2">
               @foreach ($navigationItems as $item)
               <a href="{{ $item['url'] }}" wire:navigate @click="mobileMenuOpen = false"
                 @class([ 'flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium transition-all'
-                , 'border-cyan-200 bg-cyan-50 text-cyan-800 shadow-sm'=> request()->routeIs($item['active']),
-                'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-100
-                hover:text-slate-950' => !request()->routeIs($item['active']),
+                , 'bg-white/15 text-white border border-white/25'=> request()->routeIs($item['active']),
+                'border-blue-700/50 text-blue-200 hover:bg-blue-700/50 hover:text-white' =>
+                !request()->routeIs($item['active']),
                 ])>
                 @switch($item['icon'])
                 @case('home')
@@ -249,9 +249,9 @@
 
               <a href="{{ route('repository') }}" wire:navigate @click="mobileMenuOpen = false"
                 @class([ 'flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium transition-all'
-                , 'border-cyan-200 bg-cyan-50 text-cyan-800 shadow-sm'=> request()->routeIs('repository*'),
-                'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-100
-                hover:text-slate-950' => !request()->routeIs('repository*'),
+                , 'bg-white/15 text-white border border-white/25'=> request()->routeIs('repository*'),
+                'border-blue-700/50 text-blue-200 hover:bg-blue-700/50 hover:text-white' =>
+                !request()->routeIs('repository*'),
                 ])>
                 <x-heroicon-o-book-open class="h-5 w-5 shrink-0" />
                 <span>Repository</span>

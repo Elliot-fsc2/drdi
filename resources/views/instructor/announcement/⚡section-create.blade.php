@@ -25,6 +25,15 @@ class extends Component implements HasSchemas
 
     public ?array $data = [];
 
+    public function mount(): void
+    {
+        $this->form->fill([
+            'title' => '',
+            'content' => '',
+            'section_ids' => [],
+        ]);
+    }
+
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -85,7 +94,7 @@ class extends Component implements HasSchemas
                             ->multiple()
                             ->required()
                             ->searchable()
-                            ->live()
+                            ->live(),
                     ]),
             ])
             ->statePath('data');

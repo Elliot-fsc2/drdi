@@ -15,7 +15,8 @@
         "livewire/livewire": "^4.0",
         "maatwebsite/excel": "^3.1",
         "relaticle/flowforge": "^4.0",
-        "spatie/laravel-activitylog": "^4.12"
+        "spatie/laravel-activitylog": "^4.12",
+        "spatie/laravel-permission": "^8.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -45,6 +46,7 @@
             "composer install",
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
             "@php artisan key:generate",
+            "@php artisan storage:link --force",
             "@php artisan migrate --force",
             "npm install",
             "npm run build"

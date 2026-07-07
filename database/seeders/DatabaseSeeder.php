@@ -16,25 +16,27 @@ class DatabaseSeeder extends Seeder
     {
 
         $this->call([
+            RolesAndPermissionSeeder::class,
             SemesterSeeder::class,
             DepartmentSeeder::class,
             ProgramSeeder::class,
             InstructorSeeder::class,
             StudentSeeder::class,
         ]);
-        User::factory()->create([
+        $adminUser = User::factory()->create([
             'name' => 'Administrator',
             'email' => 'admin@example.com',
             'password' => '@Admin2221',
             'is_admin' => true,
         ]);
+        $adminUser->assignRole('super_admin');
 
         $instructor = \App\Models\Instructor::factory()->create([
             'first_name' => 'Teacher',
             'last_name' => 'Demo',
         ]);
 
-        User::factory()->create([
+        $teacherUser = User::factory()->create([
             'name' => "$instructor->first_name $instructor->last_name",
             'email' => 'teacher@example.com',
             'password' => '@Teacher2221',
@@ -42,13 +44,14 @@ class DatabaseSeeder extends Seeder
             'profileable_id' => $instructor->id,
             'profileable_type' => Instructor::class,
         ]);
+        $teacherUser->assignRole('instructor');
 
         $student = Student::factory()->create([
             'first_name' => 'Student',
             'last_name' => 'Demo',
         ]);
 
-        User::factory()->create([
+        $studentUser = User::factory()->create([
             'name' => "$student->first_name $student->last_name",
             'email' => 'student@example.com',
             'password' => '@Student2221',
@@ -56,6 +59,7 @@ class DatabaseSeeder extends Seeder
             'profileable_id' => $student->id,
             'profileable_type' => Student::class,
         ]);
+        $studentUser->assignRole('student');
 
     }
 }

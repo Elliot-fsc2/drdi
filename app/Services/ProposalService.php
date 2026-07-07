@@ -98,6 +98,6 @@ class ProposalService
             ])
             ->log('created proposal by :causer.name');
 
-        return $proposal;
+        return $proposal->fresh();
     }
 }

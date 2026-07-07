@@ -12,10 +12,30 @@ new #[Title('My Profile')] class extends Component {
         $user = auth()->user();
 
         if ($user->profileable_type === \App\Models\Student::class) {
-            $user->load('profileable.program.department');
+            $user->load('profileable.program.department', 'profileable.sections.semester', 'profileable.sections.instructor');
         } elseif ($user->profileable_type === \App\Models\Instructor::class) {
             $user->load('profileable.department');
         }
+    }
+
+    public function studentSection(): ?\App\Models\Section
+    {
+        $student = auth()->user()->profileable;
+
+        return $student->sections()->active()->with('program', 'instructor', 'semester')->first();
+    }
+
+    public function studentGroup(): ?\App\Models\Group
+    {
+        $student = auth()->user()->profileable;
+
+        $section = $this->studentSection();
+
+        if (! $section) {
+            return null;
+        }
+
+        return $student->groups()->with('members', 'section')->firstWhere('section_id', $section->id);
     }
 
     public function with(): array
@@ -223,6 +243,48 @@ new #[Title('My Profile')] class extends Component {
 								</p>
 							</div>
 						</div>
+
+						{{-- Current Section --}}
+						@php $section = $this->studentSection(); @endphp
+						@if ($section)
+						<div class="flex flex-col gap-1 px-4 py-4 sm:flex-row sm:items-center sm:gap-0 sm:px-6">
+							<div class="w-28 flex-shrink-0 sm:w-40">
+								<p class="text-xs font-medium uppercase tracking-wide"
+									style="color: #94A3B8; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em">
+									Current Section
+								</p>
+							</div>
+							<div class="flex min-w-0 flex-1 flex-col gap-0.5">
+								<p class="break-words text-sm font-semibold" style="color: #0F172A">
+									{{ $section->name }}
+								</p>
+								<p class="text-xs" style="color: #64748B">
+									{{ $section->program?->name }} &bull; {{ $section->semester?->name }}
+								</p>
+							</div>
+						</div>
+
+						{{-- Current Group --}}
+						@php $group = $this->studentGroup(); @endphp
+						@if ($group)
+						<div class="flex flex-col gap-1 px-4 py-4 sm:flex-row sm:items-center sm:gap-0 sm:px-6">
+							<div class="w-28 flex-shrink-0 sm:w-40">
+								<p class="text-xs font-medium uppercase tracking-wide"
+									style="color: #94A3B8; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em">
+									Current Group
+								</p>
+							</div>
+							<div class="flex min-w-0 flex-1 flex-col gap-0.5">
+								<p class="break-words text-sm font-semibold" style="color: #0F172A">
+									{{ $group->name }}
+								</p>
+								<p class="text-xs" style="color: #64748B">
+									{{ $group->members->count() }} member{{ $group->members->count() !== 1 ? 's' : '' }}
+								</p>
+							</div>
+						</div>
+						@endif
+						@endif
 					</div>
 				@elseif ($isInstructor && $profileable)
 					<div class="divide-y" style="border-color: #F1F5F9">

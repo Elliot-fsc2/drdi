@@ -59,6 +59,24 @@ class PostService
             ->log('Created a new post: '.$data['title']);
     }
 
+    public function updateForSection(Post $post, array $data): void
+    {
+        $sectionIds = $data['section_ids'] ?? [];
+
+        $post->update([
+            'title' => $data['title'],
+            'content' => $data['content'],
+            'images_path' => $data['images_path'] ?? null,
+        ]);
+
+        $post->sections()->sync($sectionIds);
+
+        activity('Post Update by :causer.name')
+            ->performedOn($post)
+            ->withProperties(['post_id' => $post->id])
+            ->log('Updated post: '.$data['title']);
+    }
+
     public function deletePost(Post $post)
     {
         $post->delete();

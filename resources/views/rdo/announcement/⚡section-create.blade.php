@@ -25,6 +25,15 @@ class extends Component implements HasSchemas
 
     public ?array $data = [];
 
+    public function mount()
+    {
+        $this->form->fill([
+            'title' => '',
+            'content' => '',
+            'section_ids' => [],
+        ]);
+    }
+
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -76,17 +85,14 @@ class extends Component implements HasSchemas
 
                         Select::make('section_ids')
                             ->label('Sections')
-                           ->relationship(
-       
-        modifyQueryUsing: fn ($query) => $query
-            ->where('instructor_id', auth()->user()->profileable->id)
-            ->active()
-    )
-
+                            ->options(fn () => Section::query()
+                                ->where('instructor_id', auth()->user()->profileable->id)
+                                ->active()
+                                ->pluck('name', 'id'))
                             ->multiple()
                             ->searchable()
                             ->preload()
-                            ->required()
+                            ->required(),
                     ]),
             ])
             ->statePath('data');

@@ -15,6 +15,13 @@ new class extends Component implements HasActions, HasSchemas
 
     public Post $post;
 
+    public function mount(): void
+    {
+        if (! $this->post->relationLoaded('sections')) {
+            $this->post->load('sections');
+        }
+    }
+
     public function deleteAction(): Action
     {
         return Action::make('delete')
@@ -81,6 +88,7 @@ new class extends Component implements HasActions, HasSchemas
       </span>
       @endif
 
+      @if (! auth()->user()->profileable instanceof \App\Models\Student)
       <div x-data="{ open: false }" class="relative">
         <button @click="open = !open" class="p-1 rounded-lg text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition">
           <x-heroicon-o-ellipsis-horizontal class="h-5 w-5" />
@@ -88,7 +96,13 @@ new class extends Component implements HasActions, HasSchemas
 
         <div x-show="open" x-cloak @click.outside="open = false"
              class="absolute right-0 mt-2 w-40 rounded-lg border bg-white shadow-lg py-1 z-50">
-          @if(\Illuminate\Support\Facades\Route::has('rdo.announcements.edit'))
+          @if(\Illuminate\Support\Facades\Route::has('instructor.announcements.edit'))
+            <a href="{{ route('instructor.announcements.edit', $post) }}" wire:navigate
+               class="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
+              <x-heroicon-o-pencil-square class="h-4 w-4" />
+              Edit
+            </a>
+          @elseif(\Illuminate\Support\Facades\Route::has('rdo.announcements.edit'))
             <a href="{{ route('rdo.announcements.edit', $post) }}" wire:navigate
                class="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
               <x-heroicon-o-pencil-square class="h-4 w-4" />
@@ -110,6 +124,7 @@ new class extends Component implements HasActions, HasSchemas
           </button>
         </div>
       </div>
+      @endif
     </div>
   </div>
 

@@ -279,7 +279,7 @@
                                 'text-blue-200 hover:text-white hover:bg-blue-700/50' => !request()->routeIs(
                                     'rdo.thesis-fees*'),
                             ])>
-                                <x-heroicon-o-user-group class="w-5 h-5 flex-shrink-0" />
+                                <x-heroicon-o-currency-dollar class="w-5 h-5 flex-shrink-0" />
                                 <span class="font-medium text-sm">Thesis Fees</span>
                             </a>
                             <a href="{{ route('rdo.semester-management') }}" wire:navigate
@@ -290,7 +290,7 @@
                                     'text-blue-200 hover:text-white hover:bg-blue-700/50' => !request()->routeIs(
                                         'rdo.semester-management*'),
                                 ])>
-                                <x-heroicon-o-user-group class="w-5 h-5 flex-shrink-0" />
+                                <x-heroicon-o-calendar-days class="w-5 h-5 flex-shrink-0" />
                                 <span class="font-medium text-sm">Semester Tracking</span>
                             </a>
                         </div>
@@ -552,7 +552,7 @@
                                 'text-blue-200 hover:text-white hover:bg-blue-700/50' => !request()->routeIs(
                                     'rdo.thesis-fees*'),
                             ])>
-                                <x-heroicon-o-user-group class="w-5 h-5 flex-shrink-0" />
+                                <x-heroicon-o-currency-dollar class="w-5 h-5 flex-shrink-0" />
                                 <span class="font-medium text-sm whitespace-nowrap">Thesis Fees</span>
                             </a>
                             <a href="{{ route('rdo.semester-management') }}" wire:navigate
@@ -563,7 +563,7 @@
                                     'text-blue-200 hover:text-white hover:bg-blue-700/50' => !request()->routeIs(
                                         'rdo.semester-management*'),
                                 ])>
-                                <x-heroicon-o-user-group class="w-5 h-5 flex-shrink-0" />
+                                <x-heroicon-o-calendar-days class="w-5 h-5 flex-shrink-0" />
                                 <span class="font-medium text-sm">Semester Tracking</span>
                             </a>
                         </div>

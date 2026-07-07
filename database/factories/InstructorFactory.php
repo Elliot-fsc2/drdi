@@ -2,8 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\Instructor;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,24 +16,17 @@ class InstructorFactory extends Factory
      */
     public function definition(): array
     {
+        static $departmentIds = null;
+
+        if ($departmentIds === null) {
+            $departmentIds = \App\Models\Department::pluck('id')->all();
+        }
+
         return [
             'first_name' => fake()->firstName(),
             'last_name' => fake()->lastName(),
-            'department_id' => \App\Models\Department::inRandomOrder()->first()->id,
+            'department_id' => fake()->randomElement($departmentIds),
             'role' => fake()->randomElement(\App\Enums\InstructorRole::cases()),
         ];
-    }
-
-    public function configure(): static
-    {
-        return $this->afterCreating(function (Instructor $instructor) {
-            User::factory()->create([
-                'name' => $instructor->first_name.' '.$instructor->last_name,
-                'email' => strtolower(trim($instructor->first_name)).'.'.strtolower(trim($instructor->last_name)).'@instructor.edu',
-                'password' => 'password',
-                'profileable_id' => $instructor->id,
-                'profileable_type' => Instructor::class,
-            ]);
-        });
     }
 }

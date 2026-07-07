@@ -77,6 +77,7 @@ new #[Layout('layouts::instructor.app')] #[Title('My Classes')] class extends Co
     public function classes()
     {
         $query = Section::where('instructor_id', auth()->user()->profileable->id)
+        ->with('program')
             ->whereHas('semester', function ($query) {
                 $query->active();
             })

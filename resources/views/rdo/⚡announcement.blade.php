@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\PostType;
 use App\Models\Post;
 use App\Services\PostService;
 use Livewire\Attributes\Layout;
@@ -27,6 +28,7 @@ class extends Component
     {
         return Post::query()
             ->with('author', 'sections')
+            ->where('target_type', '!=', PostType::SECTIONS)
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('title', 'like', '%' . $this->search . '%')

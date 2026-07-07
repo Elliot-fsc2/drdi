@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Group;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -9,10 +10,12 @@ new #[Layout('layouts::rdo.app')] #[Title('Dashboard')] class extends Component 
     public function with(): array
     {
         return [
-            'latestGroups' => Group::with(['section.program', 'section.semester', 'leader', 'members'])
-                ->latest()
-                ->take(5)
-                ->get(),
+            'latestGroups' => Cache::flexible('rdo_latest_groups', [600, 1800], function () {
+                return Group::with(['section.program', 'section.semester', 'leader', 'members'])
+                    ->latest()
+                    ->take(5)
+                    ->get();
+            }),
         ];
     }
 };

@@ -29,7 +29,10 @@ class extends Component implements HasActions, HasSchemas
 
     public $user;
 
-    public array $data = [];
+    public array $data = [
+        'title' => '',
+        'description' => '',
+    ];
 
     public function mount()
     {
@@ -180,6 +183,7 @@ class extends Component implements HasActions, HasSchemas
                 'status' => ProposalStatus::PENDING->value,
             ]);
 
+        unset($this->proposals);
         $this->form->fill([]);
         $this->dispatch('close-modal', id: 'propose_title');
         $this->resetPage();

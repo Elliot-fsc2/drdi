@@ -11,16 +11,15 @@ class DepartmentSeeder extends Seeder
      */
     public function run(): void
     {
+        $now = now();
         $departments = [
-            'CSD',
-            'EdPsycomm',
-            'Criminal Justice',
-            'HRTM',
-            'Business Administration',
+            ['name' => 'CSD', 'created_at' => $now, 'updated_at' => $now],
+            ['name' => 'EdPsycomm', 'created_at' => $now, 'updated_at' => $now],
+            ['name' => 'Criminal Justice', 'created_at' => $now, 'updated_at' => $now],
+            ['name' => 'HRTM', 'created_at' => $now, 'updated_at' => $now],
+            ['name' => 'Business Administration', 'created_at' => $now, 'updated_at' => $now],
         ];
 
-        foreach ($departments as $department) {
-            \App\Models\Department::create(['name' => $department]);
-        }
+        \App\Models\Department::insert($departments);
     }
 }

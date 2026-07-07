@@ -135,7 +135,7 @@
                     'bg-white/15 text-white border border-white/25' => request()->routeIs('rdo.announcements*'),
                     'text-blue-200 hover:bg-blue-700/50 hover:text-white' => !request()->routeIs('rdo.announcements*'),
                 ])>
-                    <x-heroicon-o-user-group class="h-6 w-6 shrink-0" />
+                    <x-heroicon-o-megaphone class="h-6 w-6 shrink-0" />
                     <span class="font-medium">Announcements</span>
                 </a>
                 <a href="{{ route('rdo.schedule-management') }}" wire:navigate @class([
@@ -249,7 +249,7 @@
                         'bg-white/15 text-white border border-white/25' => request()->routeIs('rdo.announcements*'),
                         'text-blue-200 hover:bg-blue-700/50 hover:text-white' => !request()->routeIs('rdo.announcements*'),
                     ]) :title="!sidebarOpen ? 'Announcements' : null">
-                    <x-heroicon-o-user-group class="h-6 w-6 shrink-0" />
+                    <x-heroicon-o-megaphone class="h-6 w-6 shrink-0" />
                     <span x-show="sidebarOpen" x-transition class="whitespace-nowrap font-medium">Announcements</span>
                 </a>
                 <a href="{{ route('rdo.schedule-management') }}" wire:navigate
@@ -291,7 +291,7 @@
                             'bg-white/15 text-white border border-white/25' => request()->routeIs('rdo.thesis-fees*'),
                             'text-blue-200 hover:bg-blue-700/50 hover:text-white' => !request()->routeIs('rdo.thesis-fees*'),
                         ])>
-                            <x-heroicon-o-user-group class="h-5 w-5 shrink-0" />
+                            <x-heroicon-o-currency-dollar class="h-5 w-5 shrink-0" />
                             <span class="text-sm font-medium whitespace-nowrap">Thesis Fees</span>
                         </a>
                         <a href="{{ route('rdo.semester-management') }}" wire:navigate @class([
@@ -299,7 +299,7 @@
                             'bg-white/15 text-white border border-white/25' => request()->routeIs('rdo.semester-management*'),
                             'text-blue-200 hover:bg-blue-700/50 hover:text-white' => !request()->routeIs('rdo.semester-management*'),
                         ])>
-                            <x-heroicon-o-user-group class="h-5 w-5 shrink-0" />
+                            <x-heroicon-o-calendar-days class="h-5 w-5 shrink-0" />
                             <span class="text-sm font-medium whitespace-nowrap">Semester Tracking</span>
                         </a>
                     </div>
