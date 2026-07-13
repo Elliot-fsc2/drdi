@@ -49,7 +49,8 @@ class DatabaseSeeder extends Seeder
         $instructorUser = User::where('email', 'teacher@example.com')->first();
         if ($instructorUser && ! $instructorUser->profileable_id) {
             $instructor = Instructor::firstOrCreate(
-                ['first_name' => 'Teacher', 'last_name' => 'Demo']
+                ['first_name' => 'Teacher', 'last_name' => 'Demo'],
+                ['role' => \App\Enums\InstructorRole::Instructor]
             );
             $instructorUser->update([
                 'profileable_id' => $instructor->id,
@@ -69,7 +70,8 @@ class DatabaseSeeder extends Seeder
         $studentUser = User::where('email', 'student@example.com')->first();
         if ($studentUser && ! $studentUser->profileable_id) {
             $student = Student::firstOrCreate(
-                ['first_name' => 'Student', 'last_name' => 'Demo']
+                ['first_name' => 'Student', 'last_name' => 'Demo'],
+                ['student_number' => 'DEMO-00001']
             );
             $studentUser->update([
                 'profileable_id' => $student->id,
