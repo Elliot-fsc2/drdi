@@ -108,7 +108,7 @@ class extends Component implements HasSchemas
     {
         try {
             $formState = $this->form->getState();
-            $service->updateForSection($this->post, $formState);
+            $service->updatePost($this->post, $formState);
 
             Notification::make()
                 ->title('Announcement Updated')

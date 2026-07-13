@@ -5,6 +5,7 @@ use App\Models\Post;
 use App\Services\PostService;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -36,10 +37,10 @@ new
      */
     public function mount(): void
     {
-
         $this->form->fill([
             'title' => $this->post->title,
             'content' => $this->post->content,
+            'images_path' => $this->post->images_path,
             'target_type' => $this->post->target_type,
         ]);
     }
@@ -112,6 +113,15 @@ new
                             ->fileAttachmentsDirectory('attachments')
                             ->extraInputAttributes(['style' => 'min-height: 20rem; max-height: 50vh; overflow-y: auto;']),
 
+                        FileUpload::make('images_path')
+                            ->multiple()
+                            ->disk('public')
+                            ->directory('post-images')
+                            ->panelLayout('grid')
+                            ->uploadingMessage('Uploading attachment...')
+                            ->visibility('public')
+                            ->image(),
+
                         Select::make('target_type')
                             ->label('Target Audience')
                             ->options(collect(PostType::cases())
@@ -134,11 +144,7 @@ new
         try {
             $formState = $this->form->getState();
 
-            if ($formState['target_type'] === PostType::INSTRUCTORS->value) {
-                $service->createForInstructors($formState);
-            } elseif ($formState['target_type'] === PostType::STUDENTS->value) {
-                $service->createForStudents($formState);
-            }
+            $service->updatePost($this->post, $formState);
 
             Notification::make()
                 ->title('Announcement Updated')

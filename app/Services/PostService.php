@@ -59,7 +59,7 @@ class PostService
             ->log('Created a new post: '.$data['title']);
     }
 
-    public function updateForSection(Post $post, array $data): void
+    public function updatePost(Post $post, array $data): void
     {
         $sectionIds = $data['section_ids'] ?? [];
 
@@ -67,9 +67,14 @@ class PostService
             'title' => $data['title'],
             'content' => $data['content'],
             'images_path' => $data['images_path'] ?? null,
+            'target_type' => $data['target_type'] ?? $post->target_type,
         ]);
 
-        $post->sections()->sync($sectionIds);
+        if (! empty($sectionIds)) {
+            $post->sections()->sync($sectionIds);
+        } else {
+            $post->sections()->detach();
+        }
 
         activity('Post Update by :causer.name')
             ->performedOn($post)
