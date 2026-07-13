@@ -154,25 +154,20 @@ new class extends Component implements HasActions, HasSchemas
 
       $images = array_values(array_filter($images, fn ($path) => filled($path)));
 
-      /** @var \Illuminate\Filesystem\FilesystemAdapter $publicDisk */
-      $publicDisk = Storage::disk('public');
-
-        $imageUrls = array_values(array_filter(array_map(function ($path) use ($publicDisk): ?string {
+        $imageUrls = array_values(array_filter(array_map(function ($path): ?string {
           $path = (string) $path;
 
           if (blank($path)) {
               return null;
           }
 
-          if (Str::startsWith($path, ['http://', 'https://'])) {
+          if (Str::startsWith($path, ['http://', 'https://', '//'])) {
               return $path;
           }
 
-          if (Str::startsWith($path, ['/storage/', 'storage/'])) {
-              return asset(ltrim($path, '/'));
-          }
+          $path = ltrim((string) Str::of($path)->replaceStart('storage/', ''), '/');
 
-            return $publicDisk->url($path);
+          return asset('storage/' . $path);
       }, $images)));
 
       $visibleImageUrls = array_slice($imageUrls, 0, 5);
