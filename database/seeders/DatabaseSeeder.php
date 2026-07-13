@@ -59,6 +59,27 @@ class DatabaseSeeder extends Seeder
         }
 
         User::firstOrCreate(
+            ['email' => 'rdo@example.com'],
+            [
+                'name' => 'RDO Demo',
+                'password' => '@Rdo2221',
+                'is_admin' => false,
+            ]
+        )->assignRole('rdo');
+
+        $rdoUser = User::where('email', 'rdo@example.com')->first();
+        if ($rdoUser && ! $rdoUser->profileable_id) {
+            $rdoInstructor = Instructor::firstOrCreate(
+                ['first_name' => 'RDO', 'last_name' => 'Demo'],
+                ['role' => \App\Enums\InstructorRole::RDO]
+            );
+            $rdoUser->update([
+                'profileable_id' => $rdoInstructor->id,
+                'profileable_type' => Instructor::class,
+            ]);
+        }
+
+        User::firstOrCreate(
             ['email' => 'student@example.com'],
             [
                 'name' => 'Student Demo',
