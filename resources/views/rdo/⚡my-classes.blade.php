@@ -7,7 +7,6 @@ use App\Models\Section;
 use App\Models\Semester;
 use Filament\Actions\Action;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Cache;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Select;
@@ -110,14 +109,12 @@ new
             ->whereHas('semester', fn ($q) => $q->active())
             ->pluck('id');
 
-        return Cache::flexible('rdo_announcements_' . auth()->id(), [600, 1800], fn (): Collection =>
-            Post::where('target_type', PostType::SECTIONS)
-                ->whereHas('sections', fn ($q) => $q->whereIn('sections.id', $sectionIds))
-                ->with('author', 'sections')
-                ->latest()
-                ->take(10)
-                ->get()
-        );
+        return Post::where('target_type', PostType::SECTIONS)
+            ->whereHas('sections', fn ($q) => $q->whereIn('sections.id', $sectionIds))
+            ->with('author', 'sections')
+            ->latest()
+            ->take(10)
+            ->get();
     }
   };
 ?>

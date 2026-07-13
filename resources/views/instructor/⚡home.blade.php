@@ -3,7 +3,6 @@
 use App\Enums\PostType;
 use App\Models\Post;
 use App\Services\InstructorStatsService;
-use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -33,13 +32,11 @@ new #[Layout('layouts::instructor.app')] #[Title('Home')] class extends Componen
         $this->pendingProposals = $data['proposals'];
         $this->consultations = $data['consultations'];
         $this->recentProposals = $data['recent_proposals'];
-        $this->announcements = Cache::flexible('instructor_announcements', [600, 1800], function (): \Illuminate\Database\Eloquent\Collection {
-            return Post::where('target_type', PostType::INSTRUCTORS)
-                ->with('author', 'sections')
-                ->latest()
-                ->take(10)
-                ->get();
-        });
+        $this->announcements = Post::where('target_type', PostType::INSTRUCTORS)
+            ->with('author', 'sections')
+            ->latest()
+            ->take(10)
+            ->get();
     }
 };
 ?>
