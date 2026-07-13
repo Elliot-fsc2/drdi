@@ -1,23 +1,23 @@
 <?php
 
+use App\Enums\InstructorRole;
+use App\Enums\ResearchLibraryStatus;
 use App\Models\Group;
+use App\Models\Instructor;
 use App\Models\ResearchLibrary;
-use Filament\Forms\Components\DateTimePicker;
+use App\Models\Student;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
-use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-new #[Layout('layouts::instructor.app')] class extends Component implements HasSchemas {
+new class extends Component implements HasSchemas {
     use InteractsWithSchemas;
     use WithFileUploads;
 
@@ -35,13 +35,10 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasS
                 'academic_year' => $existing->academic_year,
                 'abstract' => $existing->abstract,
                 'file_path' => $existing->file_path,
-                'is_published' => $existing->is_published,
-                'published_at' => $existing->published_at,
             ]);
         } else {
             $this->form->fill([
                 'academic_year' => now()->year . '-' . (now()->year + 1),
-                'is_published' => false,
             ]);
         }
     }
@@ -65,8 +62,6 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasS
                     ->acceptedFileTypes(['application/pdf'])
                     ->maxSize(20480)
                     ->visibility('public'),
-
-                Toggle::make('is_published')->label('Publish to Library')->helperText('Make this research publicly visible in the library repository'),
             ])
             ->statePath('data');
     }
@@ -75,17 +70,14 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasS
     {
         $data = $this->form->getState();
 
-        if ($data['is_published'] && empty($data['published_at'])) {
-            $data['published_at'] = now();
-        }
-
-        if (!$data['is_published']) {
-            $data['published_at'] = null;
-        }
+        $data['is_published'] = false;
+        $data['published_at'] = null;
+        $data['status'] = ResearchLibraryStatus::PENDING;
+        $data['review_note'] = null;
 
         $this->group->researchLibrary()->updateOrCreate(['group_id' => $this->group->id], array_merge($data, ['group_id' => $this->group->id]));
 
-        Notification::make()->title('Saved successfully')->body('The research library entry has been saved.')->success()->send();
+        Notification::make()->title('Submitted for Approval')->body('Your research has been submitted to the RDO for review.')->success()->send();
     }
 
     #[Computed]
@@ -94,9 +86,27 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasS
         return $this->group->researchLibrary !== null;
     }
 
+    #[Computed]
+    public function currentStatus(): ?ResearchLibraryStatus
+    {
+        return $this->group->researchLibrary?->status;
+    }
+
+    #[Computed]
+    public function reviewNote(): ?string
+    {
+        return $this->group->researchLibrary?->review_note;
+    }
+
     public function render()
     {
-        return $this->view()->title('Library Requirement');
+        $layout = match (true) {
+            auth()->user()?->profileable_type === Instructor::class && auth()->user()?->profileable?->role === InstructorRole::RDO => 'layouts::rdo.app',
+            auth()->user()?->profileable_type === Instructor::class => 'layouts::instructor.app',
+            default => 'layouts::app',
+        };
+
+        return $this->view()->layout($layout)->title('Library Requirement');
     }
 };
 ?>
@@ -148,15 +158,43 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasS
                     </p>
                 </div>
 
-                @if ($this->isExisting)
+                @php
+                    $status = $this->currentStatus;
+                @endphp
+                @if ($status === \App\Enums\ResearchLibraryStatus::APPROVED)
                     <div class="inline-flex items-center gap-1.5 self-start rounded-full border px-3 py-1.5 text-xs font-medium"
                         style="border-color: #A7F3D0; background: #ECFDF5; color: #059669">
                         <span class="h-1.5 w-1.5 rounded-full" style="background: #059669"></span>
-                        Entry Saved
+                        Approved &bull; Published
+                    </div>
+                @elseif ($status === \App\Enums\ResearchLibraryStatus::PENDING)
+                    <div class="inline-flex items-center gap-1.5 self-start rounded-full border px-3 py-1.5 text-xs font-medium"
+                        style="border-color: #FDE68A; background: #FEFCE8; color: #A16207">
+                        <span class="h-1.5 w-1.5 rounded-full" style="background: #EAB308"></span>
+                        Awaiting RDO Review
+                    </div>
+                @elseif ($status === \App\Enums\ResearchLibraryStatus::REJECTED)
+                    <div class="inline-flex items-center gap-1.5 self-start rounded-full border px-3 py-1.5 text-xs font-medium"
+                        style="border-color: #FECACA; background: #FEF2F2; color: #DC2626">
+                        <span class="h-1.5 w-1.5 rounded-full" style="background: #DC2626"></span>
+                        Needs Revision
                     </div>
                 @endif
             </div>
         </div>
+
+        {{-- ── Review Note Banner ──────────────────────── --}}
+        @if ($this->reviewNote)
+            <div class="mb-6 flex items-start gap-3 rounded-2xl border px-5 py-4"
+                style="border-color: #FECACA; background: #FEF2F2">
+                <div>
+                    <p class="text-sm font-medium" style="color: #991B1B">RDO Feedback</p>
+                    <p class="mt-0.5 text-xs leading-relaxed" style="color: #B91C1C">
+                        {{ $this->reviewNote }}
+                    </p>
+                </div>
+            </div>
+        @endif
 
         {{-- ── Info Banner ─────────────────────────────── --}}
         <div class="mb-6 flex items-start gap-3 rounded-2xl border px-5 py-4"
@@ -207,13 +245,6 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasS
                         {{ $this->form->getComponent('file_path') }}
                     </div>
 
-                    {{-- Section: Publication --}}
-                    <div class="my-6 mt-5 border-t pt-6" style="border-color: #F1F5F9">
-                        <div class="space-y-4">
-                            {{ $this->form->getComponent('is_published') }}
-                        </div>
-                    </div>
-
                     {{-- Submit --}}
                     <div class="border-t pt-5" style="border-color: #F1F5F9">
                         <div class="flex items-center justify-between">
@@ -224,7 +255,7 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasS
                                 class="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-px active:scale-[0.98]"
                                 style="background: linear-gradient(135deg, #0052FF 0%, #4D7CFF 100%); box-shadow: 0 4px 14px rgba(0,82,255,0.3)">
                                 <x-heroicon-o-archive-box-arrow-down class="h-4 w-4" />
-                                {{ $this->isExisting ? 'Update Entry' : 'Submit to Library' }}
+                                {{ $this->isExisting ? 'Submit for Review' : 'Submit for Approval' }}
                             </button>
                         </div>
                     </div>

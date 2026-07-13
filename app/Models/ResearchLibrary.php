@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ResearchLibraryStatus;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -18,6 +19,8 @@ class ResearchLibrary extends Model
         'file_path',
         'is_published',
         'published_at',
+        'status',
+        'review_note',
     ];
 
     protected function casts(): array
@@ -25,6 +28,7 @@ class ResearchLibrary extends Model
         return [
             'is_published' => 'boolean',
             'published_at' => 'datetime',
+            'status' => ResearchLibraryStatus::class,
         ];
     }
 
@@ -38,6 +42,21 @@ class ResearchLibrary extends Model
     public function group()
     {
         return $this->belongsTo(Group::class);
+    }
+
+    public function scopePending($query)
+    {
+        return $query->where('status', ResearchLibraryStatus::PENDING);
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->where('status', ResearchLibraryStatus::APPROVED);
+    }
+
+    public function scopeRejected($query)
+    {
+        return $query->where('status', ResearchLibraryStatus::REJECTED);
     }
 
     public function getRouteKeyName(): string

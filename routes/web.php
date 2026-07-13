@@ -76,7 +76,8 @@ Route::middleware(['auth', 'instructor'])
 
         Route::livewire('/groups', 'instructor::groups')->name('groups');
         Route::livewire('/groups/{group}', 'instructor::groups.assigned.view')->name('groups.assigned.view');
-        // Route::livewire('/schedule-management', 'rdo::management.schedules')->name('schedule-management');
+
+        Route::livewire('/library-submissions', 'instructor::library-submissions')->name('library-submissions');
     });
 
 Route::middleware(['auth', 'student'])
@@ -115,7 +116,11 @@ Route::middleware(['auth', 'rdo'])
         Route::livewire('/semester-management', 'rdo::management.semester-tracking')->name('semester-management');
         Route::livewire('/schedule-management', 'rdo::management.schedules')->name('schedule-management');
         Route::livewire('/repository-management', 'rdo::management.repository-management')->name('repository-management');
+        Route::livewire('/research-approvals', 'rdo::management.research-approvals')->name('research-approvals');
 
         Route::livewire('/groups', 'rdo::groups')->name('groups');
         Route::livewire('/groups/{group}', 'rdo::groups.assigned.view')->name('groups.assigned.view');
+
+        Route::livewire('/library-submissions', 'instructor::library-submissions')->name('library-submissions');
+        Route::livewire('/groups/{group}/repository-form', 'instructor::library-requirement')->name('repository-requirement');
     });

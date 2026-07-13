@@ -137,6 +137,14 @@
                     <x-heroicon-o-calendar class="h-6 w-6 shrink-0" />
                     <span class="font-medium">Schedules</span>
                 </a> --}}
+                <a href="{{ route('instructor.library-submissions') }}" wire:navigate @class([
+                    'flex items-center gap-3 rounded-xl px-4 py-2 transition-all',
+                    'bg-white/15 text-white border border-white/25' => request()->routeIs('instructor.library-submissions*'),
+                    'text-blue-200 hover:bg-blue-700/50 hover:text-white' => !request()->routeIs('instructor.library-submissions*'),
+                ])>
+                    <x-heroicon-o-archive-box-arrow-down class="h-6 w-6 shrink-0" />
+                    <span class="font-medium">Library Submissions</span>
+                </a>
                 <a href="{{ route('repository') }}" wire:navigate @class([
                     'flex items-center gap-3 rounded-xl px-4 py-2 transition-all',
                     'bg-white/15 text-white border border-white/25' => request()->routeIs('repository*'),
@@ -195,6 +203,15 @@
                     ]) :title="!sidebarOpen ? 'My Groups' : null">
                     <x-heroicon-o-user-group class="h-6 w-6 shrink-0" />
                     <span x-show="sidebarOpen" x-transition class="whitespace-nowrap font-medium">My Groups</span>
+                </a>
+                <a href="{{ route('instructor.library-submissions') }}" wire:navigate
+                    :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'" @class([
+                        'group flex items-center gap-3 rounded-xl py-2 transition-all',
+                        'bg-white/15 text-white border border-white/25' => request()->routeIs('instructor.library-submissions*'),
+                        'text-blue-200 hover:bg-blue-700/50 hover:text-white' => !request()->routeIs('instructor.library-submissions*'),
+                    ]) :title="!sidebarOpen ? 'Library Submissions' : null">
+                    <x-heroicon-o-archive-box-arrow-down class="h-6 w-6 shrink-0" />
+                    <span x-show="sidebarOpen" x-transition class="whitespace-nowrap font-medium">Library Submissions</span>
                 </a>
                 <a href="{{ route('repository') }}" wire:navigate :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'"
                     @class([

@@ -1,9 +1,11 @@
 <?php
 
+use App\Enums\InstructorRole;
 use App\Enums\PersonnelRole;
 use App\Enums\PresentationType;
 use App\Models\Instructor;
 use App\Models\ResearchLibrary;
+use App\Models\Student;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -45,6 +47,18 @@ new #[Title('Research Details')] class extends Component {
         abort_unless($researchlibrary->is_published, 404);
 
         $this->libraryId = $researchlibrary->getKey();
+    }
+
+    public function render()
+    {
+        $layout = match (true) {
+            auth()->user()?->profileable_type === Student::class => 'layouts::student.app',
+            auth()->user()?->profileable_type === Instructor::class && auth()->user()?->profileable?->role === InstructorRole::RDO => 'layouts::rdo.app',
+            auth()->user()?->profileable_type === Instructor::class => 'layouts::instructor.app',
+            default => 'layouts::app',
+        };
+
+        return $this->view()->layout($layout);
     }
 };
 ?>

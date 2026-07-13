@@ -146,6 +146,14 @@
                     <x-heroicon-o-calendar class="h-6 w-6 shrink-0" />
                     <span class="font-medium">Schedules</span>
                 </a>
+                <a href="{{ route('rdo.library-submissions') }}" wire:navigate @class([
+                    'flex items-center gap-3 rounded-xl px-4 py-2 transition-all',
+                    'bg-white/15 text-white border border-white/25' => request()->routeIs('rdo.library-submissions*'),
+                    'text-blue-200 hover:bg-blue-700/50 hover:text-white' => !request()->routeIs('rdo.library-submissions*'),
+                ])>
+                    <x-heroicon-o-archive-box-arrow-down class="h-6 w-6 shrink-0" />
+                    <span class="font-medium">Library Submissions</span>
+                </a>
 
                 <div>
                     <button @click="managementOpen = !managementOpen"
@@ -180,6 +188,14 @@
                         ])>
                             <x-heroicon-o-user-group class="h-5 w-5 shrink-0" />
                             <span class="text-sm font-medium">Semester Tracking</span>
+                        </a>
+                        <a href="{{ route('rdo.research-approvals') }}" wire:navigate @class([
+                            'flex items-center gap-3 rounded-xl px-4 py-2 transition-all',
+                            'bg-white/15 text-white border border-white/25' => request()->routeIs('rdo.research-approvals*'),
+                            'text-blue-200 hover:bg-blue-700/50 hover:text-white' => !request()->routeIs('rdo.research-approvals*'),
+                        ])>
+                            <x-heroicon-o-clipboard-document-check class="h-5 w-5 shrink-0" />
+                            <span class="text-sm font-medium">Research Approvals</span>
                         </a>
                     </div>
                 </div>
@@ -301,6 +317,14 @@
                         ])>
                             <x-heroicon-o-calendar-days class="h-5 w-5 shrink-0" />
                             <span class="text-sm font-medium whitespace-nowrap">Semester Tracking</span>
+                        </a>
+                        <a href="{{ route('rdo.research-approvals') }}" wire:navigate @class([
+                            'flex items-center gap-3 rounded-xl px-4 py-2 transition-all',
+                            'bg-white/15 text-white border border-white/25' => request()->routeIs('rdo.research-approvals*'),
+                            'text-blue-200 hover:bg-blue-700/50 hover:text-white' => !request()->routeIs('rdo.research-approvals*'),
+                        ])>
+                            <x-heroicon-o-clipboard-document-check class="h-5 w-5 shrink-0" />
+                            <span class="text-sm font-medium whitespace-nowrap">Research Approvals</span>
                         </a>
                     </div>
                 </div>
