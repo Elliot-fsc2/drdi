@@ -14,21 +14,26 @@ class StudentSeeder extends Seeder
      */
     public function run(): void
     {
+        if (app()->environment('production') || Student::exists()) {
+            return;
+        }
+
         $students = Student::factory()->count(500)->create();
 
-        $now = now();
         $password = Hash::make('password');
 
-        $users = $students->map(fn (Student $student) => [
-            'name' => $student->first_name.' '.$student->last_name,
-            'email' => strtolower($student->first_name).'.'.strtolower($student->last_name).'@student.edu',
-            'password' => $password,
-            'profileable_id' => $student->id,
-            'profileable_type' => Student::class,
-            'created_at' => $now,
-            'updated_at' => $now,
-        ])->all();
+        foreach ($students as $student) {
+            $email = strtolower($student->first_name).'.'.strtolower($student->last_name).'@student.edu';
 
-        User::insert($users);
+            User::firstOrCreate(
+                ['email' => $email],
+                [
+                    'name' => $student->first_name.' '.$student->last_name,
+                    'password' => $password,
+                    'profileable_id' => $student->id,
+                    'profileable_type' => Student::class,
+                ]
+            );
+        }
     }
 }

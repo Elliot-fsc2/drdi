@@ -12,10 +12,12 @@ class SemesterSeeder extends Seeder
      */
     public function run(): void
     {
-        Semester::create([
-            'name' => '2nd Semester 2025/2026',
-            'start_date' => '2026-02-01',
-            'end_date' => '2026-06-15',
-        ]);
+        Semester::firstOrCreate(
+            ['name' => '2nd Semester 2025/2026'],
+            [
+                'start_date' => '2026-02-01',
+                'end_date' => '2026-06-15',
+            ]
+        );
     }
 }

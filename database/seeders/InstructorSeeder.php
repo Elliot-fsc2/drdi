@@ -14,21 +14,26 @@ class InstructorSeeder extends Seeder
      */
     public function run(): void
     {
+        if (app()->environment('production') || Instructor::exists()) {
+            return;
+        }
+
         $instructors = Instructor::factory(50)->create();
 
-        $now = now();
         $password = Hash::make('password');
 
-        $users = $instructors->map(fn (Instructor $instructor) => [
-            'name' => $instructor->first_name.' '.$instructor->last_name,
-            'email' => strtolower($instructor->first_name).'.'.strtolower($instructor->last_name).'@instructor.edu',
-            'password' => $password,
-            'profileable_id' => $instructor->id,
-            'profileable_type' => Instructor::class,
-            'created_at' => $now,
-            'updated_at' => $now,
-        ])->all();
+        foreach ($instructors as $instructor) {
+            $email = strtolower($instructor->first_name).'.'.strtolower($instructor->last_name).'@instructor.edu';
 
-        User::insert($users);
+            User::firstOrCreate(
+                ['email' => $email],
+                [
+                    'name' => $instructor->first_name.' '.$instructor->last_name,
+                    'password' => $password,
+                    'profileable_id' => $instructor->id,
+                    'profileable_type' => Instructor::class,
+                ]
+            );
+        }
     }
 }

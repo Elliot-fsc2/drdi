@@ -14,52 +14,67 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-
         $this->call([
             RolesAndPermissionSeeder::class,
             SemesterSeeder::class,
             DepartmentSeeder::class,
             ProgramSeeder::class,
-            InstructorSeeder::class,
-            StudentSeeder::class,
-        ]);
-        $adminUser = User::factory()->create([
-            'name' => 'Administrator',
-            'email' => 'admin@example.com',
-            'password' => '@Admin2221',
-            'is_admin' => true,
-        ]);
-        $adminUser->assignRole('super_admin');
-
-        $instructor = \App\Models\Instructor::factory()->create([
-            'first_name' => 'Teacher',
-            'last_name' => 'Demo',
         ]);
 
-        $teacherUser = User::factory()->create([
-            'name' => "$instructor->first_name $instructor->last_name",
-            'email' => 'teacher@example.com',
-            'password' => '@Teacher2221',
-            'is_admin' => false,
-            'profileable_id' => $instructor->id,
-            'profileable_type' => Instructor::class,
-        ]);
-        $teacherUser->assignRole('instructor');
+        if (! app()->environment('production')) {
+            $this->call([
+                InstructorSeeder::class,
+                StudentSeeder::class,
+            ]);
+        }
 
-        $student = Student::factory()->create([
-            'first_name' => 'Student',
-            'last_name' => 'Demo',
-        ]);
+        User::firstOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'Administrator',
+                'password' => '@Admin2221',
+                'is_admin' => true,
+            ]
+        )->assignRole('super_admin');
 
-        $studentUser = User::factory()->create([
-            'name' => "$student->first_name $student->last_name",
-            'email' => 'student@example.com',
-            'password' => '@Student2221',
-            'is_admin' => false,
-            'profileable_id' => $student->id,
-            'profileable_type' => Student::class,
-        ]);
-        $studentUser->assignRole('student');
+        User::firstOrCreate(
+            ['email' => 'teacher@example.com'],
+            [
+                'name' => 'Teacher Demo',
+                'password' => '@Teacher2221',
+                'is_admin' => false,
+            ]
+        )->assignRole('instructor');
 
+        $instructorUser = User::where('email', 'teacher@example.com')->first();
+        if ($instructorUser && ! $instructorUser->profileable_id) {
+            $instructor = Instructor::firstOrCreate(
+                ['first_name' => 'Teacher', 'last_name' => 'Demo']
+            );
+            $instructorUser->update([
+                'profileable_id' => $instructor->id,
+                'profileable_type' => Instructor::class,
+            ]);
+        }
+
+        User::firstOrCreate(
+            ['email' => 'student@example.com'],
+            [
+                'name' => 'Student Demo',
+                'password' => '@Student2221',
+                'is_admin' => false,
+            ]
+        )->assignRole('student');
+
+        $studentUser = User::where('email', 'student@example.com')->first();
+        if ($studentUser && ! $studentUser->profileable_id) {
+            $student = Student::firstOrCreate(
+                ['first_name' => 'Student', 'last_name' => 'Demo']
+            );
+            $studentUser->update([
+                'profileable_id' => $student->id,
+                'profileable_type' => Student::class,
+            ]);
+        }
     }
 }
