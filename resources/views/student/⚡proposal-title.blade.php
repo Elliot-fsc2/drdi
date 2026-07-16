@@ -208,7 +208,6 @@ class extends Component implements HasActions, HasSchemas
             unset($this->proposals);
             $this->form->fill([]);
             $this->dispatch('close-modal', id: 'propose_title');
-            $this->fresh();
 
             Notification::make()->title('Proposal submitted successfully')->success()->send();
         } catch (\Exception $e) {
