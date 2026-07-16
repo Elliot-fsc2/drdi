@@ -127,7 +127,11 @@ class extends Component implements HasActions, HasSchemas {
 
     public function selectLeader(int $studentId): void
     {
+        $oldLeaderId = $this->group->leader_id;
+
         $this->group->update(['leader_id' => $studentId]);
+        $this->groupService->syncLeaderPermission($this->group, $oldLeaderId);
+
         $this->selectingLeader = false;
         unset($this->members);
 

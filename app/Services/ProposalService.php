@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\ProposalStatus;
+use App\Models\Group;
 use App\Models\Proposal;
 use App\Models\Student;
 use App\Models\User;
@@ -11,6 +12,25 @@ use Illuminate\Support\Facades\Gate;
 
 class ProposalService
 {
+    public function update(Proposal $proposal, array $data): Proposal
+    {
+        $user = auth()->user();
+        $student = $user->profileable;
+
+        if (! $user->can('create_proposals') && $student !== null) {
+            $isLeader = Group::where('leader_id', $student->id)->exists();
+            if ($isLeader) {
+                $user->givePermissionTo('create_proposals');
+            }
+        }
+
+        Gate::authorize('create_proposals');
+
+        $proposal->update($data);
+
+        return $proposal->fresh();
+    }
+
     public function approve(Proposal $proposal, ?string $feedback = null)
     {
         Gate::authorize('approve_proposals');
@@ -81,7 +101,18 @@ class ProposalService
 
     public function create(array $data): Proposal
     {
+        $user = auth()->user();
+        $student = $user->profileable;
+
+        if (! $user->can('create_proposals') && $student !== null) {
+            $isLeader = Group::where('leader_id', $student->id)->exists();
+            if ($isLeader) {
+                $user->givePermissionTo('create_proposals');
+            }
+        }
+
         Gate::authorize('create_proposals');
+
         $proposal = Proposal::create($data);
 
         activity('Title Proposal Created')

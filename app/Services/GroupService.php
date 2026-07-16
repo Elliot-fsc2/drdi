@@ -6,6 +6,8 @@ use App\Enums\PersonnelRole;
 use App\Models\Group;
 use App\Models\Instructor;
 use App\Models\Personnel;
+use App\Models\Student;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -23,6 +25,10 @@ class GroupService
                 'leader_id' => $data['leader_id'] ?? null,
             ]);
 
+            if ($group->leader_id !== null) {
+                $this->syncLeaderPermission($group);
+            }
+
             // Attach members if provided
             if (isset($data['member_ids']) && is_array($data['member_ids'])) {
                 $this->attachGroupMembers($group, $data['member_ids']);
@@ -39,11 +45,15 @@ class GroupService
         Gate::authorize('update_groups');
 
         DB::transaction(function () use ($group, $data) {
+            $oldLeaderId = $group->leader_id;
+
             $group->update([
                 'name' => $data['name'] ?? $group->name,
                 'section_id' => $data['section_id'] ?? $group->section_id,
                 'leader_id' => $data['leader_id'] ?? $group->leader_id,
             ]);
+
+            $this->syncLeaderPermission($group, $oldLeaderId);
 
             // Sync members if provided
             if (isset($data['member_ids']) && is_array($data['member_ids'])) {
@@ -59,6 +69,10 @@ class GroupService
         Gate::authorize('delete_groups');
 
         DB::transaction(function () use ($group) {
+            if ($group->leader_id !== null) {
+                $this->syncLeaderPermission($group, $group->leader_id);
+            }
+
             $group->members()->detach();
 
             $group->updateQuietly(['final_title_id' => null]);
@@ -99,6 +113,10 @@ class GroupService
     {
         Gate::authorize('update_groups');
 
+        if (in_array($group->leader_id, $studentIds)) {
+            $this->syncLeaderPermission($group, $group->leader_id);
+        }
+
         $group->members()->detach($studentIds);
 
         return $group->fresh('members');
@@ -122,6 +140,7 @@ class GroupService
             foreach ($groups as $group) {
                 // If student is the leader, unset leader_id
                 if ($group->leader_id === $studentId) {
+                    $this->syncLeaderPermission($group, $studentId);
                     $group->update(['leader_id' => null]);
                 }
 
@@ -139,6 +158,37 @@ class GroupService
             ])
             ->log(sprintf('Removed student ID %d from all groups in section ID %d. (by %s)', $studentId, $sectionId, Auth::user()?->name ?? 'system'));
         */
+    }
+
+    public function syncLeaderPermission(Group $group, ?int $oldLeaderId = null): void
+    {
+        if ($oldLeaderId !== null && $oldLeaderId !== $group->leader_id) {
+            $oldLeaderUser = User::query()
+                ->where('profileable_type', Student::class)
+                ->where('profileable_id', $oldLeaderId)
+                ->first();
+
+            if ($oldLeaderUser !== null) {
+                $isStillLeader = Group::where('leader_id', $oldLeaderId)
+                    ->where('id', '!=', $group->id)
+                    ->exists();
+
+                if (! $isStillLeader) {
+                    $oldLeaderUser->revokePermissionTo('create_proposals');
+                }
+            }
+        }
+
+        if ($group->leader_id !== null) {
+            $newLeaderUser = User::query()
+                ->where('profileable_type', Student::class)
+                ->where('profileable_id', $group->leader_id)
+                ->first();
+
+            if ($newLeaderUser !== null) {
+                $newLeaderUser->givePermissionTo('create_proposals');
+            }
+        }
     }
 
     private function assignRandomPersonnel(Group $group): void

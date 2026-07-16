@@ -69,6 +69,18 @@ class extends Component implements HasActions, HasSchemas
         return Proposal::where('group_id', $group->id)->with('submittedBy')->latest()->paginate(10);
     }
 
+    #[Computed]
+    public function isLeader(): bool
+    {
+        $group = $this->group();
+
+        if (! $group) {
+            return false;
+        }
+
+        return $group->leader_id === $this->user->profileable->id;
+    }
+
     public function viewProposalAction(): Action
     {
         return Action::make('viewProposal')
@@ -79,8 +91,9 @@ class extends Component implements HasActions, HasSchemas
             ->form(function (array $arguments) {
                 $proposal = Proposal::find($arguments['proposal']);
                 $isPending = $proposal?->status === ProposalStatus::PENDING;
+                $canEdit = $isPending && $this->isLeader();
 
-                if ($isPending) {
+                if ($canEdit) {
                     return [
                         TextInput::make('title')->label('Proposal Title')->required()->maxLength(255),
 
@@ -122,7 +135,7 @@ class extends Component implements HasActions, HasSchemas
             })
             ->modalSubmitAction(function ($action, array $arguments) {
                 $proposal = Proposal::find($arguments['proposal']);
-                if ($proposal && $proposal->status !== ProposalStatus::PENDING) {
+                if ($proposal && ($proposal->status !== ProposalStatus::PENDING || ! $this->isLeader())) {
                     return $action->hidden();
                 }
 
@@ -132,8 +145,8 @@ class extends Component implements HasActions, HasSchemas
             ->action(function (array $arguments, array $data): void {
                 $proposal = Proposal::find($arguments['proposal']);
 
-                if ($proposal && $proposal->status === ProposalStatus::PENDING) {
-                    $proposal->update([
+                if ($proposal && $proposal->status === ProposalStatus::PENDING && $this->isLeader()) {
+                    app(ProposalService::class)->update($proposal, [
                         'title' => $data['title'],
                         'description' => $data['description'],
                     ]);
@@ -171,24 +184,36 @@ class extends Component implements HasActions, HasSchemas
         $group = $this->group();
 
         if (! $group) {
+            Notification::make()->title('No active group assigned')->danger()->send();
+
             return;
         }
 
-        app(ProposalService::class)
-            ->create([
-                'title' => $this->data['title'] ?? '',
-                'description' => $this->data['description'] ?? '',
-                'group_id' => $group->id,
-                'submitted_by' => $this->user->profileable->id,
-                'status' => ProposalStatus::PENDING->value,
-            ]);
+        if (! $this->isLeader()) {
+            Notification::make()->title('Only the group leader can propose titles')->danger()->send();
 
-        unset($this->proposals);
-        $this->form->fill([]);
-        $this->dispatch('close-modal', id: 'propose_title');
-        $this->resetPage();
+            return;
+        }
 
-        Notification::make()->title('Proposal submitted successfully')->success()->send();
+        try {
+            app(ProposalService::class)
+                ->create([
+                    'title' => $this->data['title'] ?? '',
+                    'description' => $this->data['description'] ?? '',
+                    'group_id' => $group->id,
+                    'submitted_by' => $this->user->profileable->id,
+                    'status' => ProposalStatus::PENDING->value,
+                ]);
+
+            unset($this->proposals);
+            $this->form->fill([]);
+            $this->dispatch('close-modal', id: 'propose_title');
+            $this->resetPage();
+
+            Notification::make()->title('Proposal submitted successfully')->success()->send();
+        } catch (\Exception $e) {
+            Notification::make()->title('Error: '.$e->getMessage())->danger()->send();
+        }
     }
 };
 ?>
@@ -217,10 +242,15 @@ class extends Component implements HasActions, HasSchemas
 
             <div class="mt-4 md:mt-0 flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                 <div class="w-full sm:w-auto">
-                    @if ($this->group())
+                    @if ($this->group() && $this->isLeader())
                         <x-filament::button color="info" x-on:click="$dispatch('open-modal', {id: 'propose_title'})">
                             Propose Title
                         </x-filament::button>
+                    @elseif ($this->group() && ! $this->isLeader())
+                        <span class="inline-flex items-center gap-2 rounded-lg bg-slate-100 px-4 py-2.5 text-sm text-slate-500 border border-slate-200">
+                            <x-heroicon-o-lock-closed class="h-5 w-5" />
+                            Only the group leader can propose titles
+                        </span>
                     @endif
                 </div>
             </div>
