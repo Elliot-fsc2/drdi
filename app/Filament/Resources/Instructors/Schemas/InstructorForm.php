@@ -22,7 +22,8 @@ class InstructorForm
                 TextInput::make('email')
                     ->label('Email Address')
                     ->email()
-                    ->required(),
+                    ->nullable()
+                    ->placeholder('Auto-filled from name if empty'),
                 Grid::make()
                     ->columns(2)
                     ->schema([

@@ -61,7 +61,7 @@ new #[Title('Research Repository')] class extends Component
      {
          $layout = match (true) {
              auth()->user()?->profileable_type === Student::class => 'layouts::student.app',
-             auth()->user()?->profileable_type === Instructor::class && auth()->user()?->profileable?->role === InstructorRole::RDO => 'layouts::rdo.app',
+             auth()->user()?->profileable_type === Instructor::class && in_array(auth()->user()?->profileable?->role, [InstructorRole::RDO, InstructorRole::Staff]) => 'layouts::rdo.app',
              auth()->user()?->profileable_type === Instructor::class => 'layouts::instructor.app',
              default => 'layouts::app',
          };

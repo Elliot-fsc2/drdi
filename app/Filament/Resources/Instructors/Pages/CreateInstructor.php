@@ -15,6 +15,20 @@ class CreateInstructor extends CreateRecord
 
     protected static bool $canCreateAnother = false;
 
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        if (blank($data['email'] ?? null)) {
+            $data['email'] = Str::of($data['first_name'])
+                ->lower()
+                ->append('.')
+                ->append(Str::lower($data['last_name']))
+                ->append('@drdi.edu')
+                ->toString();
+        }
+
+        return $data;
+    }
+
     protected function handleRecordCreation(array $data): Model
     {
         $instructor = static::getModel()::create($data);

@@ -116,7 +116,7 @@ class extends Component implements HasSchemas
                 ->success()
                 ->send();
 
-            $redirectRoute = auth()->user()->profileable?->role === \App\Enums\InstructorRole::RDO
+            $redirectRoute = in_array(auth()->user()->profileable?->role, [\App\Enums\InstructorRole::RDO, \App\Enums\InstructorRole::Staff])
                 ? 'rdo.classes'
                 : 'instructor.classes';
 

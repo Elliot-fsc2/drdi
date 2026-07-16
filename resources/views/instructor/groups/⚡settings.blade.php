@@ -85,7 +85,7 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
     private function authorizeAccess(): void
     {
         $user = Auth::user();
-        $isRDO = $user->profileable_type === Instructor::class && $user->profileable?->role === InstructorRole::RDO;
+        $isRDO = $user->profileable_type === Instructor::class && in_array($user->profileable?->role, [InstructorRole::RDO, InstructorRole::Staff]);
 
         if (! $isRDO) {
             abort_if($this->group->section->instructor_id !== $user->profileable->id, 403);
