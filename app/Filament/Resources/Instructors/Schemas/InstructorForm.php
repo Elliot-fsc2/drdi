@@ -4,9 +4,9 @@ namespace App\Filament\Resources\Instructors\Schemas;
 
 use App\Enums\InstructorRole;
 use Filament\Forms\Components\Checkbox;
-use Filament\Schemas\Components\Grid;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
 
 class InstructorForm

@@ -16,7 +16,15 @@ class RDOMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (! auth()->check() || auth()->user()->profileable?->role !== InstructorRole::RDO) {
+        $user = auth()->user();
+
+        if (! $user) {
+            abort(403, 'Unauthorized');
+        }
+
+        $allowedRoles = [InstructorRole::RDO, InstructorRole::Staff];
+
+        if (! in_array($user->profileable?->role, $allowedRoles, true)) {
             abort(403, 'Unauthorized');
         }
 

@@ -29,12 +29,15 @@ class Login
 
             $user = Auth::user();
 
-            if ($user->profileable?->role === \App\Enums\InstructorRole::RDO) {
+            $role = $user->profileable?->role;
+
+            // Staff and RDO both go to RDO dashboard
+            if ($role === \App\Enums\InstructorRole::RDO || $role === \App\Enums\InstructorRole::Staff) {
                 return redirect()->intended(route('rdo.home'));
             }
+
             // Redirect based on user role
             if ($user->profileable_type === \App\Models\Instructor::class) {
-                // Check if RDO
                 // Regular instructor
                 return redirect()->intended(route('instructor.home'));
             } elseif ($user->profileable_type === \App\Models\Student::class) {

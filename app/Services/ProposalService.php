@@ -7,19 +7,13 @@ use App\Models\Proposal;
 use App\Models\Student;
 use App\Models\User;
 use App\Notifications\ApproveProposal;
+use Illuminate\Support\Facades\Gate;
 
 class ProposalService
 {
-    /**
-     * Create a new class instance.
-     */
-    public function __construct()
-    {
-        //
-    }
-
     public function approve(Proposal $proposal, ?string $feedback = null)
     {
+        Gate::authorize('approve_proposals');
         $proposal->update([
             'status' => ProposalStatus::APPROVED,
             'feedback' => $feedback,
@@ -53,6 +47,7 @@ class ProposalService
 
     public function reject(Proposal $proposal, ?string $feedback = null)
     {
+        Gate::authorize('reject_proposals');
         $proposal->update([
             'status' => ProposalStatus::REJECTED,
             'feedback' => $feedback,
@@ -86,6 +81,7 @@ class ProposalService
 
     public function create(array $data): Proposal
     {
+        Gate::authorize('create_proposals');
         $proposal = Proposal::create($data);
 
         activity('Title Proposal Created')

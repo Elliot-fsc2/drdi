@@ -10,12 +10,15 @@ use App\Models\Schedule;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
 class PresentationService
 {
     public function create(array $data): Schedule
     {
+        Gate::authorize('create_schedules');
+
         $date = Carbon::parse($data['date'])->toDateString();
         $startTime = Carbon::parse($date.' '.$data['start_time']);
         $endTime = Carbon::parse($date.' '.$data['end_time']);
@@ -66,6 +69,8 @@ class PresentationService
 
     public function update(array $data, Schedule $schedule): Schedule
     {
+        Gate::authorize('update_schedules');
+
         $date = Carbon::parse($data['date'])->toDateString();
         $startTime = Carbon::parse($date.' '.$data['start_time']);
         $endTime = Carbon::parse($date.' '.$data['end_time']);
@@ -94,6 +99,8 @@ class PresentationService
      */
     public function bulkSchedule(array $data): array
     {
+        Gate::authorize('create_schedules');
+
         return DB::transaction(function () use ($data): array {
             $sectionId = (int) $data['section_id'];
             $presentationType = $this->resolvePresentationType($data['presentation_type']);

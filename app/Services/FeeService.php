@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Group;
 use App\Models\Semester;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
 
 class FeeService
@@ -19,6 +20,8 @@ class FeeService
      */
     public function initializeGroupLedger(Group $group): void
     {
+        Gate::authorize('manage_fees');
+
         DB::transaction(function () use ($group) {
             $semester = $group->section->semester;
 
@@ -58,6 +61,8 @@ class FeeService
 
     public function syncHonorarium(Group $group): void
     {
+        Gate::authorize('manage_fees');
+
         DB::transaction(function () use ($group) {
             $semester = $group->section->semester;
 
@@ -112,6 +117,8 @@ class FeeService
      */
     public function createRates(array $data): void
     {
+        Gate::authorize('manage_thesis_rates');
+
         DB::transaction(function () use ($data) {
             $semester = $data['semester_id'] ?? null;
 
@@ -151,6 +158,7 @@ class FeeService
 
     public function updateAllGroupsInSemester(Semester $semester): void
     {
+        Gate::authorize('manage_fees');
 
         $baseRateTotal = $semester->rates()
             ->where('type', 'fixed_per_group')

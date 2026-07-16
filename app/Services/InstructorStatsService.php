@@ -5,11 +5,14 @@ namespace App\Services;
 use App\Enums\ProposalStatus;
 use App\Models\Proposal;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
 
 class InstructorStatsService
 {
     public function dashboardStats(): array
     {
+        Gate::authorize('view_dashboard');
+
         $user = auth()->user()->profileable;
 
         return Cache::flexible('instructor_dashboard_'.$user->id, [300, 900], function () use ($user): array {

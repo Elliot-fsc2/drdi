@@ -14,13 +14,15 @@ Route::get('/', function () {
 
     $user = Auth::user();
 
+    $role = $user->profileable?->role;
+
+    // Staff and RDO both go to RDO dashboard
+    if ($role === \App\Enums\InstructorRole::RDO || $role === \App\Enums\InstructorRole::Staff) {
+        return redirect()->route('rdo.home');
+    }
+
     // Redirect based on user role
     if ($user->profileable_type === \App\Models\Instructor::class) {
-        // Check if RDO
-        if ($user->profileable?->role === \App\Enums\InstructorRole::RDO) {
-            return redirect()->route('rdo.home');
-        }
-
         // Regular instructor
         return redirect()->route('instructor.home');
     } elseif ($user->profileable_type === \App\Models\Student::class) {

@@ -113,13 +113,19 @@
             <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
                 @php
                     $userType = auth()->user()->profileable_type;
+                    $userRole = auth()->user()->profileable?->role;
                     $isInstructor =
                         $userType === \App\Models\Instructor::class &&
-                        auth()->user()->profileable?->role !== \App\Enums\InstructorRole::RDO;
+                        $userRole !== \App\Enums\InstructorRole::RDO &&
+                        $userRole !== \App\Enums\InstructorRole::Staff;
                     $isStudent = $userType === \App\Models\Student::class;
                     $isRDO =
                         $userType === \App\Models\Instructor::class &&
-                        auth()->user()->profileable?->role === \App\Enums\InstructorRole::RDO;
+                        $userRole === \App\Enums\InstructorRole::RDO;
+                    $isStaff =
+                        $userType === \App\Models\Instructor::class &&
+                        $userRole === \App\Enums\InstructorRole::Staff;
+                    $showRdoNav = $isRDO || $isStaff;
                 @endphp
 
                 @if ($isInstructor)
@@ -208,8 +214,8 @@
                         <x-heroicon-o-chat-bubble-left-right class="w-6 h-6 flex-shrink-0" />
                         <span class="font-medium">Consultations</span>
                     </a>
-                @elseif($isRDO)
-                    {{-- RDO Navigation --}}
+                @elseif($showRdoNav)
+                    {{-- RDO / Staff Navigation --}}
                     <a href="{{ route('rdo.home') }}" wire:navigate @class([
                         'flex items-center gap-3 px-4 py-2 rounded-xl transition-all',
                         'bg-white/15 text-white border border-white/25' => request()->routeIs(
@@ -337,13 +343,19 @@
             <nav class="flex-1 py-6 space-y-1 overflow-y-auto" :class="sidebarOpen ? 'px-4' : 'px-3'">
                 @php
                     $userType = auth()->user()->profileable_type;
+                    $userRole = auth()->user()->profileable?->role;
                     $isInstructor =
                         $userType === \App\Models\Instructor::class &&
-                        auth()->user()->profileable?->role !== \App\Enums\InstructorRole::RDO;
+                        $userRole !== \App\Enums\InstructorRole::RDO &&
+                        $userRole !== \App\Enums\InstructorRole::Staff;
                     $isStudent = $userType === \App\Models\Student::class;
                     $isRDO =
                         $userType === \App\Models\Instructor::class &&
-                        auth()->user()->profileable?->role === \App\Enums\InstructorRole::RDO;
+                        $userRole === \App\Enums\InstructorRole::RDO;
+                    $isStaff =
+                        $userType === \App\Models\Instructor::class &&
+                        $userRole === \App\Enums\InstructorRole::Staff;
+                    $showRdoNav = $isRDO || $isStaff;
                 @endphp
 
                 @if ($isInstructor)
@@ -462,8 +474,8 @@
                         <x-heroicon-o-currency-dollar class="w-6 h-6 flex-shrink-0" />
                         <span x-show="sidebarOpen" x-transition class="font-medium whitespace-nowrap">Fees</span>
                     </a>
-                @elseif($isRDO)
-                    {{-- RDO Navigation --}}
+                @elseif($showRdoNav)
+                    {{-- RDO / Staff Navigation --}}
                     <a href="{{ route('rdo.home') }}" wire:navigate
                         :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'" @class([
                             'flex items-center gap-3 py-2 rounded-xl transition-all group',

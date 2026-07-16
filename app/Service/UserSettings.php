@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 use Spatie\Activitylog\Models\Activity;
 
 class UserSettings
@@ -20,6 +21,8 @@ class UserSettings
 
     public function showActivityLogs($userId)
     {
+        Gate::authorize('view_activity_logs');
+
         $user = User::findOrFail($userId);
         $activityLogs = Activity::where('causer_id', $userId)->latest()->paginate();
 
