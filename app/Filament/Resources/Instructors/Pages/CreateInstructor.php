@@ -19,24 +19,20 @@ class CreateInstructor extends CreateRecord
     {
         $instructor = static::getModel()::create($data);
 
-        $temporaryPassword = Str::random(12);
+        $password = $data['password'] ?? Str::random(12);
 
         $user = User::create([
             'name' => $instructor->first_name.' '.$instructor->last_name,
-            'email' => Str::of($instructor->first_name)
-                ->trim()
-                ->lower()
-                ->append('.')
-                ->append(Str::of($instructor->last_name)->trim()->lower())
-                ->append('@instructor.edu')
-                ->toString(),
-            'password' => $temporaryPassword,
+            'email' => $data['email'],
+            'password' => $password,
         ]);
 
         $user->profileable()->associate($instructor);
         $user->save();
 
-        $user->notify(new SendWelcomeEmail($temporaryPassword));
+        if ($data['send_email']) {
+            $user->notify(new SendWelcomeEmail($password));
+        }
 
         return $instructor;
     }
