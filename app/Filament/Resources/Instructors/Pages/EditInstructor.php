@@ -20,6 +20,19 @@ class EditInstructor extends EditRecord
         ];
     }
 
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        $user = User::where('profileable_type', $this->record::class)
+            ->where('profileable_id', $this->record->id)
+            ->first();
+
+        if ($user) {
+            $data['email'] = $user->email;
+        }
+
+        return $data;
+    }
+
     protected function mutateFormDataBeforeSave(array $data): array
     {
         if (blank($data['password'] ?? null)) {
@@ -37,8 +50,22 @@ class EditInstructor extends EditRecord
             ->where('profileable_id', $instructor->id)
             ->first();
 
-        if ($user !== null && filled($this->data['email'] ?? null)) {
-            $user->update(['email' => $this->data['email']]);
+        if (! $user) {
+            return;
+        }
+
+        $updates = [];
+
+        if (filled($this->data['email'] ?? null)) {
+            $updates['email'] = $this->data['email'];
+        }
+
+        if (filled($this->data['password'] ?? null)) {
+            $updates['password'] = $this->data['password'];
+        }
+
+        if (! empty($updates)) {
+            $user->update($updates);
         }
     }
 }
