@@ -25,7 +25,7 @@ new #[Layout('layouts::guest')]
           try {
               $loginService->attempt($this->email, $this->password, $this->remember);
           } catch (\Illuminate\Validation\ValidationException $e) {
-              if ($seconds = $loginService->getLockoutSeconds()) {
+              if (! app()->environment('local') && ($seconds = $loginService->getLockoutSeconds())) {
                   $this->dispatch('lockout', seconds: $seconds);
               }
 
@@ -36,7 +36,8 @@ new #[Layout('layouts::guest')]
       }
   };
 ?>
-<div class="h-screen flex overflow-hidden" x-data="{
+<div class="h-screen flex overflow-hidden"@if (! app()->environment('local'))
+     x-data="{
         secondsLeft: 0,
         startTimer(s) {
             this.secondsLeft = s;
@@ -45,7 +46,8 @@ new #[Layout('layouts::guest')]
                 else this.secondsLeft--;
             }, 1000);
         }
-     }" @lockout.window="startTimer($event.detail.seconds)">
+     }" @lockout.window="startTimer($event.detail.seconds)"
+     @endif>
 
   <!-- Left Side - Welcome Section -->
   <div
@@ -132,14 +134,20 @@ new #[Layout('layouts::guest')]
           </div>
 
           <!-- Login Button -->
-          <button type="submit" x-bind:disabled="secondsLeft > 0"
+          <button type="submit"
+            @if (! app()->environment('local'))
+            x-bind:disabled="secondsLeft > 0"
             x-bind:class="secondsLeft > 0 ? 'bg-gray-400 opacity-50 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'"
-            class="w-full text-white font-semibold py-3 rounded-lg transition-all shadow-lg">
-
+            @endif
+            class="w-full text-white font-semibold py-3 rounded-lg transition-all shadow-lg bg-blue-600 hover:bg-blue-700">
+            @if (! app()->environment('local'))
             <span x-show="secondsLeft <= 0">Login</span>
             <span x-show="secondsLeft > 0">
               Please wait <span x-text="secondsLeft"></span>s
             </span>
+            @else
+            <span>Login</span>
+            @endif
           </button>
         </form>
       </div>

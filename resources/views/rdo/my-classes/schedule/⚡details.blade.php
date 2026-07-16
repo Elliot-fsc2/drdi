@@ -105,6 +105,7 @@ new #[Layout('layouts::rdo.app')] #[Title('Presentation Details')] class extends
         ]);
 
         $this->schedule->refresh();
+        unset($this->panelists);
         $this->status = $newStatus->value;
 
         Notification::make()

@@ -37,7 +37,7 @@ class DatabaseSeeder extends Seeder
             ]
         )->assignRole('super_admin');
 
-        User::firstOrCreate(
+        User::updateOrCreate(
             ['email' => 'teacher@example.com'],
             [
                 'name' => 'Teacher Demo',
@@ -48,7 +48,7 @@ class DatabaseSeeder extends Seeder
 
         $instructorUser = User::where('email', 'teacher@example.com')->first();
         if ($instructorUser && ! $instructorUser->profileable_id) {
-            $instructor = Instructor::firstOrCreate(
+            $instructor = Instructor::updateOrCreate(
                 ['first_name' => 'Teacher', 'last_name' => 'Demo'],
                 ['role' => \App\Enums\InstructorRole::Instructor]
             );
@@ -58,7 +58,7 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        User::firstOrCreate(
+        User::updateOrCreate(
             ['email' => 'rdo@example.com'],
             [
                 'name' => 'RDO Demo',
@@ -69,7 +69,7 @@ class DatabaseSeeder extends Seeder
 
         $rdoUser = User::where('email', 'rdo@example.com')->first();
         if ($rdoUser && ! $rdoUser->profileable_id) {
-            $rdoInstructor = Instructor::firstOrCreate(
+            $rdoInstructor = Instructor::updateOrCreate(
                 ['first_name' => 'RDO', 'last_name' => 'Demo'],
                 ['role' => \App\Enums\InstructorRole::RDO]
             );
@@ -79,7 +79,7 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        User::firstOrCreate(
+        User::updateOrCreate(
             ['email' => 'student@example.com'],
             [
                 'name' => 'Student Demo',
@@ -90,7 +90,7 @@ class DatabaseSeeder extends Seeder
 
         $studentUser = User::where('email', 'student@example.com')->first();
         if ($studentUser && ! $studentUser->profileable_id) {
-            $student = Student::firstOrCreate(
+            $student = Student::updateOrCreate(
                 ['first_name' => 'Student', 'last_name' => 'Demo'],
                 ['student_number' => 'DEMO-00001']
             );

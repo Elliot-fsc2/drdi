@@ -105,6 +105,7 @@ new #[Layout('layouts::instructor.app')] #[Title('Presentation Details')] class 
         ]);
 
         $this->schedule->refresh();
+        unset($this->panelists);
         $this->status = $newStatus->value;
 
         Notification::make()

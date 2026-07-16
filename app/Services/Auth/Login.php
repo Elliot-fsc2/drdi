@@ -14,17 +14,21 @@ class Login
 
     public function attempt(string $email, string $password, bool $remember = false)
     {
-        $key = $this->throttleKey();
+        if (! app()->environment('local')) {
+            $key = $this->throttleKey();
 
-        if (RateLimiter::tooManyAttempts($key, $this->maxAttempts)) {
-            $seconds = RateLimiter::availableIn($key);
-            throw ValidationException::withMessages([
-                'email' => "Too many login attempts. Please try again in {$seconds} seconds.",
-            ]);
+            if (RateLimiter::tooManyAttempts($key, $this->maxAttempts)) {
+                $seconds = RateLimiter::availableIn($key);
+                throw ValidationException::withMessages([
+                    'email' => "Too many login attempts. Please try again in {$seconds} seconds.",
+                ]);
+            }
         }
 
         if (Auth::attempt(['email' => $email, 'password' => $password], $remember)) {
-            RateLimiter::clear($key);
+            if (! app()->environment('local')) {
+                RateLimiter::clear($key);
+            }
             request()->session()->regenerate();
 
             $user = Auth::user();
@@ -48,7 +52,9 @@ class Login
             return redirect()->intended('/');
         }
 
-        RateLimiter::hit($key, $this->decaySeconds);
+        if (! app()->environment('local')) {
+            RateLimiter::hit($key, $this->decaySeconds);
+        }
 
         throw ValidationException::withMessages([
             'email' => 'The provided credentials do not match our records.',
