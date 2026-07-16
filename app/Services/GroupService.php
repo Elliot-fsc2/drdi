@@ -10,14 +10,11 @@ use App\Models\Student;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
 
 class GroupService
 {
     public function create(array $data): Group
     {
-        Gate::authorize('create_groups');
-
         return DB::transaction(function () use ($data) {
             $group = Group::create([
                 'name' => $data['name'],
@@ -42,8 +39,6 @@ class GroupService
 
     public function update(Group $group, array $data)
     {
-        Gate::authorize('update_groups');
-
         DB::transaction(function () use ($group, $data) {
             $oldLeaderId = $group->leader_id;
 
@@ -66,8 +61,6 @@ class GroupService
 
     public function delete(Group $group)
     {
-        Gate::authorize('delete_groups');
-
         DB::transaction(function () use ($group) {
             if ($group->leader_id !== null) {
                 $this->syncLeaderPermission($group, $group->leader_id);
@@ -102,8 +95,6 @@ class GroupService
 
     public function addMembers(Group $group, array $studentIds): Group
     {
-        Gate::authorize('update_groups');
-
         $group->members()->syncWithoutDetaching($studentIds);
 
         return $group->fresh('members');
@@ -111,8 +102,6 @@ class GroupService
 
     public function removeMembers(Group $group, array $studentIds): Group
     {
-        Gate::authorize('update_groups');
-
         if (in_array($group->leader_id, $studentIds)) {
             $this->syncLeaderPermission($group, $group->leader_id);
         }
@@ -124,8 +113,6 @@ class GroupService
 
     public function removeStudentFromSectionGroups(int $studentId, int $sectionId): void
     {
-        Gate::authorize('update_groups');
-
         DB::transaction(function () use ($studentId, $sectionId) {
             // Find all groups in this section that the student belongs to
             $groups = Group::where('section_id', $sectionId)

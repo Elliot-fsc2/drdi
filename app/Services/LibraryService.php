@@ -4,14 +4,11 @@ namespace App\Services;
 
 use App\Models\Group;
 use App\Models\ResearchLibrary;
-use Illuminate\Support\Facades\Gate;
 
 class LibraryService
 {
     public function create(Group $group, array $data): ResearchLibrary
     {
-        Gate::authorize('manage_repository');
-
         if ($group->isEligibleForLibrary()) {
             $group->researchLibrary()->create([
                 'title' => $group->finalTitle->title,
@@ -26,8 +23,6 @@ class LibraryService
 
     public function update(ResearchLibrary $library, array $data)
     {
-        Gate::authorize('manage_repository');
-
         $library->update([
             'title' => $data['title'],
             'abstract' => $data['abstract'],
@@ -39,15 +34,11 @@ class LibraryService
 
     public function delete(ResearchLibrary $library)
     {
-        Gate::authorize('manage_repository');
-
         $library->delete();
     }
 
     public function publish(ResearchLibrary $library, string $publishedAt)
     {
-        Gate::authorize('manage_repository');
-
         $library->update([
             'is_published' => true,
             'published_at' => $publishedAt ?? now(),
@@ -62,8 +53,6 @@ class LibraryService
 
     public function unpublish(ResearchLibrary $library)
     {
-        Gate::authorize('manage_repository');
-
         $library->update([
             'is_published' => false,
             'published_at' => null,

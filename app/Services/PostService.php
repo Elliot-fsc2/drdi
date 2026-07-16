@@ -4,14 +4,11 @@ namespace App\Services;
 
 use App\Enums\PostType;
 use App\Models\Post;
-use Illuminate\Support\Facades\Gate;
 
 class PostService
 {
     public function createForInstructors(array $data)
     {
-        Gate::authorize('create_announcements');
-
         $post = Post::create([
             'title' => $data['title'],
             'content' => $data['content'],
@@ -28,8 +25,6 @@ class PostService
 
     public function createForStudents(array $data)
     {
-        Gate::authorize('create_announcements');
-
         $post = Post::create([
             'title' => $data['title'],
             'content' => $data['content'],
@@ -46,8 +41,6 @@ class PostService
 
     public function createForSection(array $data)
     {
-        Gate::authorize('create_announcements');
-
         $sectionIds = $data['section_ids'] ?? [];
 
         $post = Post::create([
@@ -68,8 +61,6 @@ class PostService
 
     public function updatePost(Post $post, array $data): void
     {
-        Gate::authorize('update_announcements');
-
         $sectionIds = $data['section_ids'] ?? [];
 
         $post->update([
@@ -93,8 +84,6 @@ class PostService
 
     public function deletePost(Post $post)
     {
-        Gate::authorize('delete_announcements');
-
         $post->delete();
 
         activity('Post Deletion by :causer.name')
