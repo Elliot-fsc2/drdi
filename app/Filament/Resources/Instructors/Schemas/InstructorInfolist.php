@@ -13,6 +13,8 @@ class InstructorInfolist
             ->components([
                 TextEntry::make('first_name'),
                 TextEntry::make('last_name'),
+                TextEntry::make('user.email')
+                    ->label('Email'),
                 TextEntry::make('department.name'),
                 TextEntry::make('role')
                     ->badge(),

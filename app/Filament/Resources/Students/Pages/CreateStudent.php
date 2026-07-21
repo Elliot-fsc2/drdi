@@ -13,6 +13,21 @@ class CreateStudent extends CreateRecord
 {
     protected static string $resource = StudentResource::class;
 
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        if (blank($data['email'] ?? null)) {
+            $data['email'] = Str::of($data['first_name'])
+                ->trim()
+                ->lower()
+                ->append('.')
+                ->append(Str::of($data['last_name'])->trim()->lower())
+                ->append('@student.edu')
+                ->toString();
+        }
+
+        return $data;
+    }
+
     protected function handleRecordCreation(array $data): Model
     {
         $student = static::getModel()::create($data);
@@ -21,13 +36,7 @@ class CreateStudent extends CreateRecord
 
         $user = User::create([
             'name' => $student->first_name.' '.$student->last_name,
-            'email' => Str::of($student->first_name)
-                ->trim()
-                ->lower()
-                ->append('.')
-                ->append(Str::of($student->last_name)->trim()->lower())
-                ->append('@student.edu')
-                ->toString(),
+            'email' => $data['email'],
             'password' => $temporaryPassword,
         ]);
 

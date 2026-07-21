@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -12,7 +13,7 @@ use Illuminate\Support\Str;
 use Spatie\Activitylog\Traits\CausesActivity;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements CanResetPassword, FilamentUser
 {
     use CausesActivity, HasRoles;
 
@@ -58,6 +59,11 @@ class User extends Authenticatable implements FilamentUser
     /**
      * Get the user's initials
      */
+    public function setNameAttribute(string $value): void
+    {
+        $this->attributes['name'] = ucwords(trim($value));
+    }
+
     public function initials(): string
     {
         return Str::of($this->name)
@@ -73,6 +79,16 @@ class User extends Authenticatable implements FilamentUser
     public function canAccessPanel(Panel $panel): bool
     {
         return $this->is_admin || $this->hasRole(['admin', 'super_admin']);
+    }
+
+    public function getEmailForPasswordReset(): string
+    {
+        return $this->email;
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        // Custom password setup is handled by SetInitialPassword notification
     }
 
     public function profileable(): \Illuminate\Database\Eloquent\Relations\MorphTo

@@ -2,7 +2,6 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Pages\TaskBoard;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -27,10 +26,6 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->login()
-            ->pages([
-                TaskBoard::class,
-            ])
-
             ->colors([
                 'primary' => Color::Blue,
             ])
@@ -42,6 +37,8 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('DRDI Admin')
             ->favicon(asset('images/logo.png'))
             ->profile(isSimple: false)
+            ->databaseNotifications()
+            ->collapsibleNavigationGroups(false)
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

@@ -6,6 +6,7 @@ use App\Enums\InstructorRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Support\Facades\DB;
 
 class Instructor extends Model
 {
@@ -24,6 +25,27 @@ class Instructor extends Model
         return [
             'role' => InstructorRole::class,
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Instructor $instructor) {
+            DB::transaction(function () use ($instructor) {
+                $instructor->user?->delete();
+                $instructor->consultations()->delete();
+                $instructor->personnel()->delete();
+            });
+        });
+    }
+
+    public function setFirstNameAttribute(string $value): void
+    {
+        $this->attributes['first_name'] = ucfirst(trim($value));
+    }
+
+    public function setLastNameAttribute(string $value): void
+    {
+        $this->attributes['last_name'] = ucfirst(trim($value));
     }
 
     public function getFullNameAttribute(): string

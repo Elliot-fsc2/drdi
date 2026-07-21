@@ -19,6 +19,9 @@ class InstructorsTable
                     ->searchable(),
                 TextColumn::make('last_name')
                     ->searchable(),
+                TextColumn::make('user.email')
+                    ->label('Email')
+                    ->searchable(),
                 TextColumn::make('department.name')
                     ->searchable(),
                 TextColumn::make('role')

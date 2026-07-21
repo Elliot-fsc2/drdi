@@ -21,6 +21,9 @@ class StudentsTable
                     ->searchable(),
                 TextColumn::make('student_number')
                     ->searchable(),
+                TextColumn::make('user.email')
+                    ->label('Email')
+                    ->searchable(),
                 TextColumn::make('program.name')
                     ->searchable(),
                 TextColumn::make('created_at')

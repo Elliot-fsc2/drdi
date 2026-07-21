@@ -18,6 +18,11 @@ class StudentForm
                     ->required(),
                 TextInput::make('student_number')
                     ->required(),
+                TextInput::make('email')
+                    ->label('Email Address')
+                    ->email()
+                    ->nullable()
+                    ->placeholder('Auto-filled from name if empty'),
                 Select::make('program_id')
                     ->relationship('program', 'name')
                     ->required(),

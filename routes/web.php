@@ -41,6 +41,7 @@ Route::livewire('/test', 'task-board')->name('test');
 
 Route::middleware('guest')->group(function () {
     Route::livewire('/login', 'pages::auth.login')->name('login');
+    Route::livewire('/set-password', 'pages::auth.set-password')->name('password.set');
 });
 
 Route::middleware('auth')->group(function () {

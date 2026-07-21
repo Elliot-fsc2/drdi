@@ -14,6 +14,8 @@ class StudentInfolist
                 TextEntry::make('first_name'),
                 TextEntry::make('last_name'),
                 TextEntry::make('student_number'),
+                TextEntry::make('user.email')
+                    ->label('Email'),
                 TextEntry::make('program.name'),
                 TextEntry::make('created_at')
                     ->dateTime()
