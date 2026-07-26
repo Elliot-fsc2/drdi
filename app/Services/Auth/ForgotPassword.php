@@ -5,7 +5,6 @@ namespace App\Services\Auth;
 use App\Models\User;
 use App\Notifications\ForgotPassword as ForgotPasswordNotification;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Validation\ValidationException;
 
 class ForgotPassword
 {
@@ -14,9 +13,7 @@ class ForgotPassword
         $user = User::where('email', $email)->first();
 
         if (! $user) {
-            throw ValidationException::withMessages([
-                'email' => 'We could not find an account with that email address.',
-            ]);
+            return;
         }
 
         $token = Password::broker()->createToken($user);

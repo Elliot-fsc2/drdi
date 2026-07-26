@@ -36,7 +36,7 @@ class StudentsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //  
+                //
             ])
             ->recordActions([
                 ViewAction::make(),

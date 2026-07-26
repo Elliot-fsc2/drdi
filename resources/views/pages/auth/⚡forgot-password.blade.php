@@ -19,13 +19,9 @@ new #[Layout('layouts::guest')]
       {
           $this->validate();
 
-          try {
-              $forgotPasswordService->sendResetLink($this->email);
+          $forgotPasswordService->sendResetLink($this->email);
 
-              $this->sent = true;
-          } catch (\Illuminate\Validation\ValidationException $e) {
-              $this->addError('email', $e->validator->errors()->first('email'));
-          }
+          $this->sent = true;
       }
   };
 ?>
