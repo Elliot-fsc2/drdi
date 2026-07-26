@@ -31,7 +31,14 @@ new #[Layout('layouts::guest')]
           $this->email = request('email');
 
           if (! $this->token || ! $this->email) {
-              $this->success = false;
+              return;
+          }
+
+          $user = \App\Models\User::where('email', $this->email)->first();
+
+          if (! $user || ! Password::broker()->getRepository()->exists($user, $this->token)) {
+              $this->token = '';
+              $this->email = '';
           }
       }
 
