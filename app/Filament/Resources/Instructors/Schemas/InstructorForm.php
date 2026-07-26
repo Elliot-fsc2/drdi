@@ -23,7 +23,8 @@ class InstructorForm
                     ->label('Email Address')
                     ->email()
                     ->nullable()
-                    ->placeholder('Auto-filled from name if empty'),
+                    ->placeholder('Auto-filled from name if empty')
+                    ->unique(table: 'users', column: 'email', ignoreRecord: true),
                 Grid::make()
                     ->columns(2)
                     ->schema([

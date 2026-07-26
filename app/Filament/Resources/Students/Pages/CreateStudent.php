@@ -4,9 +4,10 @@ namespace App\Filament\Resources\Students\Pages;
 
 use App\Filament\Resources\Students\StudentResource;
 use App\Models\User;
-use App\Notifications\SendWelcomeEmail;
+use App\Notifications\SetInitialPassword;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 
 class CreateStudent extends CreateRecord
@@ -43,7 +44,9 @@ class CreateStudent extends CreateRecord
         $user->profileable()->associate($student);
         $user->save();
 
-        $user->notify(new SendWelcomeEmail($temporaryPassword));
+        $token = Password::broker()->createToken($user);
+
+        $user->notify(new SetInitialPassword($token));
 
         return $student;
     }

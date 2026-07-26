@@ -4,9 +4,10 @@ namespace App\Filament\Resources\Instructors\Pages;
 
 use App\Filament\Resources\Instructors\InstructorResource;
 use App\Models\User;
-use App\Notifications\SendWelcomeEmail;
+use App\Notifications\SetInitialPassword;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 
 class CreateInstructor extends CreateRecord
@@ -44,9 +45,9 @@ class CreateInstructor extends CreateRecord
         $user->profileable()->associate($instructor);
         $user->save();
 
-        if ($data['send_email']) {
-            $user->notify(new SendWelcomeEmail($password));
-        }
+        $token = Password::broker()->createToken($user);
+
+        $user->notify(new SetInitialPassword($token));
 
         return $instructor;
     }
