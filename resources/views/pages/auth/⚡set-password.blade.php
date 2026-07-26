@@ -8,7 +8,7 @@ use Livewire\Attributes\Validate;
 use Livewire\Component;
 
 new #[Layout('layouts::guest')]
-  #[Title('Set Password')]
+      #[Title('Reset Password')]
   class extends Component
   {
       #[Validate('required|string')]
@@ -74,8 +74,8 @@ new #[Layout('layouts::guest')]
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
               </svg>
             </div>
-            <h2 class="text-2xl font-bold text-gray-900 mb-2">Password Set Successfully!</h2>
-            <p class="text-gray-500 mb-6">Your password has been set. You can now login with your new password.</p>
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">Password Reset Successfully!</h2>
+            <p class="text-gray-500 mb-6">Your password has been reset. You can now login with your new password.</p>
             <a href="{{ route('login') }}"
               class="inline-block w-full text-center text-white font-semibold py-3 rounded-lg bg-blue-600 hover:bg-blue-700 transition-all shadow-lg">
               Go to Login
@@ -97,7 +97,7 @@ new #[Layout('layouts::guest')]
           </div>
         @else
           <div class="mb-8">
-            <h2 class="text-3xl font-bold text-gray-900 mb-2">Set Your Password</h2>
+            <h2 class="text-3xl font-bold text-gray-900 mb-2">Reset Your Password</h2>
             <p class="text-sm text-gray-500">Choose a strong password for your account</p>
           </div>
 
@@ -134,7 +134,7 @@ new #[Layout('layouts::guest')]
 
             <button type="submit"
               class="w-full text-white font-semibold py-3 rounded-lg transition-all shadow-lg bg-blue-600 hover:bg-blue-700">
-              Set Password
+              Reset Password
             </button>
           </form>
         @endif

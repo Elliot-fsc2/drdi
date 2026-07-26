@@ -128,7 +128,7 @@ new #[Layout('layouts::guest')]
                 class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
               <span class="ml-2 text-sm text-gray-700">Remember Me</span>
             </label>
-            <a href="#" class="text-sm text-blue-600 hover:text-blue-700 font-medium">
+            <a href="{{ route('password.request') }}" class="text-sm text-blue-600 hover:text-blue-700 font-medium">
               Forget Password ?
             </a>
           </div>

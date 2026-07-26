@@ -5,7 +5,6 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
-use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -13,7 +12,7 @@ use Illuminate\Support\Str;
 use Spatie\Activitylog\Traits\CausesActivity;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements CanResetPassword, FilamentUser
+class User extends Authenticatable implements FilamentUser
 {
     use CausesActivity, HasRoles;
 
@@ -84,11 +83,6 @@ class User extends Authenticatable implements CanResetPassword, FilamentUser
     public function getEmailForPasswordReset(): string
     {
         return $this->email;
-    }
-
-    public function sendPasswordResetNotification($token): void
-    {
-        // Custom password setup is handled by SetInitialPassword notification
     }
 
     public function profileable(): \Illuminate\Database\Eloquent\Relations\MorphTo
