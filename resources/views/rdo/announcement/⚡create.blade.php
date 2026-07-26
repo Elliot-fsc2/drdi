@@ -64,7 +64,7 @@ class extends Component implements HasActions, HasSchemas
                                 ['h1', 'h2', 'h3'],
                                 ['alignStart', 'alignCenter', 'alignEnd'],
                                 ['blockquote', 'codeBlock', 'bulletList', 'orderedList'],
-                                ['table', 'attachFiles'], // The `customBlocks` and `mergeTags` tools are also added here if those features are used.
+                                ['table', 'attachFiles'],
                                 ['undo', 'redo'],
                             ])
                             ->floatingToolbars([

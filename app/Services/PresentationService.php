@@ -89,9 +89,6 @@ class PresentationService
         return $schedule;
     }
 
-    /**
-     * @return array{scheduled: Collection<int, Schedule>, skipped: Collection<int, Group>, messages: Collection<int, string>}
-     */
     public function bulkSchedule(array $data): array
     {
         return DB::transaction(function () use ($data): array {

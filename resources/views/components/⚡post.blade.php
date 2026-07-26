@@ -145,6 +145,7 @@ new class extends Component implements HasActions, HasSchemas
               : (string) Str::of((string) $content)->sanitizeHtml());
 
       $contentPlain = (string) Str::of($contentHtml)->stripTags()->squish();
+      $hasTable = Str::contains($contentHtml, '<table');
       $shouldToggleContent = Str::length($contentPlain) > 240;
 
       $images = $post->images_path;
@@ -185,16 +186,22 @@ new class extends Component implements HasActions, HasSchemas
     @endphp
 
     @if(filled($contentPlain))
-      <div x-data="{ expanded: false }" class="space-y-2">
+      <div x-data="{ expanded: {{ $hasTable ? 'true' : 'false' }} }" class="space-y-2">
         <div
           class="prose prose-sm prose-slate max-w-none text-slate-600 leading-relaxed
-                 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 {{ $shouldToggleContent ? 'max-h-28 overflow-hidden' : '' }}"
+                 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4
+                 [&_table]:w-full [&_table]:border-collapse [&_table]:text-sm
+                 [&_th]:border [&_th]:border-slate-300 [&_th]:bg-slate-100 [&_th]:px-3 [&_th]:py-2 [&_th]:font-semibold [&_th]:text-slate-700
+                 [&_td]:border [&_td]:border-slate-300 [&_td]:px-3 [&_td]:py-2 [&_td]:text-slate-600
+                 [&_tr:nth-child(even)_td]:bg-slate-50
+                 [&_tfoot_th]:border [&_tfoot_th]:border-slate-300 [&_tfoot_th]:bg-slate-50 [&_tfoot_th]:px-3 [&_tfoot_th]:py-2 [&_tfoot_th]:font-semibold
+                 overflow-x-auto {{ $shouldToggleContent && !$hasTable ? 'max-h-28 overflow-hidden' : '' }}"
           :class="expanded ? 'max-h-none overflow-visible' : ''"
         >
           {!! $contentHtml !!}
         </div>
 
-        @if($shouldToggleContent)
+        @if($shouldToggleContent && !$hasTable)
           <button
             type="button"
             x-cloak

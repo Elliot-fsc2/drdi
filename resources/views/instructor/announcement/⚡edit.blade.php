@@ -4,6 +4,8 @@ use App\Enums\InstructorRole;
 use App\Models\Post;
 use App\Models\Section;
 use App\Services\PostService;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -20,8 +22,9 @@ use Livewire\Component;
 new
 #[Layout('layouts::instructor.app')]
 #[Title('Edit Section Announcement')]
-class extends Component implements HasSchemas
+class extends Component implements HasActions, HasSchemas
 {
+    use InteractsWithActions;
     use InteractsWithSchemas;
 
     public ?array $data = [];
