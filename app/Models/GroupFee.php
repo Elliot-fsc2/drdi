@@ -13,6 +13,7 @@ class GroupFee extends Model
         'group_id',
         'base_fee',
         'honorarium_total',
+        'panel_fee_total',
         'total_merger_amount',
     ];
 

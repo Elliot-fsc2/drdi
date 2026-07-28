@@ -126,7 +126,7 @@ new #[Layout('layouts::rdo.app')] class extends Component implements HasActions,
 
     public function selectLeader(int $studentId): void
     {
-        $this->group->update(['leader_id' => $studentId]);
+        $this->groupService->update($this->group, ['leader_id' => $studentId]);
         $this->selectingLeader = false;
         unset($this->members);
 

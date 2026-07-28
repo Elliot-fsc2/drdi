@@ -22,13 +22,15 @@ class Schedule extends Model
         'presentation_type',
         'status',
         'panelists',
+        'panel_fee',
     ];
 
-    public function casts()
+    public function casts(): array
     {
         return [
             'date' => 'date',
             'panelists' => 'array',
+            'panel_fee' => 'integer',
             'status' => PresentationStatus::class,
             'presentation_type' => PresentationType::class,
         ];

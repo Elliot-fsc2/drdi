@@ -43,6 +43,7 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
                     'id' => $proposal->id,
                     'title' => $proposal->title,
                     'description' => $proposal->description,
+                    'file_path' => $proposal->file_path,
                     'status' => $proposal->status,
                     'submitted_date' => $proposal->created_at->format('M d, Y'),
                     'submitted_by' => $proposal->submittedBy ? trim($proposal->submittedBy->first_name . ' ' . $proposal->submittedBy->last_name) : 'Unknown',
@@ -90,6 +91,20 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
                     Placeholder::make('description')
                         ->label('Description / Abstract')
                         ->content(new \Illuminate\Support\HtmlString('<div class="prose max-w-none text-slate-600">' . e($arguments['description'] ?? '') . '</div>')),
+                    Placeholder::make('file_path')
+                        ->label('Proposal Document')
+                        ->content(function () use ($arguments) {
+                            $filePath = $arguments['file_path'] ?? null;
+
+                            if (! $filePath) {
+                                return 'No file uploaded.';
+                            }
+
+                            return new \Illuminate\Support\HtmlString(
+                                '<a href="'.asset('storage/'.$filePath).'" target="_blank" class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 underline text-sm">'.
+                                '📄 View Proposal Document</a>'
+                            );
+                        }),
                     Placeholder::make('feedback')
                         ->label('Instructor Feedback')
                         ->content(function () use ($arguments) {
@@ -293,7 +308,7 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
                     default => ucfirst($statusValue),
                 };
             @endphp
-            <div wire:click="mountAction('viewProposalAction', @js(['id' => $proposalItem['id'], 'title' => $proposalItem['title'], 'description' => $proposalItem['description'], 'status' => strtolower($proposalItem['status'] instanceof \App\Enums\ProposalStatus ? $proposalItem['status']->value : $proposalItem['status']), 'submitted_date' => $proposalItem['submitted_date'], 'submitted_by' => $proposalItem['submitted_by'], 'feedback' => \App\Models\Proposal::find($proposalItem['id'])?->feedback]))"
+            <div wire:click="mountAction('viewProposalAction', @js(['id' => $proposalItem['id'], 'title' => $proposalItem['title'], 'description' => $proposalItem['description'], 'file_path' => $proposalItem['file_path'], 'status' => strtolower($proposalItem['status'] instanceof \App\Enums\ProposalStatus ? $proposalItem['status']->value : $proposalItem['status']), 'submitted_date' => $proposalItem['submitted_date'], 'submitted_by' => $proposalItem['submitted_by'], 'feedback' => \App\Models\Proposal::find($proposalItem['id'])?->feedback]))"
                 class="group relative cursor-pointer overflow-hidden rounded-xl border border-slate-200 bg-white transition-all duration-200 hover:border-blue-200 hover:shadow-md">
                 <div
                     class="absolute bottom-0 left-0 top-0 w-[3px] rounded-l-xl

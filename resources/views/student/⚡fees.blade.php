@@ -40,6 +40,7 @@ new #[Layout('layouts::student.app')] #[Title('Fees')] class extends Component {
             'group_name' => $group->name,
             'base_fee' => $fee->base_fee,
             'honorarium_total' => $fee->honorarium_total,
+            'panel_fee_total' => $fee->panel_fee_total,
             'total_fee' => $totalFee,
             'member_count' => $memberCount,
             'per_student_fee' => $perStudentFee,
@@ -94,10 +95,19 @@ new #[Layout('layouts::student.app')] #[Title('Fees')] class extends Component {
                     <div class="flex justify-between items-center pb-2">
                         <div>
                             <p class="text-sm font-medium text-gray-900">Honorarium Total</p>
-                            <p class="text-xs text-gray-500 mt-0.5">Adviser and panelist fees</p>
+                            <p class="text-xs text-gray-500 mt-0.5">Adviser and personnel fees</p>
                         </div>
                         <p class="font-semibold text-gray-900">
                             ₱{{ number_format($this->feeData['honorarium_total'], 2) }}</p>
+                    </div>
+
+                    <div class="flex justify-between items-center pb-2">
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">Panel Fee Total</p>
+                            <p class="text-xs text-gray-500 mt-0.5">Presentation panelist fees</p>
+                        </div>
+                        <p class="font-semibold text-gray-900">
+                            ₱{{ number_format($this->feeData['panel_fee_total'], 2) }}</p>
                     </div>
                 </div>
 

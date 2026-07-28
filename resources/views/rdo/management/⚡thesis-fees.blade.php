@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\PanelistRole;
+use App\Enums\PersonnelRole;
 use App\Enums\ThesisRatesType;
 use App\Models\ThesisRate;
 use App\Services\FeeService;
@@ -16,7 +18,8 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Layout('layouts::rdo.app')] #[Title('Thesis Rates Management')] class extends Component implements HasActions, HasSchemas {
+new #[Layout('layouts::rdo.app')] #[Title('Thesis Rates Management')] class extends Component implements HasActions, HasSchemas
+{
     use InteractsWithActions;
     use InteractsWithSchemas;
 
@@ -34,7 +37,13 @@ new #[Layout('layouts::rdo.app')] #[Title('Thesis Rates Management')] class exte
             ->label('Add New Rate')
             ->icon(Heroicon::Plus)
             ->modalHeading('Create Thesis Rate')
-            ->form([TextInput::make('name')->label('Rate Name')->placeholder('e.g., Base Fee, Technical Adviser Fee')->required()->maxLength(255), TextInput::make('amount')->label('Amount (₱)')->numeric()->required()->minValue(0)->prefix('₱')->placeholder('0.00'), Select::make('type')->label('Rate Type')->options(ThesisRatesType::class)->required()->native(false)])
+            ->schema([
+                TextInput::make('name')->label('Rate Name')->placeholder('e.g., Base Fee, Technical Adviser Fee')->required()->maxLength(255),
+                TextInput::make('amount')->label('Amount (₱)')->numeric()->required()->minValue(0)->prefix('₱')->placeholder('0.00'),
+                Select::make('type')->label('Rate Type')->options(ThesisRatesType::class)->required()->native(false),
+                Select::make('personnel_role')->label('Applies to Personnel Role')->options(PersonnelRole::class)->placeholder('General (any personnel role)')->nullable()->native(false)->visibleJs("\$get('type') === 'per_personnel'"),
+                Select::make('panelist_role')->label('Applies to Panelist Role')->options(PanelistRole::class)->placeholder('General (any panelist role)')->nullable()->native(false)->visibleJs("\$get('type') === 'per_panel'"),
+            ])
             ->successNotificationTitle('Thesis rate created successfully')
             ->action(function (array $data): void {
                 ThesisRate::create($data);
@@ -49,13 +58,21 @@ new #[Layout('layouts::rdo.app')] #[Title('Thesis Rates Management')] class exte
             ->modalCloseButton(false)
             ->icon(Heroicon::PencilSquare)
             ->fillForm(
-                fn(array $arguments): array => [
+                fn (array $arguments): array => [
                     'name' => ThesisRate::find($arguments['rateId'])->name,
                     'amount' => ThesisRate::find($arguments['rateId'])->amount,
                     'type' => ThesisRate::find($arguments['rateId'])->type->value,
+                    'personnel_role' => ThesisRate::find($arguments['rateId'])->personnel_role?->value,
+                    'panelist_role' => ThesisRate::find($arguments['rateId'])->panelist_role?->value,
                 ],
             )
-            ->form([TextInput::make('name')->label('Rate Name')->required()->maxLength(255), TextInput::make('amount')->label('Amount (₱)')->numeric()->required()->minValue(0)->prefix('₱'), Select::make('type')->label('Rate Type')->options(ThesisRatesType::class)->required()->native(false)])
+            ->schema([
+                TextInput::make('name')->label('Rate Name')->required()->maxLength(255),
+                TextInput::make('amount')->label('Amount (₱)')->numeric()->required()->minValue(0)->prefix('₱'),
+                Select::make('type')->label('Rate Type')->options(ThesisRatesType::class)->required()->native(false),
+                Select::make('personnel_role')->label('Applies to Personnel Role')->options(PersonnelRole::class)->placeholder('General (any personnel role)')->nullable()->native(false)->visibleJs("\$get('type') === 'per_personnel'"),
+                Select::make('panelist_role')->label('Applies to Panelist Role')->options(PanelistRole::class)->placeholder('General (any panelist role)')->nullable()->native(false)->visibleJs("\$get('type') === 'per_panel'"),
+            ])
             ->successNotificationTitle('Thesis rate updated successfully')
             ->action(function (array $arguments, array $data, FeeService $feeService): void {
                 $rate = ThesisRate::find($arguments['rateId']);
@@ -196,12 +213,27 @@ new #[Layout('layouts::rdo.app')] #[Title('Thesis Rates Management')] class exte
 
                             <div class="space-y-3">
                                 @foreach ($ratesGroup as $rate)
+                                    @php
+                                        $appliesTo = match (true) {
+                                            $rate->type === ThesisRatesType::PER_PERSONNEL && $rate->personnel_role => $rate->personnel_role->getLabel(),
+                                            $rate->type === ThesisRatesType::PER_PERSONNEL => 'All Personnel',
+                                            $rate->type === ThesisRatesType::PER_PANEL && $rate->panelist_role => $rate->panelist_role->getLabel(),
+                                            $rate->type === ThesisRatesType::PER_PANEL => 'All Panelists',
+                                            default => null,
+                                        };
+                                    @endphp
                                     <div class="rounded-xl p-4 transition-colors duration-150 hover:bg-[#F5F8FF]"
                                         style="border: 1px solid #F1F5F9; background: #FAFAFA">
                                         <div class="flex items-start justify-between gap-4">
                                             <div class="flex-1 min-w-0">
                                                 <h3 class="font-semibold text-sm truncate" style="color: #0F172A">
                                                     {{ $rate->name }}</h3>
+                                                @if ($appliesTo)
+                                                    <span class="inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-medium mt-1"
+                                                        style="background: rgba(100,116,139,0.06); border: 1px solid rgba(100,116,139,0.12); color: #64748B">
+                                                        {{ $appliesTo }}
+                                                    </span>
+                                                @endif
                                                 <p class="mt-1 font-bold text-lg"
                                                     style="background: linear-gradient(to right, #0052FF, #4D7CFF); -webkit-background-clip: text; background-clip: text; color: transparent">
                                                     ₱{{ number_format($rate->amount, 2) }}
@@ -242,6 +274,10 @@ new #[Layout('layouts::rdo.app')] #[Title('Thesis Rates Management')] class exte
                                     <span
                                         style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #94A3B8; text-transform: uppercase">Type</span>
                                 </th>
+                                <th class="px-5 py-4 text-left">
+                                    <span
+                                        style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #94A3B8; text-transform: uppercase">Applies To</span>
+                                </th>
                                 <th class="px-5 py-4 text-right">
                                     <span
                                         style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #94A3B8; text-transform: uppercase">Amount</span>
@@ -254,6 +290,20 @@ new #[Layout('layouts::rdo.app')] #[Title('Thesis Rates Management')] class exte
                         </thead>
                         <tbody>
                             @foreach ($this->rates as $rate)
+                                @php
+                                    $appliesTo = match (true) {
+                                        $rate->type === ThesisRatesType::PER_PERSONNEL && $rate->personnel_role => $rate->personnel_role->getLabel(),
+                                        $rate->type === ThesisRatesType::PER_PERSONNEL => 'All Personnel',
+                                        $rate->type === ThesisRatesType::PER_PANEL && $rate->panelist_role => $rate->panelist_role->getLabel(),
+                                        $rate->type === ThesisRatesType::PER_PANEL => 'All Panelists',
+                                        default => '—',
+                                    };
+                                    $appliesStyle = match (true) {
+                                        $rate->type === ThesisRatesType::PER_PERSONNEL => ['bg' => 'rgba(5,150,105,0.08)', 'border' => 'rgba(5,150,105,0.18)', 'color' => '#059669'],
+                                        $rate->type === ThesisRatesType::PER_PANEL => ['bg' => 'rgba(124,58,237,0.08)', 'border' => 'rgba(124,58,237,0.18)', 'color' => '#7C3AED'],
+                                        default => ['bg' => 'rgba(100,116,139,0.06)', 'border' => 'rgba(100,116,139,0.12)', 'color' => '#64748B'],
+                                    };
+                                @endphp
                                 <tr class="transition-colors duration-150 hover:bg-[#F5F8FF]"
                                     style="border-bottom: 1px solid #F1F5F9">
                                     <td class="px-6 py-4">
@@ -266,6 +316,13 @@ new #[Layout('layouts::rdo.app')] #[Title('Thesis Rates Management')] class exte
                                             class="inline-flex items-center rounded-lg px-2.5 py-0.5 text-xs font-medium"
                                             style="background: rgba(0,82,255,0.06); color: #0052FF; border: 1px solid rgba(0,82,255,0.12)">
                                             {{ $rate->type->getLabel() }}
+                                        </span>
+                                    </td>
+                                    <td class="px-5 py-4">
+                                        <span
+                                            class="inline-flex items-center rounded-lg px-2.5 py-0.5 text-xs font-medium"
+                                            style="background: {{ $appliesStyle['bg'] }}; border: 1px solid {{ $appliesStyle['border'] }}; color: {{ $appliesStyle['color'] }}">
+                                            {{ $appliesTo }}
                                         </span>
                                     </td>
                                     <td class="px-5 py-4 text-right">
@@ -301,7 +358,7 @@ new #[Layout('layouts::rdo.app')] #[Title('Thesis Rates Management')] class exte
 
         {{-- ── Summary Cards ────────────────────────────── --}}
         @if ($this->rates->isNotEmpty())
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mt-6">
 
                 <div class="rounded-2xl border overflow-hidden"
                     style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
@@ -327,6 +384,7 @@ new #[Layout('layouts::rdo.app')] #[Title('Thesis Rates Management')] class exte
                         @endif
                     </div>
                 </div>
+
                 <div class="rounded-2xl border overflow-hidden"
                     style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
                     <div class="px-5 py-4" style="border-bottom: 1px solid #F1F5F9; background: #FAFAFA">
@@ -340,7 +398,16 @@ new #[Layout('layouts::rdo.app')] #[Title('Thesis Rates Management')] class exte
                     <div class="p-5 space-y-2">
                         @foreach ($this->rates->where('type.value', 'per_personnel') as $rate)
                             <div class="flex items-center justify-between text-sm">
-                                <span style="color: #64748B">{{ $rate->name }}</span>
+                                @php
+                                    $roleLabel = $rate->personnel_role ? $rate->personnel_role->getLabel() : 'General';
+                                @endphp
+                                <div class="flex items-center gap-2">
+                                    <span style="color: #64748B">{{ $rate->name }}</span>
+                                    <span class="inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-medium"
+                                        style="background: rgba(5,150,105,0.08); border: 1px solid rgba(5,150,105,0.18); color: #059669">
+                                        {{ $roleLabel }}
+                                    </span>
+                                </div>
                                 <span class="font-semibold" style="color: #0F172A">
                                     ₱{{ number_format($rate->amount, 2) }}
                                 </span>
@@ -348,6 +415,40 @@ new #[Layout('layouts::rdo.app')] #[Title('Thesis Rates Management')] class exte
                         @endforeach
                         @if ($this->rates->where('type.value', 'per_personnel')->isEmpty())
                             <p class="text-sm italic" style="color: #94A3B8">No per-personnel rates configured</p>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="rounded-2xl border overflow-hidden"
+                    style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+                    <div class="px-5 py-4" style="border-bottom: 1px solid #F1F5F9; background: #FAFAFA">
+                        <div class="flex items-center gap-3">
+                            <div>
+                                <h4 class="text-sm font-semibold" style="color: #0F172A">Per panel</h4>
+                                <p style="font-size: 11px; color: #94A3B8">Panelist honoraria per presentation</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-5 space-y-2">
+                        @foreach ($this->rates->where('type.value', 'per_panel') as $rate)
+                            <div class="flex items-center justify-between text-sm">
+                                @php
+                                    $roleLabel = $rate->panelist_role ? $rate->panelist_role->getLabel() : 'General';
+                                @endphp
+                                <div class="flex items-center gap-2">
+                                    <span style="color: #64748B">{{ $rate->name }}</span>
+                                    <span class="inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-medium"
+                                        style="background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.18); color: #7C3AED">
+                                        {{ $roleLabel }}
+                                    </span>
+                                </div>
+                                <span class="font-semibold" style="color: #0F172A">
+                                    ₱{{ number_format($rate->amount, 2) }}
+                                </span>
+                            </div>
+                        @endforeach
+                        @if ($this->rates->where('type.value', 'per_panel')->isEmpty())
+                            <p class="text-sm italic" style="color: #94A3B8">No per-panel rates configured</p>
                         @endif
                     </div>
                 </div>

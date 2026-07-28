@@ -14,6 +14,10 @@ use Illuminate\Validation\ValidationException;
 
 class PresentationService
 {
+    public function __construct(
+        protected FeeService $feeService,
+    ) {}
+
     public function create(array $data): Schedule
     {
         $date = Carbon::parse($data['date'])->toDateString();
@@ -50,7 +54,7 @@ class PresentationService
             endTime: $endTime,
         );
 
-        return Schedule::create([
+        $schedule = Schedule::create([
             'section_id' => $data['section_id'],
             'group_id' => $data['group_id'],
             'venue' => $data['venue'],
@@ -61,6 +65,10 @@ class PresentationService
             'status' => $this->resolvePresentationStatus($data['status'] ?? PresentationStatus::SCHEDULED)->value,
             'panelists' => $this->normalizePanelists($data['panelists'] ?? null),
         ]);
+
+        $this->feeService->syncPanelFees($schedule->load('section'));
+
+        return $schedule;
 
     }
 
@@ -85,6 +93,8 @@ class PresentationService
             'venue' => $data['venue'],
             'panelists' => $this->normalizePanelists($data['panelists'] ?? null),
         ]);
+
+        $this->feeService->syncPanelFees($schedule->fresh()->load('section'));
 
         return $schedule;
     }
@@ -145,7 +155,7 @@ class PresentationService
                     continue;
                 }
 
-                $scheduledGroups->push(Schedule::create([
+                $newSchedule = Schedule::create([
                     'section_id' => $sectionId,
                     'group_id' => $group->id,
                     'venue' => $data['venue'],
@@ -155,7 +165,11 @@ class PresentationService
                     'presentation_type' => $presentationType->value,
                     'status' => $presentationStatus->value,
                     'panelists' => $this->normalizePanelists($data['panelists'] ?? null),
-                ]));
+                ]);
+
+                $this->feeService->syncPanelFees($newSchedule->load('section'));
+
+                $scheduledGroups->push($newSchedule);
 
                 $currentStartTime->addMinutes($slotMinutes + $gapMinutes);
             }

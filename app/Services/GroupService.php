@@ -16,8 +16,14 @@ class GroupService
     public function create(array $data): Group
     {
         return DB::transaction(function () use ($data) {
+            $name = $data['name'] ?? '';
+
+            if ($name === '') {
+                $name = $this->generateGroupName($data['leader_id'] ?? null);
+            }
+
             $group = Group::create([
-                'name' => $data['name'],
+                'name' => $name,
                 'section_id' => $data['section_id'],
                 'leader_id' => $data['leader_id'] ?? null,
             ]);
@@ -41,11 +47,18 @@ class GroupService
     {
         DB::transaction(function () use ($group, $data) {
             $oldLeaderId = $group->leader_id;
+            $newLeaderId = $data['leader_id'] ?? $group->leader_id;
+
+            $name = $data['name'] ?? $group->name;
+
+            if (! isset($data['name']) && $newLeaderId !== $oldLeaderId) {
+                $name = $this->generateGroupName($newLeaderId);
+            }
 
             $group->update([
-                'name' => $data['name'] ?? $group->name,
+                'name' => $name,
                 'section_id' => $data['section_id'] ?? $group->section_id,
-                'leader_id' => $data['leader_id'] ?? $group->leader_id,
+                'leader_id' => $newLeaderId,
             ]);
 
             $this->syncLeaderPermission($group, $oldLeaderId);
@@ -128,7 +141,10 @@ class GroupService
                 // If student is the leader, unset leader_id
                 if ($group->leader_id === $studentId) {
                     $this->syncLeaderPermission($group, $studentId);
-                    $group->update(['leader_id' => null]);
+                    $group->update([
+                        'leader_id' => null,
+                        'name' => $this->generateGroupName(null),
+                    ]);
                 }
 
                 // Remove student from group members
@@ -176,6 +192,21 @@ class GroupService
                 $newLeaderUser->givePermissionTo('create_proposals');
             }
         }
+    }
+
+    private function generateGroupName(?int $leaderId): string
+    {
+        if ($leaderId === null) {
+            return 'New Group';
+        }
+
+        $leader = Student::find($leaderId);
+
+        if ($leader === null) {
+            return 'New Group';
+        }
+
+        return $leader->last_name."\u{2019}s Group";
     }
 
     private function assignRandomPersonnel(Group $group): void
@@ -249,7 +280,7 @@ class GroupService
             ->withProperties([
                 'members' => $memberIds,
             ])
-            ->log('Attached members to group: :members');
+            ->log('Attached members to group: '.implode(', ', $memberIds));
     }
 
     private function syncGroupMembers(Group $group, array $memberIds): void

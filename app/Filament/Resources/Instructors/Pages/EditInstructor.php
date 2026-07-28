@@ -30,6 +30,8 @@ class EditInstructor extends EditRecord
             $data['email'] = $user->email;
         }
 
+        $data['department_id'] = $this->record->department_id;
+
         return $data;
     }
 

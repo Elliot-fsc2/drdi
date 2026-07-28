@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "olakunlevpn-filament-skills": {
+      "source": "olakunlevpn/olakunlevpn-filament-skills",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "0562d590c14fa018f17f6a6b39d1aa12cf076a4b60f7ba9d2283b93819b08713"
+    }
+  }
+}

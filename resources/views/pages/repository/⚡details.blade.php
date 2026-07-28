@@ -10,7 +10,9 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('Research Details')] class extends Component {
+new #[Title('Research Details')]
+class extends Component
+{
     public int $libraryId;
 
     #[Computed]

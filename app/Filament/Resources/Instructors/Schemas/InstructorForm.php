@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Instructors\Schemas;
 
 use App\Enums\InstructorRole;
+use App\Models\Department;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -24,7 +25,13 @@ class InstructorForm
                     ->email()
                     ->nullable()
                     ->placeholder('Auto-filled from name if empty')
-                    ->unique(table: 'users', column: 'email', ignoreRecord: true),
+                    ->unique(table: 'users', column: 'email', ignoreRecord: true,
+                        modifyRuleUsing: function (\Illuminate\Validation\Rules\Unique $rule, $livewire) {
+                            $user = $livewire?->record?->user;
+
+                            return $rule->ignore($user?->getKey() ?? $livewire?->record?->getKey(), 'id');
+                        },
+                    ),
                 Grid::make()
                     ->columns(2)
                     ->schema([
@@ -42,8 +49,8 @@ class InstructorForm
                             ->same('password'),
                     ]),
                 Select::make('department_id')
-                    ->relationship('department', 'name')
-                    ->required(),
+                    ->options(Department::pluck('name', 'id'))
+                    ->nullable(),
                 Select::make('role')
                     ->options(InstructorRole::class)
                     ->default('instructor')

@@ -32,7 +32,7 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasS
     {
         return $schema
             ->components([
-                TextInput::make('name')->label('Group Name')->placeholder('e.g., Group 1')->required()->maxLength(255)->live(),
+                TextInput::make('name')->label('Group Name')->placeholder("e.g., Dela Cruz's Group — leave blank to auto-generate")->maxLength(255)->live(),
 
                 Select::make('leader_id')
                     ->label('Group Leader')
@@ -90,8 +90,8 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasS
     {
         $data = $this->form->getState();
 
-        if (empty($data['name']) || empty($data['leader_id'])) {
-            Notification::make()->title('Validation Error')->body('Please fill in all required fields.')->danger()->send();
+        if (empty($data['leader_id'])) {
+            Notification::make()->title('Validation Error')->body('Please select a group leader.')->danger()->send();
 
             return;
         }
@@ -227,7 +227,7 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasS
                             <button type="submit"
                                 class="mt-5 w-full rounded-xl py-2.5 text-sm font-semibold text-white transition-all hover:-translate-y-px disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
                                 style="background: linear-gradient(135deg, #0052FF 0%, #4D7CFF 100%); box-shadow: 0 4px 14px rgba(0,82,255,0.25)"
-                                @disabled(empty($data['name']) || empty($data['leader_id']))>
+                                @disabled(empty($data['leader_id']))>
                                 <span class="flex items-center justify-center gap-2">
                                     <x-heroicon-o-user-group class="h-4 w-4" />
                                     Create Group

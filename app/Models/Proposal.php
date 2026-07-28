@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Proposal extends Model
 {
-    protected $fillable = ['title', 'description', 'group_id', 'submitted_by', 'status', 'feedback'];
+    protected $fillable = ['title', 'description', 'file_path', 'group_id', 'submitted_by', 'status', 'feedback'];
 
     protected $casts = [
         'status' => ProposalStatus::class,

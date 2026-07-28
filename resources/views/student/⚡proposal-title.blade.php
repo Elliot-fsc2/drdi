@@ -6,6 +6,7 @@ use App\Services\ProposalService;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -32,11 +33,13 @@ class extends Component implements HasActions, HasSchemas
     public array $data = [
         'title' => '',
         'description' => '',
+        'file_path' => '',
     ];
 
     public function mount()
     {
         $this->user = auth()->user()->load('profileable.sections.program', 'profileable.sections.semester');
+        $this->form->fill();
     }
 
     #[Computed]
@@ -99,6 +102,8 @@ class extends Component implements HasActions, HasSchemas
 
                         Textarea::make('description')->label('Description')->required()->rows(8),
 
+                        FileUpload::make('file_path')->label('Proposal Document (PDF)')->acceptedFileTypes(['application/pdf'])->maxSize(10240)->directory('proposals')->disk('public')->visibility('public'),
+
                         Textarea::make('feedback')
                             ->label('Instructor Feedback')
                             ->disabled()
@@ -110,6 +115,20 @@ class extends Component implements HasActions, HasSchemas
                     \Filament\Forms\Components\Placeholder::make('title')->label('Proposal Title')->content($proposal?->title),
 
                     \Filament\Forms\Components\Placeholder::make('description')->label('Description')->content($proposal?->description),
+
+                    \Filament\Forms\Components\Placeholder::make('file_path')
+                        ->label('Proposal Document')
+                        ->content(function () use ($proposal) {
+                            if (! $proposal?->file_path) {
+                                return 'No file uploaded.';
+                            }
+
+                            return new \Illuminate\Support\HtmlString(
+                                '<a href="'.asset('storage/'.$proposal->file_path).'" target="_blank" class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 underline">'.
+                                '<x-heroicon-s-document-text class="h-5 w-5" />'.
+                                'View Proposal Document</a>'
+                            );
+                        }),
 
                     \Filament\Forms\Components\Placeholder::make('feedback')
                         ->label('Instructor Feedback')
@@ -130,6 +149,7 @@ class extends Component implements HasActions, HasSchemas
                 return [
                     'title' => $proposal?->title,
                     'description' => $proposal?->description,
+                    'file_path' => $proposal?->file_path,
                     'feedback' => $proposal?->feedback,
                 ];
             })
@@ -149,6 +169,7 @@ class extends Component implements HasActions, HasSchemas
                     app(ProposalService::class)->update($proposal, [
                         'title' => $data['title'],
                         'description' => $data['description'],
+                        'file_path' => $data['file_path'] ?? $proposal->file_path,
                     ]);
 
                     unset($this->proposals);
@@ -176,7 +197,7 @@ class extends Component implements HasActions, HasSchemas
 
     public function form(Schema $schema): Schema
     {
-        return $schema->components([TextInput::make('title')->label('Proposal Title')->placeholder('Enter the title of your proposal')->required()->minLength(5)->maxLength(255), Textarea::make('description')->label('Description')->placeholder('Provide a brief description of your proposal')->required()->rows(8)])->statePath('data');
+        return $schema->components([TextInput::make('title')->label('Proposal Title')->placeholder('Enter the title of your proposal')->required()->minLength(5)->maxLength(255), Textarea::make('description')->label('Description')->placeholder('Provide a brief description of your proposal')->required()->rows(8), FileUpload::make('file_path')->label('Proposal Document (PDF)')->acceptedFileTypes(['application/pdf'])->maxSize(10240)->required()->directory('proposals')->disk('public')->visibility('public')])->statePath('data');
     }
 
     public function createProposal(): void
@@ -196,16 +217,20 @@ class extends Component implements HasActions, HasSchemas
         }
 
         try {
+            $data = $this->form->getState();
+
             app(ProposalService::class)
                 ->create([
-                    'title' => $this->data['title'] ?? '',
-                    'description' => $this->data['description'] ?? '',
+                    'title' => $data['title'] ?? '',
+                    'description' => $data['description'] ?? '',
+                    'file_path' => $data['file_path'] ?? null,
                     'group_id' => $group->id,
                     'submitted_by' => $this->user->profileable->id,
                     'status' => ProposalStatus::PENDING->value,
                 ]);
 
             unset($this->proposals);
+            $this->data['file_path'] = '';
             $this->form->fill([]);
             $this->dispatch('close-modal', id: 'propose_title');
 
@@ -359,7 +384,7 @@ class extends Component implements HasActions, HasSchemas
 
         <form wire:submit="createProposal">
             {{ $this->form }}
-            <x-filament::button type="submit" color="info" class="mt-4" wire:click="$refresh"
+            <x-filament::button type="submit" color="info" class="mt-4"
                 wire:island="proposals-list">
                 Submit
             </x-filament::button>

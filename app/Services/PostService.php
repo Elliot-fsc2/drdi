@@ -17,7 +17,7 @@ class PostService
             'target_type' => PostType::INSTRUCTORS,
         ]);
 
-        activity('Post Creation by :causer.name')
+        activity('Post Creation by '.(auth()->user()?->name ?? 'System'))
             ->performedOn($post)
             ->withProperties(['post_id' => $post->id])
             ->log('Created a new post: '.$data['title']);
@@ -33,7 +33,7 @@ class PostService
             'target_type' => PostType::STUDENTS,
         ]);
 
-        activity('Post Creation by :causer.name')
+        activity('Post Creation by '.(auth()->user()?->name ?? 'System'))
             ->performedOn($post)
             ->withProperties(['post_id' => $post->id])
             ->log('Created a new post: '.$data['title']);
@@ -53,7 +53,7 @@ class PostService
 
         $post->sections()->attach($sectionIds);
 
-        activity('Post Creation by :causer.name')
+        activity('Post Creation by '.(auth()->user()?->name ?? 'System'))
             ->performedOn($post)
             ->withProperties(['post_id' => $post->id])
             ->log('Created a new post: '.$data['title']);
@@ -76,7 +76,7 @@ class PostService
             $post->sections()->detach();
         }
 
-        activity('Post Update by :causer.name')
+        activity('Post Update by '.(auth()->user()?->name ?? 'System'))
             ->performedOn($post)
             ->withProperties(['post_id' => $post->id])
             ->log('Updated post: '.$data['title']);
@@ -86,7 +86,7 @@ class PostService
     {
         $post->delete();
 
-        activity('Post Deletion by :causer.name')
+        activity('Post Deletion by '.(auth()->user()?->name ?? 'System'))
             ->performedOn($post)
             ->withProperties(['post_id' => $post->id])
             ->log('Deleted post: '.$post->title);
