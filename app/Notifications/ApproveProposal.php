@@ -3,13 +3,15 @@
 namespace App\Notifications;
 
 use App\Models\Proposal;
+use App\Traits\HasEmailPreference;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class ApproveProposal extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use HasEmailPreference, Queueable;
 
     /**
      * Create a new notification instance.
@@ -26,7 +28,18 @@ class ApproveProposal extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return $this->viaWithEmail($notifiable);
+    }
+
+    public function toMail(object $notifiable): MailMessage
+    {
+        return (new MailMessage)
+            ->subject('Proposal Approved')
+            ->greeting('Hello '.$notifiable->name.'!')
+            ->line('Your proposal has been approved.')
+            ->line('Title: '.$this->proposal->title)
+            ->action('View Proposal', url('/student/proposal-title'))
+            ->line('Congratulations on your approved proposal!');
     }
 
     /**

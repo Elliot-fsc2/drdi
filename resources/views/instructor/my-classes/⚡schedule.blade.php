@@ -226,7 +226,7 @@ class extends Component implements HasActions, HasSchemas
             ->iconButton()
             ->icon('heroicon-m-pencil-square')
             ->color('gray')
-            ->schema([
+            ->form([
                 Grid::make(2)->schema([
                     DatePicker::make('date')
                         ->required()
@@ -282,12 +282,12 @@ class extends Component implements HasActions, HasSchemas
                         ->all(),
                 ];
             })
-            ->before(function (Action $action, array $data, array $arguments): void {
+            ->action(function (array $data, array $arguments): void {
                 $schedule = Schedule::findOrFail($arguments['schedule']);
 
                 try {
-                    $min = 6 * 60; // 06:00
-                    $max = 18 * 60; // 18:00
+                    $min = 6 * 60;
+                    $max = 18 * 60;
 
                     $start = Carbon::parse($data['start_time']);
                     $end = Carbon::parse($data['end_time']);
@@ -300,8 +300,6 @@ class extends Component implements HasActions, HasSchemas
                             ->body('Start and end times must be between 06:00 and 18:00.')
                             ->danger()
                             ->send();
-
-                        $action->halt();
 
                         return;
                     }
@@ -317,24 +315,13 @@ class extends Component implements HasActions, HasSchemas
                         ->body($message)
                         ->danger()
                         ->send();
-
-                    $action->halt();
-
-                    return;
                 } catch (\Throwable $e) {
                     Notification::make()
                         ->title('Scheduling error')
                         ->body($e->getMessage())
                         ->danger()
                         ->send();
-
-                    $action->halt();
-
-                    return;
                 }
-            })
-            ->action(function (): void {
-                // The save is handled in the before hook so the modal can be halted on failure.
             });
     }
 
@@ -374,7 +361,8 @@ class extends Component implements HasActions, HasSchemas
                 ];
             })
             ->action(function (array $data, array $arguments): void {
-                Schedule::findOrFail($arguments['schedule'])->update(['status' => $data['status']]);
+                $schedule = Schedule::findOrFail($arguments['schedule']);
+                app(PresentationService::class)->updateStatus($schedule, PresentationStatus::from($data['status']));
                 Notification::make()->title('Status updated successfully.')->success()->send();
             });
     }

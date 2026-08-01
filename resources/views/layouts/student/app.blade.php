@@ -152,6 +152,8 @@
 
           <div class="flex items-center gap-2 sm:gap-3 ml-auto lg:ml-0">
 
+            @livewire('notification-dropdown')
+
             <div class="relative" x-data="{ open: false }" @click.away="open = false">
               <button @click="open = !open"
                 class="flex items-center gap-3 rounded-2xl border border-blue-600/50 bg-blue-700/30 px-3 py-2 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-400 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400/50">
@@ -267,7 +269,6 @@
     </main>
   </div>
 
-  @livewire('notifications')
   @livewireScripts
   @filamentScripts
 </body>

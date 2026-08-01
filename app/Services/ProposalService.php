@@ -8,9 +8,13 @@ use App\Models\Proposal;
 use App\Models\Student;
 use App\Models\User;
 use App\Notifications\ApproveProposal;
+use App\Notifications\ProposalSubmitted;
+use App\Notifications\RejectProposal;
 
 class ProposalService
 {
+    public function __construct(protected NotificationService $notificationService) {}
+
     public function update(Proposal $proposal, array $data): Proposal
     {
         $user = auth()->user();
@@ -50,15 +54,12 @@ class ProposalService
             ? $proposal->group->members()->pluck('students.id')
             : collect();
 
-        /** @var \Illuminate\Database\Eloquent\Collection<int, User> $recipients */
         $recipients = User::query()
             ->where('profileable_type', Student::class)
             ->whereIn('profileable_id', $memberIds)
             ->get();
 
-        foreach ($recipients as $recipient) {
-            $recipient->notify(new ApproveProposal($proposal));
-        }
+        $this->notificationService->sendMany($recipients, new ApproveProposal($proposal));
     }
 
     public function reject(Proposal $proposal, ?string $feedback = null)
@@ -83,15 +84,12 @@ class ProposalService
             ? $proposal->group->members()->pluck('students.id')
             : collect();
 
-        /** @var \Illuminate\Database\Eloquent\Collection<int, User> $recipients */
         $recipients = User::query()
             ->where('profileable_type', Student::class)
             ->whereIn('profileable_id', $memberIds)
             ->get();
 
-        foreach ($recipients as $recipient) {
-            $recipient->notify(new \App\Notifications\RejectProposal($proposal));
-        }
+        $this->notificationService->sendMany($recipients, new RejectProposal($proposal));
     }
 
     public function create(array $data): Proposal
@@ -117,6 +115,10 @@ class ProposalService
                 'title' => $proposal->title,
             ])
             ->log('created proposal by :causer.name');
+
+        if ($proposal->group?->section?->instructor) {
+            $this->notificationService->sendToGroupAdviser($proposal->group, new ProposalSubmitted($proposal));
+        }
 
         return $proposal->fresh();
     }

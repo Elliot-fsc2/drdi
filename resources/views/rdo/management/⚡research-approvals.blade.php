@@ -4,6 +4,7 @@ use App\Enums\ResearchLibraryStatus;
 use App\Models\ResearchLibrary;
 use App\Notifications\ApproveResearchLibrary;
 use App\Notifications\RejectResearchLibrary;
+use App\Services\NotificationService;
 use Filament\Notifications\Notification;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -81,7 +82,7 @@ class extends Component
 
         $instructor = $library->group?->section?->instructor;
         if ($instructor?->user) {
-            $instructor->user->notify(new ApproveResearchLibrary($library));
+            app(NotificationService::class)->send($instructor->user, new ApproveResearchLibrary($library));
         }
 
         Notification::make()
@@ -112,7 +113,7 @@ class extends Component
 
         $instructor = $library->group?->section?->instructor;
         if ($instructor?->user) {
-            $instructor->user->notify(new RejectResearchLibrary($library));
+            app(NotificationService::class)->send($instructor->user, new RejectResearchLibrary($library));
         }
 
         $this->declineId = null;

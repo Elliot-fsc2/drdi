@@ -2,6 +2,9 @@
 
 use App\Models\Consultation;
 use App\Models\Group;
+use App\Notifications\ConsultationBooked;
+use App\Notifications\ConsultationUpdated;
+use App\Services\NotificationService;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
@@ -136,7 +139,7 @@ new #[Layout('layouts::rdo.app')] #[Title('View Group')] class extends Component
             ])
             ->successNotificationTitle('Consultation scheduled successfully')
             ->action(function (array $data): void {
-                Consultation::create([
+                $consultation = Consultation::create([
                     'group_id' => $this->group->id,
                     'instructor_id' => auth()->user()->profileable->id,
                     'type' => $data['type'],
@@ -144,6 +147,8 @@ new #[Layout('layouts::rdo.app')] #[Title('View Group')] class extends Component
                     'status' => $data['status'],
                     'remarks' => $data['remarks'] ?? null,
                 ]);
+
+                app(NotificationService::class)->sendToGroupMembers($this->group, new ConsultationBooked($consultation));
 
                 unset($this->consultations);
             });
@@ -210,6 +215,8 @@ new #[Layout('layouts::rdo.app')] #[Title('View Group')] class extends Component
                 abort_unless($consultation->instructor_id === auth()->user()->profileable->id, 403);
 
                 $consultation->update($data);
+
+                app(NotificationService::class)->sendToGroupMembers($this->group, new ConsultationUpdated($consultation));
 
                 unset($this->consultations);
             });

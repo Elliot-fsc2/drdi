@@ -6,7 +6,12 @@ use App\Enums\PanelistRole;
 use App\Enums\PresentationStatus;
 use App\Enums\PresentationType;
 use App\Models\Group;
+use App\Models\Instructor;
 use App\Models\Schedule;
+use App\Models\User;
+use App\Notifications\ScheduleCreated;
+use App\Notifications\ScheduleResult;
+use App\Notifications\ScheduleUpdated;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +21,7 @@ class PresentationService
 {
     public function __construct(
         protected FeeService $feeService,
+        protected NotificationService $notificationService,
     ) {}
 
     public function create(array $data): Schedule
@@ -68,6 +74,8 @@ class PresentationService
 
         $this->feeService->syncPanelFees($schedule->load('section'));
 
+        $this->notifyScheduleParticipants($schedule, new ScheduleCreated($schedule));
+
         return $schedule;
 
     }
@@ -94,7 +102,11 @@ class PresentationService
             'panelists' => $this->normalizePanelists($data['panelists'] ?? null),
         ]);
 
-        $this->feeService->syncPanelFees($schedule->fresh()->load('section'));
+        $schedule = $schedule->fresh();
+
+        $this->feeService->syncPanelFees($schedule->load('section'));
+
+        $this->notifyScheduleParticipants($schedule, new ScheduleUpdated($schedule));
 
         return $schedule;
     }
@@ -180,6 +192,85 @@ class PresentationService
                 'messages' => $messages,
             ];
         });
+    }
+
+    public function updateStatus(Schedule $schedule, PresentationStatus $status): Schedule
+    {
+        $schedule->update(['status' => $status]);
+
+        $schedule = $schedule->fresh();
+
+        $this->notifyScheduleParticipants($schedule, new ScheduleResult($schedule));
+
+        return $schedule;
+    }
+
+    public function updateStatusWithoutNotification(Schedule $schedule, PresentationStatus $status): Schedule
+    {
+        $schedule->update(['status' => $status]);
+
+        return $schedule->fresh();
+    }
+
+    private function notifyScheduleParticipants(Schedule $schedule, $notification): void
+    {
+        $group = $schedule->group;
+        if ($group !== null) {
+            $this->notificationService->sendToGroupMembersAndAdviser($group, $notification);
+        }
+
+        $panelists = $schedule->panelists;
+        if ($panelists === null || $panelists === []) {
+            return;
+        }
+
+        foreach ($panelists as $instructorId => $role) {
+            $user = User::where('profileable_type', Instructor::class)
+                ->where('profileable_id', $instructorId)
+                ->first();
+
+            if ($user === null || $user->is(auth()->user())) {
+                continue;
+            }
+
+            $groupName = $group?->name ?? 'a group';
+            $roleLabel = str_replace('_', ' ', $role);
+
+            $user->notify(new class($groupName, $roleLabel, $notification) extends \Illuminate\Notifications\Notification implements \Illuminate\Contracts\Queue\ShouldQueue
+            {
+                use \Illuminate\Bus\Queueable;
+
+                public function __construct(
+                    protected string $groupName,
+                    protected string $role,
+                    protected $originalNotification,
+                ) {}
+
+                public function via($notifiable): array
+                {
+                    return $this->originalNotification->via($notifiable);
+                }
+
+                public function toDatabase($notifiable): array
+                {
+                    return [
+                        'type' => 'panelist_assigned',
+                        'title' => 'Panelist Assigned',
+                        'message' => "You have been assigned as {$this->role} panelist for {$this->groupName}.",
+                        'icon' => 'heroicon-o-users',
+                        'color' => 'info',
+                    ];
+                }
+
+                public function toMail($notifiable): \Illuminate\Notifications\Messages\MailMessage
+                {
+                    return (new \Illuminate\Notifications\Messages\MailMessage)
+                        ->subject('Panelist Assigned')
+                        ->greeting('Hello '.$notifiable->name.'!')
+                        ->line("You have been assigned as {$this->role} panelist for {$this->groupName}.");
+                }
+            });
+        }
     }
 
     private function resolvePresentationType(PresentationType|string $presentationType): PresentationType

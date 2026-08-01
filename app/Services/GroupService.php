@@ -8,11 +8,19 @@ use App\Models\Instructor;
 use App\Models\Personnel;
 use App\Models\Student;
 use App\Models\User;
+use App\Notifications\GroupCreated;
+use App\Notifications\GroupDeleted;
+use App\Notifications\GroupUpdated;
+use App\Notifications\MemberAdded;
+use App\Notifications\MemberRemoved;
+use App\Notifications\PersonnelAssigned;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class GroupService
 {
+    public function __construct(protected NotificationService $notificationService) {}
+
     public function create(array $data): Group
     {
         return DB::transaction(function () use ($data) {
@@ -38,6 +46,8 @@ class GroupService
             }
 
             $this->assignRandomPersonnel($group);
+
+            $this->notificationService->sendToGroupMembersAndAdviser($group, new GroupCreated($group));
 
             return $group->load(['section', 'leader', 'members']);
         });
@@ -68,6 +78,8 @@ class GroupService
                 $this->syncGroupMembers($group, $data['member_ids']);
             }
 
+            $this->notificationService->sendToGroupMembersAndAdviser($group, new GroupUpdated($group));
+
             return $group->fresh(['section', 'leader', 'members']);
         });
     }
@@ -87,6 +99,8 @@ class GroupService
             $group->personnel()->delete();
             $group->proposals()->delete();
             $group->fee()?->delete();
+
+            $this->notificationService->sendToGroupMembers($group, new GroupDeleted($group));
 
             return $group->delete();
         });
@@ -110,6 +124,13 @@ class GroupService
     {
         $group->members()->syncWithoutDetaching($studentIds);
 
+        $users = User::query()
+            ->where('profileable_type', Student::class)
+            ->whereIn('profileable_id', $studentIds)
+            ->get();
+
+        $this->notificationService->sendMany($users, new MemberAdded($group));
+
         return $group->fresh('members');
     }
 
@@ -120,6 +141,13 @@ class GroupService
         }
 
         $group->members()->detach($studentIds);
+
+        $users = User::query()
+            ->where('profileable_type', Student::class)
+            ->whereIn('profileable_id', $studentIds)
+            ->get();
+
+        $this->notificationService->sendMany($users, new MemberRemoved($group));
 
         return $group->fresh('members');
     }
@@ -263,11 +291,18 @@ class GroupService
 
     private function createPersonnelAssignment(Group $group, Instructor $instructor, PersonnelRole $role): Personnel
     {
-        return Personnel::create([
+        $personnel = Personnel::create([
             'instructor_id' => $instructor->id,
             'group_id' => $group->id,
             'role' => $role,
         ]);
+
+        $instructorUser = $instructor->user;
+        if ($instructorUser !== null) {
+            $this->notificationService->send($instructorUser, new PersonnelAssigned($group, $role));
+        }
+
+        return $personnel;
     }
 
     private function attachGroupMembers(Group $group, array $memberIds): void

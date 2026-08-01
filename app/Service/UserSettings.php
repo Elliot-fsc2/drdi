@@ -19,6 +19,20 @@ class UserSettings
             ->log('Changed password');
     }
 
+    public function toggleEmailNotifications($userId): bool
+    {
+        $user = User::findOrFail($userId);
+        $user->update([
+            'notify_email' => ! $user->notify_email,
+        ]);
+
+        activity('User Notification Settings')
+            ->performedOn($user)
+            ->log('Toggled email notifications to '.($user->notify_email ? 'on' : 'off'));
+
+        return $user->notify_email;
+    }
+
     public function showActivityLogs($userId)
     {
         Gate::authorize('view_activity_logs');

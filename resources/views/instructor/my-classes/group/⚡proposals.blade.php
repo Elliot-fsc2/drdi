@@ -37,6 +37,7 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
     {
         return Proposal::where('group_id', $this->group->id)
             ->with('submittedBy')
+            ->latest()
             ->get()
             ->map(function ($proposal) {
                 return [

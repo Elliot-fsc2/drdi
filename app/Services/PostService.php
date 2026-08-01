@@ -3,10 +3,16 @@
 namespace App\Services;
 
 use App\Enums\PostType;
+use App\Models\Instructor;
 use App\Models\Post;
+use App\Models\Student;
+use App\Models\User;
+use App\Notifications\NewAnnouncement;
 
 class PostService
 {
+    public function __construct(protected NotificationService $notificationService) {}
+
     public function createForInstructors(array $data)
     {
         $post = Post::create([
@@ -21,6 +27,15 @@ class PostService
             ->performedOn($post)
             ->withProperties(['post_id' => $post->id])
             ->log('Created a new post: '.$data['title']);
+
+        $instructorIds = Instructor::where('role', 'Instructor')->pluck('id');
+
+        $users = User::query()
+            ->where('profileable_type', Instructor::class)
+            ->whereIn('profileable_id', $instructorIds)
+            ->get();
+
+        $this->notificationService->sendMany($users, new NewAnnouncement($post));
     }
 
     public function createForStudents(array $data)
@@ -37,6 +52,12 @@ class PostService
             ->performedOn($post)
             ->withProperties(['post_id' => $post->id])
             ->log('Created a new post: '.$data['title']);
+
+        $users = User::query()
+            ->where('profileable_type', Student::class)
+            ->get();
+
+        $this->notificationService->sendMany($users, new NewAnnouncement($post));
     }
 
     public function createForSection(array $data)
@@ -57,6 +78,13 @@ class PostService
             ->performedOn($post)
             ->withProperties(['post_id' => $post->id])
             ->log('Created a new post: '.$data['title']);
+
+        $users = User::query()
+            ->where('profileable_type', Student::class)
+            ->whereHas('profileable.sections', fn ($q) => $q->whereIn('sections.id', $sectionIds))
+            ->get();
+
+        $this->notificationService->sendMany($users, new NewAnnouncement($post));
     }
 
     public function updatePost(Post $post, array $data): void

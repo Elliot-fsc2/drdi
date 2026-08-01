@@ -72,6 +72,16 @@ class extends Component implements HasActions, HasSchemas
             });
     }
 
+    public function toggleEmailNotifications(): void
+    {
+        $enabled = $this->userSettings->toggleEmailNotifications(auth()->id());
+
+        Notification::make()
+            ->title($enabled ? 'Email notifications enabled' : 'Email notifications disabled')
+            ->success()
+            ->send();
+    }
+
     public function activityLogs()
     {
         return Activity::where('causer_id', auth()->id())->latest()->paginate(5, pageName: 'activityPage');
@@ -289,10 +299,12 @@ class extends Component implements HasActions, HasSchemas
                         <div class="flex items-center justify-between py-4">
                             <div>
                                 <p class="text-sm font-medium" style="color: #0F172A">Email Notifications</p>
-                                <p class="text-xs" style="color: #94A3B8">Receive updates via email.</p>
+                                <p class="text-xs" style="color: #94A3B8">Receive email updates for important events like proposal approvals, schedule changes, and announcements.</p>
                             </div>
                             <label class="relative inline-flex cursor-pointer items-center">
-                                <input type="checkbox" checked disabled
+                                <input type="checkbox" role="switch" aria-label="Toggle email notifications"
+                                    @checked(auth()->user()->notify_email)
+                                    wire:click="toggleEmailNotifications"
                                     class="peer sr-only">
                                 <div
                                     class="h-6 w-11 rounded-full bg-slate-300 after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-slate-300 after:bg-white after:transition-all peer-checked:bg-blue-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300">

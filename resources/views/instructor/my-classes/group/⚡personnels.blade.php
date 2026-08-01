@@ -5,7 +5,9 @@ use App\Models\Group;
 use App\Models\Instructor;
 use App\Models\Personnel;
 use App\Models\Section;
+use App\Notifications\PersonnelAssigned;
 use App\Services\FeeService;
+use App\Services\NotificationService;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
@@ -106,6 +108,16 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
                     'group_id' => $this->group->id,
                     'role' => $data['role'],
                 ]);
+
+                // Notify the assigned instructor
+                $instructor = Instructor::with('user')->find($data['instructor_id']);
+                if ($instructor?->user) {
+                    $role = PersonnelRole::tryFrom($data['role']);
+                    app(NotificationService::class)->send(
+                        $instructor->user,
+                        new PersonnelAssigned($this->group, $role),
+                    );
+                }
 
                 // Recalculate honorarium based on updated personnel count
                 $feeService = app(FeeService::class);

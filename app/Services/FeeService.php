@@ -7,11 +7,17 @@ use App\Enums\ThesisRatesType;
 use App\Models\Group;
 use App\Models\Schedule;
 use App\Models\Semester;
+use App\Notifications\FeeLedgerInitialized;
+use App\Notifications\SemesterRateUpdated;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 class FeeService
 {
+    public function __construct(
+        protected NotificationService $notificationService,
+    ) {}
+
     public function initializeGroupLedger(Group $group): void
     {
         DB::transaction(function () use ($group) {
@@ -46,6 +52,8 @@ class FeeService
                     'total_merger_amount' => $baseAmount + $existingHonorarium + $existingPanelFee,
                 ])
                 ->log('Initialized group fee ledger');
+
+            $this->notificationService->sendToGroupMembers($group, new FeeLedgerInitialized($group));
         });
     }
 
@@ -106,6 +114,7 @@ class FeeService
                     'base_fee' => $currentBaseFee,
                 ])
                 ->log('Synchronized honorarium totals for group');
+
         });
     }
 
@@ -246,6 +255,18 @@ class FeeService
                 ])
                 ->log('Created or updated semester master rates');
         });
+    }
+
+    public function notifySemesterRateChange(Semester $semester): void
+    {
+        $groups = Group::query()
+            ->whereHas('section.semester', fn ($q) => $q->where('id', $semester->id))
+            ->with('section.semester')
+            ->get();
+
+        foreach ($groups as $group) {
+            $this->notificationService->sendToGroupMembers($group, new SemesterRateUpdated($semester));
+        }
     }
 
     public function updateAllGroupsInSemester(Semester $semester): void

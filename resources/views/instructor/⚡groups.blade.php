@@ -27,7 +27,7 @@ class extends Component
                     'id' => $group->id,
                     'section_id' => $group->section_id,
                     'title' => $group->name,
-                    'leader' => $group->leader->full_name,
+                    'leader' => $group->leader?->full_name,
                     'members_count' => $group->members_count,
                 ];
             });
@@ -46,7 +46,7 @@ class extends Component
                     'id' => $group->id,
                     'section_id' => $group->section_id,
                     'title' => $group->name,
-                    'leader' => $group->leader->full_name,
+                    'leader' => $group->leader?->full_name,
                     'members_count' => $group->members_count,
                 ];
             });

@@ -100,18 +100,24 @@ new #[Layout('layouts::rdo.app')] #[Title('Presentation Details')] class extends
             return;
         }
 
-        $this->schedule->update([
-            'status' => $newStatus->value,
-        ]);
+        try {
+            app(\App\Services\PresentationService::class)->updateStatus($this->schedule, $newStatus);
 
-        $this->schedule->refresh();
-        unset($this->panelists);
-        $this->status = $newStatus->value;
+            $this->schedule->refresh();
+            unset($this->panelists);
+            $this->status = $newStatus->value;
 
-        Notification::make()
-            ->title('Presentation status updated successfully')
-            ->success()
-            ->send();
+            Notification::make()
+                ->title('Presentation status updated successfully')
+                ->success()
+                ->send();
+        } catch (\Throwable $e) {
+            Notification::make()
+                ->title('Failed to update status')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+        }
     }
 
     #[Computed]
