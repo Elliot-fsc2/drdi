@@ -56,7 +56,7 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
             ->icon(Heroicon::UserPlus)
             ->modalHeading('Add Students to Section')
             ->modalDescription(fn() => "Select students from {$this->section->program->name} to add to this section.")
-            ->form(function () {
+            ->schema(function () {
                 $availableStudents = Student::whereDoesntHave('sections', function ($query) {
                     $query->whereHas('semester', function ($q) {
                         $q->active();

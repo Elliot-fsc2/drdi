@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\InstructorRole;
+use App\Models\Instructor;
 use App\Models\Post;
 use App\Models\Section;
 use App\Services\PostService;
@@ -15,14 +16,9 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
-use Livewire\Attributes\Layout;
-use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new
-#[Layout('layouts::instructor.app')]
-#[Title('Edit Section Announcement')]
-class extends Component implements HasActions, HasSchemas
+new class extends Component implements HasActions, HasSchemas
 {
     use InteractsWithActions;
     use InteractsWithSchemas;
@@ -60,25 +56,10 @@ class extends Component implements HasActions, HasSchemas
                             ->columnSpanFull()
                             ->placeholder('Write your full notice or update details here...')
                             ->toolbarButtons([
-                                ['bold', 'italic', 'underline', 'strike', 'subscript', 'superscript', 'link'],
-                                ['h1', 'h2', 'h3'],
-                                ['alignStart', 'alignCenter', 'alignEnd'],
-                                ['blockquote', 'codeBlock', 'bulletList', 'orderedList'],
-                                ['table', 'attachFiles'],
-                                ['undo', 'redo'],
+                                'bold', 'italic', 'underline', 'strike',
+                                ['bulletList', 'orderedList'],
+                                'undo', 'redo',
                             ])
-                            ->floatingToolbars([
-                                'heading' => ['h1', 'h2', 'h3'],
-                                'paragraph' => ['bold', 'italic', 'underline', 'strike', 'subscript', 'superscript'],
-                                'table' => [
-                                    'tableAddColumnBefore', 'tableAddColumnAfter', 'tableDeleteColumn',
-                                    'tableAddRowBefore', 'tableAddRowAfter', 'tableDeleteRow',
-                                    'tableMergeCells', 'tableSplitCell',
-                                    'tableToggleHeaderRow', 'tableToggleHeaderCell',
-                                    'tableDelete',
-                                ],
-                            ])
-                            ->fileAttachmentsDirectory('attachments')
                             ->extraInputAttributes(['style' => 'min-height: 20rem; max-height: 50vh; overflow-y: auto;']),
 
                         FileUpload::make('images_path')
@@ -138,6 +119,17 @@ class extends Component implements HasActions, HasSchemas
                 ->danger()
                 ->send();
         }
+    }
+
+    public function render()
+    {
+        $layout = match (true) {
+            auth()->user()?->profileable_type === Instructor::class && in_array(auth()->user()?->profileable?->role, [InstructorRole::RDO, InstructorRole::Staff]) => 'layouts::rdo.app',
+            auth()->user()?->profileable_type === Instructor::class => 'layouts::instructor.app',
+            default => 'layouts::app',
+        };
+
+        return $this->view()->layout($layout)->title('Edit Section Announcement');
     }
 };
 ?>

@@ -8,8 +8,8 @@ use App\Models\Section;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
-use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
@@ -62,7 +62,7 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
             ->modalHeading(fn(array $arguments) => $arguments['title'] ?? 'Research Proposal')
             ->modalSubmitAction(false)
             ->modalCloseButton(false)
-            ->form(function (array $arguments) {
+            ->schema(function (array $arguments) {
                 $statusValue = strtolower($arguments['status'] ?? 'pending');
                 $badgeColor = match ($statusValue) {
                     'approved' => 'success',
@@ -79,26 +79,26 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
 
                 return [
                     Grid::make(3)->schema([
-                        Placeholder::make('submitted_date')
+                        TextEntry::make('submitted_date')
                             ->label('Date Submitted')
-                            ->content($arguments['submitted_date'] ?? ''),
-                        Placeholder::make('submitted_by')
+                            ->state($arguments['submitted_date'] ?? ''),
+                        TextEntry::make('submitted_by')
                             ->label('Submitted By')
-                            ->content(new \Illuminate\Support\HtmlString('<span class="font-bold">' . e($arguments['submitted_by'] ?? 'Unknown') . '</span>')),
-                        Placeholder::make('status')
+                            ->formatStateUsing(fn (): \Illuminate\Support\HtmlString => new \Illuminate\Support\HtmlString('<span class="font-bold">' . e($arguments['submitted_by'] ?? 'Unknown') . '</span>')),
+                        TextEntry::make('status')
                             ->label('Status')
-                            ->content(new \Illuminate\Support\HtmlString('<span class="text-xs font-semibold px-2 py-1 rounded text-' . $badgeColor . '-700 bg-' . $badgeColor . '-100">' . $badgeLabel . '</span>')),
+                            ->formatStateUsing(fn (): \Illuminate\Support\HtmlString => new \Illuminate\Support\HtmlString('<span class="text-xs font-semibold px-2 py-1 rounded text-' . $badgeColor . '-700 bg-' . $badgeColor . '-100">' . $badgeLabel . '</span>')),
                     ]),
-                    Placeholder::make('description')
+                    TextEntry::make('description')
                         ->label('Description / Abstract')
-                        ->content(new \Illuminate\Support\HtmlString('<div class="prose max-w-none text-slate-600">' . e($arguments['description'] ?? '') . '</div>')),
-                    Placeholder::make('file_path')
+                        ->formatStateUsing(fn (): \Illuminate\Support\HtmlString => new \Illuminate\Support\HtmlString('<div class="prose max-w-none text-slate-600">' . e($arguments['description'] ?? '') . '</div>')),
+                    TextEntry::make('file_path')
                         ->label('Proposal Document')
-                        ->content(function () use ($arguments) {
+                        ->formatStateUsing(function (): \Illuminate\Support\HtmlString {
                             $filePath = $arguments['file_path'] ?? null;
 
                             if (! $filePath) {
-                                return 'No file uploaded.';
+                                return new \Illuminate\Support\HtmlString('No file uploaded.');
                             }
 
                             return new \Illuminate\Support\HtmlString(
@@ -106,9 +106,9 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
                                 '📄 View Proposal Document</a>'
                             );
                         }),
-                    Placeholder::make('feedback')
+                    TextEntry::make('feedback')
                         ->label('Instructor Feedback')
-                        ->content(function () use ($arguments) {
+                        ->formatStateUsing(function (): \Illuminate\Support\HtmlString {
                             $statusValue = strtolower($arguments['status'] ?? '');
                             $isRejected = $statusValue === 'rejected';
                             $feedback = $arguments['feedback'] ?? 'No feedback provided.';
@@ -178,7 +178,7 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
             ->modalCloseButton(false)
             ->modalDescription('Are you sure you want to reject this proposal? Please provide a reason below.')
             ->color('danger')
-            ->form([\Filament\Forms\Components\Textarea::make('feedback')->label('Feedback / Reason for Rejection')->placeholder('Please explain why this title is being rejected to help the students.')->required()->rows(3)])
+            ->schema([\Filament\Forms\Components\Textarea::make('feedback')->label('Feedback / Reason for Rejection')->placeholder('Please explain why this title is being rejected to help the students.')->required()->rows(3)])
             ->successNotificationTitle('Proposal Rejected')
             ->action(function ($arguments, array $data) {
                 $proposalId = $arguments['id'] ?? null;
@@ -211,7 +211,7 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
             ->label('Edit Title')
             ->icon(Heroicon::PencilSquare)
             ->modalHeading('Edit Research Title')
-            ->form([TextInput::make('title')->label('Research Title')->required()->maxLength(255)])
+            ->schema([TextInput::make('title')->label('Research Title')->required()->maxLength(255)])
             ->successNotificationTitle('Title updated successfully')
             ->action(function (array $data, array $arguments): void {
                 $proposalId = $arguments['id'] ?? null;
@@ -235,7 +235,7 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
             ->modalSubmitActionLabel('Yes, Approve')
             ->color('success')
             ->icon(Heroicon::CheckCircle)
-            ->form([\Filament\Forms\Components\Textarea::make('feedback')->label('Feedback / Remarks (Optional)')->placeholder('Add any optional remarks or feedback for the students.')->rows(3)])
+            ->schema([\Filament\Forms\Components\Textarea::make('feedback')->label('Feedback / Remarks (Optional)')->placeholder('Add any optional remarks or feedback for the students.')->rows(3)])
             ->successNotificationTitle('Title approved successfully')
             ->action(function ($arguments, array $data): void {
                 $proposalId = $arguments['id'] ?? null;

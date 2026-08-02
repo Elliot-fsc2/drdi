@@ -64,7 +64,7 @@ new #[Layout('layouts::rdo.app')] class extends Component implements HasActions,
             ->icon(Heroicon::UserPlus)
             ->modalHeading('Add Members to Group')
             ->modalDescription(fn() => "Select students from {$this->section->name} to add to this group.")
-            ->form(function () {
+            ->schema(function () {
                 $availableStudents = $this->section
                     ->students()
                     ->whereDoesntHave('groups', function ($query) {

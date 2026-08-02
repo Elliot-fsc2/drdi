@@ -37,7 +37,7 @@ new #[Layout('layouts::instructor.app')] #[Title('My Classes')] class extends Co
             ->label('Create Section')
             ->icon(Heroicon::Plus)
             ->color('primary')
-            ->form([
+            ->schema([
                 TextInput::make('name')->label('Section Name')->placeholder('e.g., BSCS-4A')->required()->maxLength(255),
 
                 Select::make('program_id')->label('Program')->options(Program::pluck('name', 'id'))->required()->searchable(),

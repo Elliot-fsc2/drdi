@@ -102,7 +102,7 @@ new #[Layout('layouts::rdo.app')] #[Title('View Group')] class extends Component
             ->icon(Heroicon::CalendarDays)
             ->modalHeading('Schedule Consultation Session')
             ->modalDescription('Create a new consultation session for this group.')
-            ->form([
+            ->schema([
                 Select::make('type')
                     ->label('Consultation Type')
                     ->options([
@@ -174,7 +174,7 @@ new #[Layout('layouts::rdo.app')] #[Title('View Group')] class extends Component
                     'remarks' => $consultation->remarks,
                 ];
             })
-            ->form([
+            ->schema([
                 Select::make('type')
                     ->label('Consultation Type')
                     ->options([

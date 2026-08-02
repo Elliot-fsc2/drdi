@@ -40,7 +40,7 @@ class extends Component implements HasActions, HasSchemas
             ->modalHeading('Change Password')
             ->modalDescription('Enter your current password and a new password.')
             ->modalIcon(Heroicon::LockClosed)
-            ->form([
+            ->schema([
                 TextInput::make('current_password')
                     ->label('Current Password')
                     ->password()

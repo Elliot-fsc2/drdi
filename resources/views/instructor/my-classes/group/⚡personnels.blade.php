@@ -18,6 +18,7 @@ use Filament\Support\Icons\Heroicon;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Filament\Schemas\Components\Utilities\Get;
 
 new #[Layout('layouts::instructor.app')] class extends Component implements HasActions, HasSchemas {
     use InteractsWithActions;
@@ -53,11 +54,11 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
             ->modalCloseButton(false)
             ->modalHeading('Assign Personnel to Group')
             ->modalDescription('Select an instructor and assign them a role for this group.')
-            ->form([
+            ->schema([
                 // Role first so instructor list can react to selected role
                 Select::make('role')
                     ->label('Role')
-                    ->reactive()
+                    ->live()
                     ->options(function () {
                         $roles = collect(PersonnelRole::cases());
 
@@ -77,7 +78,7 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
                 // Instructor options depend on selected role
                 Select::make('instructor_id')
                     ->label('Instructor')
-                    ->options(function (callable $get) {
+                    ->options(function (Get $get) {
                         $selectedRole = $get('role');
 
                         $query = Instructor::query()->with('department')

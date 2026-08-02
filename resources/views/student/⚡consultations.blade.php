@@ -7,7 +7,7 @@ use Livewire\Attributes\Title;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Filament\Actions\Contracts\HasActions;
-use Filament\Forms\Components\Placeholder;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
@@ -61,26 +61,34 @@ new #[Layout('layouts::student.app')] #[Title('Group Consultations')] class exte
             ->modalWidth('lg')
             ->modalSubmitAction(false)
             ->modalCancelActionLabel('Close')
-            ->form(function (array $arguments) {
+            ->schema(function (array $arguments) {
                 $consultation = Consultation::find($arguments['consultation']);
 
                 return [
-                    Placeholder::make('scheduled_at')->label('Scheduled Time')->content(fn() => $consultation?->scheduled_at ? $consultation->scheduled_at->format('M d, Y') : 'To Be Determined'),
+                    TextEntry::make('scheduled_at')
+                        ->label('Scheduled Time')
+                        ->state(fn() => $consultation?->scheduled_at ? $consultation->scheduled_at->format('M d, Y') : 'To Be Determined'),
 
-                    Placeholder::make('instructor')->label('Instructor')->content(
-                        fn() => collect([$consultation?->instructor?->first_name, $consultation?->instructor?->last_name])
-                            ->filter()
-                            ->join(' ') ?:
-                        'Instructor #' . $consultation?->instructor_id,
-                    ),
+                    TextEntry::make('instructor')
+                        ->label('Instructor')
+                        ->state(
+                            fn() => collect([$consultation?->instructor?->first_name, $consultation?->instructor?->last_name])
+                                ->filter()
+                                ->join(' ') ?:
+                            'Instructor #' . $consultation?->instructor_id,
+                        ),
 
-                    Placeholder::make('type')->label('Type')->content(fn() => ucfirst($consultation?->type ?? 'N/A')),
+                    TextEntry::make('type')
+                        ->label('Type')
+                        ->state(fn() => ucfirst($consultation?->type ?? 'N/A')),
 
-                    Placeholder::make('status')->label('Status')->content(fn() => ucfirst($consultation?->status ?? 'N/A')),
+                    TextEntry::make('status')
+                        ->label('Status')
+                        ->state(fn() => ucfirst($consultation?->status ?? 'N/A')),
 
-                    Placeholder::make('remarks')
+                    TextEntry::make('remarks')
                         ->label('Instructor Remarks')
-                        ->content(function () use ($consultation) {
+                        ->formatStateUsing(function (): \Illuminate\Support\HtmlString {
                             $remarks = $consultation?->remarks ?? 'No remarks provided.';
 
                             return new \Illuminate\Support\HtmlString('<div class="p-3 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 text-sm italic mt-1">' . nl2br(e($remarks)) . '</div>');

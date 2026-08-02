@@ -26,22 +26,18 @@ class extends Component implements HasActions, HasSchemas
         return $schema
             ->components([
                 TextInput::make('title')
-                    ->label('')
+                    ->hiddenLabel()
                     ->placeholder('Title')
                     ->required(),
 
                 RichEditor::make('content')
                     ->required()
-                    ->label('')
+                    ->hiddenLabel()
                     ->placeholder('Start typing...')
-                    ->fileAttachmentsAcceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
                     ->toolbarButtons([
-                        ['bold', 'italic', 'underline', 'strike', 'subscript', 'superscript', 'link'],
-                        ['h1', 'h2', 'h3', 'attachFiles'],
-                        ['alignStart', 'alignCenter', 'alignEnd'],
-                        ['blockquote', 'codeBlock', 'bulletList', 'orderedList'],
-                        ['table'],
-                        ['undo', 'redo'],
+                        'bold', 'italic', 'underline', 'strike',
+                        ['bulletList', 'orderedList'],
+                        'undo', 'redo',
                     ]),
             ])
             ->statePath('data');

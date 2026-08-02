@@ -91,7 +91,7 @@ class extends Component implements HasActions, HasSchemas
             ->modalHeading('Proposal Details')
             ->modalWidth('lg')
             ->color('info')
-            ->form(function (array $arguments) {
+            ->schema(function (array $arguments) {
                 $proposal = Proposal::find($arguments['proposal']);
                 $isPending = $proposal?->status === ProposalStatus::PENDING;
                 $canEdit = $isPending && $this->isLeader();
@@ -112,15 +112,15 @@ class extends Component implements HasActions, HasSchemas
                 }
 
                 return [
-                    \Filament\Forms\Components\Placeholder::make('title')->label('Proposal Title')->content($proposal?->title),
+                    \Filament\Infolists\Components\TextEntry::make('title')->label('Proposal Title')->state($proposal?->title),
 
-                    \Filament\Forms\Components\Placeholder::make('description')->label('Description')->content($proposal?->description),
+                    \Filament\Infolists\Components\TextEntry::make('description')->label('Description')->state($proposal?->description),
 
-                    \Filament\Forms\Components\Placeholder::make('file_path')
+                    \Filament\Infolists\Components\TextEntry::make('file_path')
                         ->label('Proposal Document')
-                        ->content(function () use ($proposal) {
+                        ->formatStateUsing(function (): \Illuminate\Support\HtmlString {
                             if (! $proposal?->file_path) {
-                                return 'No file uploaded.';
+                                return new \Illuminate\Support\HtmlString('No file uploaded.');
                             }
 
                             return new \Illuminate\Support\HtmlString(
@@ -130,9 +130,9 @@ class extends Component implements HasActions, HasSchemas
                             );
                         }),
 
-                    \Filament\Forms\Components\Placeholder::make('feedback')
+                    \Filament\Infolists\Components\TextEntry::make('feedback')
                         ->label('Instructor Feedback')
-                        ->content(function () use ($proposal) {
+                        ->formatStateUsing(function (): \Illuminate\Support\HtmlString {
                             $feedback = $proposal?->feedback ?? 'No feedback provided.';
                             $isRejected = $proposal?->status === ProposalStatus::REJECTED;
 

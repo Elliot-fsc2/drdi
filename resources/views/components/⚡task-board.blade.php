@@ -62,7 +62,7 @@ new class extends Component implements HasActions, HasBoard, HasForms
                     ->iconButton()
                     ->color('info')
                     ->model(Task::class)
-                    ->form([
+                    ->schema([
                         TextInput::make('title')->required()->maxLength(255),
                     ])
                     ->mutateDataUsing(function (array $data, array $arguments): array {
@@ -79,7 +79,7 @@ new class extends Component implements HasActions, HasBoard, HasForms
                     ->color('info')
                     ->modalWidth('md')
                     ->modalCloseButton(false)
-                    ->form([
+                    ->schema([
                         TextInput::make('title')->required()->maxLength(255),
                         Select::make('status')
                             ->options(TaskStatus::class)
@@ -100,7 +100,7 @@ new class extends Component implements HasActions, HasBoard, HasForms
             ->icon('heroicon-m-plus')
             ->modalHeading('Create a new task')
             ->modalWidth('md')
-            ->form([
+            ->schema([
                 TextInput::make('title')
                     ->label('Task Title')
                     ->required()

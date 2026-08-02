@@ -60,7 +60,7 @@ class extends Component implements HasActions, HasSchemas
             ->modalWidth('xl')
             ->modalCloseButton(false)
             ->icon('heroicon-m-plus')
-            ->form([
+            ->schema([
                 Grid::make(2)->schema([
                     DatePicker::make('date')
                         ->required()
@@ -226,7 +226,7 @@ class extends Component implements HasActions, HasSchemas
             ->iconButton()
             ->icon('heroicon-m-pencil-square')
             ->color('gray')
-            ->form([
+            ->schema([
                 Grid::make(2)->schema([
                     DatePicker::make('date')
                         ->required()

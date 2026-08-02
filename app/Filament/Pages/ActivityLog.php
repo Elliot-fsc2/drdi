@@ -79,7 +79,7 @@ class ActivityLog extends Page implements HasTable
                     ->label('Causer Type')
                     ->options(fn (): array => $this->activityLogOptions('causer_type', true)),
                 Filter::make('created_at')
-                    ->form([
+                    ->schema([
                         DatePicker::make('created_from'),
                         DatePicker::make('created_until'),
                     ])

@@ -56,25 +56,10 @@ class extends Component implements HasActions, HasSchemas
                             ->columnSpanFull()
                             ->placeholder('Write your full notice or update details here...')
                             ->toolbarButtons([
-                                ['bold', 'italic', 'underline', 'strike', 'subscript', 'superscript', 'link'],
-                                ['h1', 'h2', 'h3'],
-                                ['alignStart', 'alignCenter', 'alignEnd'],
-                                ['blockquote', 'codeBlock', 'bulletList', 'orderedList'],
-                                ['table', 'attachFiles'],
-                                ['undo', 'redo'],
+                                'bold', 'italic', 'underline', 'strike',
+                                ['bulletList', 'orderedList'],
+                                'undo', 'redo',
                             ])
-                            ->floatingToolbars([
-                                'heading' => ['h1', 'h2', 'h3'],
-                                'paragraph' => ['bold', 'italic', 'underline', 'strike', 'subscript', 'superscript'],
-                                'table' => [
-                                    'tableAddColumnBefore', 'tableAddColumnAfter', 'tableDeleteColumn',
-                                    'tableAddRowBefore', 'tableAddRowAfter', 'tableDeleteRow',
-                                    'tableMergeCells', 'tableSplitCell',
-                                    'tableToggleHeaderRow', 'tableToggleHeaderCell',
-                                    'tableDelete',
-                                ],
-                            ])
-                            ->fileAttachmentsDirectory('attachments')
                             ->extraInputAttributes(['style' => 'min-height: 20rem; max-height: 50vh; overflow-y: auto;']),
 
                         FileUpload::make('images_path')

@@ -43,7 +43,7 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
             ->icon(Heroicon::CalendarDays)
             ->modalHeading('Schedule Consultation Session')
             ->modalDescription('Create a new consultation session for this group.')
-            ->form([
+            ->schema([
                 Select::make('type')
                     ->label('Consultation Type')
                     ->options([
@@ -113,7 +113,7 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
                     'remarks' => $consultation->remarks,
                 ];
             })
-            ->form([
+            ->schema([
                 Select::make('type')
                     ->label('Consultation Type')
                     ->options([

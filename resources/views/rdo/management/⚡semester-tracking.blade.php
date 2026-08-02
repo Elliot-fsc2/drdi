@@ -65,7 +65,7 @@ class extends Component implements HasActions, HasSchemas
             ->modalWidth('md')
             ->successNotificationTitle('Semester Added')
             ->modalHeading('Add New Semester')
-            ->form([TextInput::make('name')->label('Semester Name')->required()->placeholder('e.g. 2nd Semester AY 2024-2025'), DatePicker::make('start_date')->label('Start Date')->required(), DatePicker::make('end_date')->label('End Date')->required()])
+            ->schema([TextInput::make('name')->label('Semester Name')->required()->placeholder('e.g. 2nd Semester AY 2024-2025'), DatePicker::make('start_date')->label('Start Date')->required(), DatePicker::make('end_date')->label('End Date')->required()])
             ->action(function (array $data) {
                 $sem = Semester::create($data);
                 $this->selectedId = $sem->id;
@@ -90,7 +90,7 @@ class extends Component implements HasActions, HasSchemas
                     'end_date' => $sem->end_date,
                 ];
             })
-            ->form([TextInput::make('name')->label('Semester Name')->required(), DatePicker::make('start_date')->label('Start Date')->required(), DatePicker::make('end_date')->label('End Date')->required()])
+            ->schema([TextInput::make('name')->label('Semester Name')->required(), DatePicker::make('start_date')->label('Start Date')->required(), DatePicker::make('end_date')->label('End Date')->required()])
             ->action(function (array $data) {
                 $this->selectedSemester->update($data);
                 unset($this->selectedSemester);
