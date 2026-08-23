@@ -17,6 +17,9 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
+            # Set PHP 8.3 in path
+            export PATH="/usr/local/lsws/lsphp83/bin:$PATH"
+            
             # Navigate to the deployment path
             cd ${{ secrets.DEPLOY_PATH }}
             
@@ -27,25 +30,21 @@ jobs:
             git pull origin main
             
             # Install/update PHP dependencies
-            composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+            php $(which composer || echo "composer") install --no-interaction --prefer-dist --optimize-autoloader --no-dev
             
             # Install/update Node dependencies and build assets
-            npm ci
+            npm install
             npm run build
             
             # Run database migrations
             php artisan migrate --force
             
-            # Clear caches
-            php artisan cache:clear
-            php artisan config:clear
-            php artisan route:clear
-            php artisan view:clear
-            
-            # Optimize for production
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
+            # Clear caches and optimize
+            php artisan optimize:clear
+            php artisan optimize
             
             # Take application out of maintenance mode
             php artisan up
+            
+            # Restart PM2 process
+            pm2 restart 0
