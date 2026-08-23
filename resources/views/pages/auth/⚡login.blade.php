@@ -142,7 +142,7 @@ new #[Layout('layouts::guest')]
             class="w-full text-white font-semibold py-3 rounded-lg transition-all shadow-lg bg-blue-600 hover:bg-blue-700">
             @if (! app()->environment('local'))
             <span x-show="secondsLeft <= 0">Login</span>
-            <span x-show="secondsLeft > 0">
+            <span x-show="secondsLeft > 0" style="display: none;">
               Please wait <span x-text="secondsLeft"></span>s
             </span>
             @else
