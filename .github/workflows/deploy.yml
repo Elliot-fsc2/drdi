@@ -1,0 +1,51 @@
+name: Deploy Application
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            # Navigate to the deployment path
+            cd ${{ secrets.DEPLOY_PATH }}
+            
+            # Put application in maintenance mode
+            php artisan down --secret="github-actions" || true
+            
+            # Pull the latest changes from the repository
+            git pull origin main
+            
+            # Install/update PHP dependencies
+            composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+            
+            # Install/update Node dependencies and build assets
+            npm ci
+            npm run build
+            
+            # Run database migrations
+            php artisan migrate --force
+            
+            # Clear caches
+            php artisan cache:clear
+            php artisan config:clear
+            php artisan route:clear
+            php artisan view:clear
+            
+            # Optimize for production
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            
+            # Take application out of maintenance mode
+            php artisan up
