@@ -81,7 +81,7 @@ class PostService
 
         $users = User::query()
             ->where('profileable_type', Student::class)
-            ->whereHas('profileable.sections', fn ($q) => $q->whereIn('sections.id', $sectionIds))
+            ->whereHasMorph('profileable', [Student::class], fn ($q) => $q->whereHas('sections', fn ($q2) => $q2->whereIn('sections.id', $sectionIds)))
             ->get();
 
         $this->notificationService->sendMany($users, new NewAnnouncement($post));

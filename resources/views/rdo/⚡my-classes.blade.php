@@ -139,7 +139,7 @@ new
         rel="stylesheet">
 @endassets
 
-<div class="min-h-screen relative" style="background: #F8FAFC">
+<div class="min-h-screen relative" x-data="{ tab: 'classes' }" style="background: #F8FAFC">
 
     {{-- Ambient background glows --}}
     <div class="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
@@ -228,8 +228,38 @@ new
             </div>
         </div>
 
-        {{-- ── Empty State ────────────────────────────────────────────────────────── --}}
-        @if (count($this->classes) === 0)
+        {{-- ── Tab switcher ────────────────────────────────────────────────────────── --}}
+        <div class="inline-flex items-center gap-1 rounded-xl p-1 mb-4"
+            style="background: #EEF2FF; border: 1px solid rgba(0,82,255,0.12)">
+            <button type="button" @click="tab = 'classes'"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200"
+                :style="tab === 'classes' ? 'background: linear-gradient(to right, #0052FF, #4D7CFF); color: white; box-shadow: 0 2px 8px rgba(0,82,255,0.3)' : 'color: #64748B'">
+                <x-heroicon-o-academic-cap class="h-4 w-4" />
+                Classes
+                @if (count($this->classes) > 0)
+                <span class="px-1.5 py-0.5 rounded-full text-xs font-bold"
+                    :style="tab === 'classes' ? 'background: rgba(255,255,255,0.25); color: white' : 'background: rgba(0,82,255,0.1); color: #0052FF'">
+                    {{ count($this->classes) }}
+                </span>
+                @endif
+            </button>
+            <button type="button" @click="tab = 'announcements'"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200"
+                :style="tab === 'announcements' ? 'background: linear-gradient(to right, #0052FF, #4D7CFF); color: white; box-shadow: 0 2px 8px rgba(0,82,255,0.3)' : 'color: #64748B'">
+                <x-heroicon-o-megaphone class="h-4 w-4" />
+                Announcements
+                @if ($this->announcements->isNotEmpty())
+                <span class="px-1.5 py-0.5 rounded-full text-xs font-bold"
+                    :style="tab === 'announcements' ? 'background: rgba(255,255,255,0.25); color: white' : 'background: rgba(0,82,255,0.1); color: #0052FF'">
+                    {{ $this->announcements->count() }}
+                </span>
+                @endif
+            </button>
+        </div>
+
+        {{-- ── Classes Tab ─────────────────────────────────────────────────────────── --}}
+        <div x-show="tab === 'classes'" x-cloak>
+            @if (count($this->classes) === 0)
             <div class="bg-white rounded-2xl border flex flex-col items-center justify-center py-20 px-8 text-center"
                 style="border-color: #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
                 <div class="w-20 h-20 rounded-2xl flex items-center justify-center mb-6"
@@ -264,7 +294,7 @@ new
                     </button>
                 @endunless
             </div>
-        @else
+            @else
             {{-- ── Stats summary ─────────────────────────────────────────────────────── --}}
             <div class="flex flex-wrap items-center gap-x-5 gap-y-2 mb-6 px-1">
                 <div class="flex items-center gap-2">
@@ -438,28 +468,40 @@ new
                     </a>
                 @endforeach
             </div>
+        @endif
+        </div>
 
-            {{-- ── Announcements Section ─────────────────────────────────────────────── --}}
-            @php $announcements = $this->announcements; @endphp
+        {{-- ── Announcements Tab ─────────────────────────────────────────────────── --}}
+        @php $announcements = $this->announcements; @endphp
+        <div x-show="tab === 'announcements'" x-cloak>
             @if ($announcements->isNotEmpty())
-                <div class="mt-10">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-8 h-8 rounded-lg flex items-center justify-center"
-                            style="background: linear-gradient(135deg, #0052FF, #4D7CFF); box-shadow: 0 4px 12px rgba(0,82,255,0.25)">
-                            <x-heroicon-o-megaphone class="h-4 w-4 text-white" />
-                        </div>
-                        <h2 class="font-bold text-lg" style="color: #0F172A; font-family: 'Calistoga', Georgia, serif">
-                            Section Announcements
-                        </h2>
+                <div class="space-y-4">
+                    @foreach ($announcements as $announcement)
+                        <livewire-post :post="$announcement" defer />
+                    @endforeach
+                </div>
+            @else
+                <div class="bg-white rounded-2xl border flex flex-col items-center justify-center py-20 px-8 text-center"
+                    style="border-color: #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+                    <div class="w-20 h-20 rounded-2xl flex items-center justify-center mb-6"
+                        style="background: linear-gradient(135deg, #0052FF, #4D7CFF); box-shadow: 0 8px 24px rgba(0,82,255,0.3)">
+                        <x-heroicon-o-megaphone class="h-10 w-10 text-white" />
                     </div>
-                    <div class="space-y-4">
-                        @foreach ($announcements as $announcement)
-                            <livewire-post :post="$announcement" defer />
-                        @endforeach
-                    </div>
+                    <h3 class="mb-2" style="font-family: 'Calistoga', Georgia, serif; font-size: 1.5rem; color: #0F172A">
+                        No announcements yet
+                    </h3>
+                    <p class="text-sm max-w-xs mb-6" style="color: #64748B; line-height: 1.6">
+                        Announcements you broadcast to your sections will appear here.
+                    </p>
+                    <button wire:click="mountAction('createAnnouncement')"
+                        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-white transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+                        style="background: linear-gradient(to right, #0052FF, #4D7CFF); box-shadow: 0 4px 12px rgba(0,82,255,0.3)">
+                        <x-heroicon-o-megaphone class="h-4 w-4" />
+                        Create Announcement
+                    </button>
                 </div>
             @endif
-        @endif
+        </div>
 
     </div>
     <x-filament-actions::modals />
