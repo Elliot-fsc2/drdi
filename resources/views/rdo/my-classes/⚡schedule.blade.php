@@ -385,10 +385,6 @@ class extends Component implements HasActions, HasSchemas
 ?>
 
 
-@assets
-    <link rel="stylesheet" href="{{ Vite::asset('resources/css/filament.css') }}">
-@endassets
-
 <div class="space-y-4 p-4 md:p-5">
     {{-- Header --}}
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

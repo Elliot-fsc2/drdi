@@ -99,7 +99,6 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Calistoga&family=JetBrains+Mono:wght@400;500&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="{{ Vite::asset('resources/css/filament.css') }}">
 @endassets
 
 <x-slot name="title">

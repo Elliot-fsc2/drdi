@@ -123,10 +123,6 @@ new class extends Component implements HasActions, HasBoard, HasForms
 };
 ?>
 
-@assets
-<link rel="stylesheet" href="{{ Vite::asset('resources/css/filament/admin/theme.css') }}">
-@endassets
-
 <div>
   <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold">Task Board</h1>

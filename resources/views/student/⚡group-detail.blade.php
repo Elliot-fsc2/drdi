@@ -46,10 +46,6 @@ new #[Layout('layouts::student.app')] #[Title('Group Details')] class extends Co
 };
 ?>
 
-@assets
-    <link rel="stylesheet" href="{{ Vite::asset('resources/css/filament.css') }}">
-@endassets
-
 <div class="p-3 sm:p-4 lg:p-6 bg-slate-50 min-h-screen">
     <div class="max-w-5xl mx-auto space-y-6">
 

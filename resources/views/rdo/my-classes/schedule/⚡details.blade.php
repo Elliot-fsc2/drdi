@@ -193,10 +193,6 @@ new #[Layout('layouts::rdo.app')] #[Title('Presentation Details')] class extends
 };
 ?>
 
-@assets
-    <link rel="stylesheet" href="{{ Vite::asset('resources/css/filament.css') }}">
-@endassets
-
 <x-slot name="title">{{ $this->group->name }} Presentation Details</x-slot>
 
 <div class="min-h-screen bg-slate-50">

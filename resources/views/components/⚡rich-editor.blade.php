@@ -45,10 +45,6 @@ class extends Component implements HasActions, HasSchemas
 };
 ?>
 
-@assets
-<link rel="stylesheet" href="{{ Vite::asset('resources/css/filament.css') }}">
-@endassets
-
 <div>
     {{ $this->form }}
     <x-filament-actions::modals />

@@ -110,10 +110,6 @@ new #[Layout('layouts::student.app')] #[Title('Group Consultations')] class exte
 };
 ?>
 
-@assets
-    <link rel="stylesheet" href="{{ Vite::asset('resources/css/filament.css') }}">
-@endassets
-
 <div class="p-4 sm:p-6 lg:p-8 min-h-screen bg-slate-50">
     <div class="max-w-4xl mx-auto">
 

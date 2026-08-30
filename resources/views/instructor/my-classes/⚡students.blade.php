@@ -113,10 +113,6 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
 };
 ?>
 
-@assets
-    <link rel="stylesheet" href="{{ Vite::asset('resources/css/filament.css') }}">
-@endassets
-
 <div class="space-y-4 p-4 md:p-5">
     {{-- Header --}}
     <div class="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white/90 px-4 py-4 shadow-sm backdrop-blur sm:flex-row sm:items-center sm:justify-between">

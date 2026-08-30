@@ -106,7 +106,6 @@ class extends Component implements HasActions, HasSchemas
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Calistoga&family=JetBrains+Mono:wght@400;500&display=swap"
   rel="stylesheet">
-  <link rel="stylesheet" href="{{ Vite::asset('resources/css/filament.css') }}">
 @endassets
 
 <div class="relative min-h-screen" style="background: #F8FAFC"

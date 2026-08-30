@@ -138,6 +138,42 @@ new #[Title('My Profile')] class extends Component implements HasSchemas {
         $this->dispatch('close-modal', id: 'cover-modal');
     }
 
+    public function deleteAvatar(): void
+    {
+        $user = auth()->user();
+
+        if ($user->avatar) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($user->avatar);
+        }
+
+        $user->update(['avatar' => null]);
+
+        $this->dispatch('close-modal', id: 'delete-avatar-modal');
+
+        Notification::make()
+            ->title('Avatar removed successfully')
+            ->success()
+            ->send();
+    }
+
+    public function deleteCover(): void
+    {
+        $user = auth()->user();
+
+        if ($user->cover_photo) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($user->cover_photo);
+        }
+
+        $user->update(['cover_photo' => null]);
+
+        $this->dispatch('close-modal', id: 'delete-cover-modal');
+
+        Notification::make()
+            ->title('Cover photo removed successfully')
+            ->success()
+            ->send();
+    }
+
     public function render()
     {
         $layout = match (true) {
@@ -157,8 +193,7 @@ new #[Title('My Profile')] class extends Component implements HasSchemas {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Calistoga&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="{{ Vite::asset('resources/css/filament.css') }}">
-    <style>
+<style>
         .fi-modal-centered>.fi-modal-window-ctn {
             grid-template-rows: 2fr auto 1fr;
         }
@@ -197,12 +232,23 @@ new #[Title('My Profile')] class extends Component implements HasSchemas {
                     class="h-full w-full object-cover transition-transform duration-500 group-hover/cover:scale-105">
 
                 {{-- Change Cover overlay --}}
-                <button type="button" wire:click="$dispatch('open-modal', { id: 'cover-modal' })"
-                    class="absolute right-4 top-4 inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 sm:text-sm"
-                    style="background: rgba(15,23,42,0.55); border: 1px solid rgba(255,255,255,0.25); backdrop-filter: blur(6px)">
-                    <x-heroicon-o-camera class="h-4 w-4" />
-                    Change Cover
-                </button>
+                <div class="absolute right-4 top-4 flex items-center gap-2">
+                    @if ($user->cover_photo)
+                        <button type="button"
+                            @click="$dispatch('open-modal', { id: 'delete-cover-modal' })"
+                            class="inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 sm:text-sm"
+                            style="background: rgba(239,68,68,0.7); border: 1px solid rgba(255,255,255,0.25); backdrop-filter: blur(6px)">
+                            <x-heroicon-o-trash class="h-4 w-4" />
+                            Remove Cover
+                        </button>
+                    @endif
+                    <button type="button" wire:click="$dispatch('open-modal', { id: 'cover-modal' })"
+                        class="inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 sm:text-sm"
+                        style="background: rgba(15,23,42,0.55); border: 1px solid rgba(255,255,255,0.25); backdrop-filter: blur(6px)">
+                        <x-heroicon-o-camera class="h-4 w-4" />
+                        Change Cover
+                    </button>
+                </div>
             </div>
 
             {{-- Avatar + identity --}}
@@ -226,6 +272,15 @@ new #[Title('My Profile')] class extends Component implements HasSchemas {
                                     </div>
                                 @endif
                             </div>
+                            @if ($user->avatar)
+                                <button type="button"
+                                    @click="$dispatch('open-modal', { id: 'delete-avatar-modal' })"
+                                    class="absolute -bottom-1 -right-10 flex h-9 w-9 items-center justify-center rounded-full border-2 border-white text-white transition-all duration-200 hover:scale-105"
+                                    style="background: rgba(239,68,68,0.9); box-shadow: 0 2px 8px rgba(239,68,68,0.35)"
+                                    title="Remove Avatar">
+                                    <x-heroicon-o-trash class="h-4 w-4" />
+                                </button>
+                            @endif
                             <button type="button" wire:click="$dispatch('open-modal', { id: 'avatar-modal' })"
                                 class="absolute -bottom-1 -right-1 flex h-9 w-9 items-center justify-center rounded-full border-2 border-white text-white transition-all duration-200 hover:scale-105"
                                 style="background: linear-gradient(135deg, #0052FF, #4D7CFF); box-shadow: 0 2px 8px rgba(0,82,255,0.35)"
@@ -538,6 +593,44 @@ new #[Title('My Profile')] class extends Component implements HasSchemas {
                 </x-filament::button>
                 <x-filament::button color="primary" tag="button" wire:click="saveCover">
                     Save Cover
+                </x-filament::button>
+            </div>
+        </x-slot>
+    </x-filament::modal>
+
+    {{-- ── Delete Avatar confirmation (client-side) ───── --}}
+    <x-filament::modal id="delete-avatar-modal" alignment="center" width="sm" closeButton class="fi-modal-centered"
+        :extra-modal-window-attribute-bag="new \Illuminate\View\ComponentAttributeBag(['class' => 'rounded-3xl'])">
+        <x-slot name="heading">Remove Profile Picture</x-slot>
+        <x-slot name="description">Are you sure you want to remove your profile picture? This cannot be undone.</x-slot>
+
+        <x-slot name="footer">
+            <div class="flex items-center justify-end gap-3">
+                <x-filament::button color="gray" tag="button"
+                    wire:click="$dispatch('close-modal', { id: 'delete-avatar-modal' })">
+                    Cancel
+                </x-filament::button>
+                <x-filament::button color="danger" tag="button" wire:click="deleteAvatar">
+                    Remove
+                </x-filament::button>
+            </div>
+        </x-slot>
+    </x-filament::modal>
+
+    {{-- ── Delete Cover confirmation (client-side) ────── --}}
+    <x-filament::modal id="delete-cover-modal" alignment="center" width="sm" closeButton class="fi-modal-centered"
+        :extra-modal-window-attribute-bag="new \Illuminate\View\ComponentAttributeBag(['class' => 'rounded-3xl'])">
+        <x-slot name="heading">Remove Cover Photo</x-slot>
+        <x-slot name="description">Are you sure you want to remove your cover photo? This cannot be undone.</x-slot>
+
+        <x-slot name="footer">
+            <div class="flex items-center justify-end gap-3">
+                <x-filament::button color="gray" tag="button"
+                    wire:click="$dispatch('close-modal', { id: 'delete-cover-modal' })">
+                    Cancel
+                </x-filament::button>
+                <x-filament::button color="danger" tag="button" wire:click="deleteCover">
+                    Remove
                 </x-filament::button>
             </div>
         </x-slot>
