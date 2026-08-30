@@ -38,7 +38,22 @@ jobs:
             # Install/update PHP dependencies (full install matching the lock file:
             # --no-dev removes dev packages whose stale file autoload entries can
             # break every artisan command, leaving the site in maintenance mode)
-            php $(which composer || echo "composer") install --no-interaction --prefer-dist --optimize-autoloader
+            # Retry on transient failures (e.g. corrupted 0-byte archive downloads)
+            COMPOSER_BIN=$(which composer || echo "composer")
+            for attempt in 1 2 3; do
+              echo "composer install (attempt $attempt)..."
+              if php "$COMPOSER_BIN" install --no-interaction --prefer-dist --optimize-autoloader; then
+                break
+              fi
+              if [ "$attempt" -eq 3 ]; then
+                echo "composer install failed after 3 attempts" >&2
+                exit 1
+              fi
+              php "$COMPOSER_BIN" clear-cache 2>/dev/null || true
+            done
+
+            # Sanity check: abort if the app cannot boot (broken vendor/autoloader)
+            php artisan --version
 
             # Install/update Node dependencies and build assets
             npm install
