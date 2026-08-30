@@ -14,12 +14,20 @@ class Group extends Model
 
     protected $fillable = [
         'name',
+        'photo',
         'section_id',
         'leader_id',
         'final_title_id',
         'status',
         'final_grade',
     ];
+
+    public function getPhotoUrlAttribute(): string
+    {
+        return $this->photo
+            ? asset('storage/'.$this->photo)
+            : asset('images/group_page.jpg');
+    }
 
     public function getActivitylogOptions(): LogOptions
     {

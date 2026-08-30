@@ -29,6 +29,7 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
                 'groups' => function ($query) {
                     $query->where('section_id', $this->section->id);
                 },
+                'user',
             ])
             ->get()
             ->map(function ($student) {
@@ -42,6 +43,7 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
                     'group' => $group?->name ?? 'No Group',
                     'role' => $isLeader ? 'Leader' : 'Member',
                     'has_group' => $group !== null,
+                    'avatar_url' => $student->user?->avatar_url ?? asset('images/default-avatar.png'),
                 ];
             })
             ->toArray();
@@ -151,8 +153,13 @@ new #[Layout('layouts::instructor.app')] class extends Component implements HasA
                 @foreach ($this->students as $student)
                     <li class="group flex flex-col gap-4 px-4 py-4 transition-colors hover:bg-slate-50/80 sm:flex-row sm:items-center sm:justify-between">
                         <div class="flex min-w-0 items-center gap-4">
-                            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-500 text-sm font-semibold text-white shadow-sm">
-                                {{ strtoupper(mb_substr($student['name'], 0, 1)) }}
+                            <div class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-500 text-sm font-semibold text-white shadow-sm">
+                                @if ($student['avatar_url'])
+                                    <img src="{{ $student['avatar_url'] }}" alt="{{ $student['name'] }}"
+                                        class="h-full w-full object-cover">
+                                @else
+                                    {{ strtoupper(mb_substr($student['name'], 0, 1)) }}
+                                @endif
                             </div>
                             <div class="min-w-0">
                                 <div class="flex flex-wrap items-center gap-2">

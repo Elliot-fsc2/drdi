@@ -8,6 +8,7 @@ use Filament\Actions\Contracts\HasActions;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\FileUpload;
 use Filament\Support\Icons\Heroicon;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -41,6 +42,7 @@ new #[Layout('layouts::rdo.app')] class extends Component implements HasActions,
         return $this->group
             ->members()
             ->select('students.id', 'students.first_name', 'students.last_name', 'students.student_number')
+            ->with('user')
             ->orderByRaw('students.id = ? DESC', [$this->group->leader_id])
             ->get();
     }
@@ -168,6 +170,28 @@ new #[Layout('layouts::rdo.app')] class extends Component implements HasActions,
                 $this->redirectRoute('rdo.classes.view', ['section' => $this->section->id], navigate: true);
             });
     }
+
+    public function changePhotoAction(): Action
+    {
+        return Action::make('changePhoto')
+            ->label('Change Photo')
+            ->icon(Heroicon::Photo)
+            ->color('primary')
+            ->schema([
+                FileUpload::make('photo')
+                    ->label('Group Photo')
+                    ->disk('public')
+                    ->directory('group-photos')
+                    ->visibility('public')
+                    ->image()
+                    ->imageEditor()
+                    ->maxSize(5120)
+                    ->required(),
+            ])
+            ->action(function (array $data): void {
+                $this->group->update(['photo' => $data['photo']]);
+            });
+    }
 };
 ?>
 
@@ -216,28 +240,52 @@ new #[Layout('layouts::rdo.app')] class extends Component implements HasActions,
         <span style="color: #0F172A; font-weight: 600">{{ $this->group->name }}</span>
       </div>
 
-      <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-5">
-        <div>
-          {{-- Section label badge --}}
-          <div class="inline-flex items-center gap-2 rounded-full border px-4 py-1.5 mb-4"
-            style="border-color: rgba(0,82,255,0.25); background: rgba(0,82,255,0.05)">
-            <span class="w-1.5 h-1.5 rounded-full" style="background: #0052FF"></span>
-            <span
-              style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: #0052FF; text-transform: uppercase">
-              My Classes
-            </span>
+      {{-- Photo banner --}}
+      <div class="relative rounded-3xl overflow-hidden"
+        style="box-shadow: 0 8px 30px rgba(0,0,0,0.12)">
+        <img src="{{ $this->group->photo_url }}" alt="{{ $this->group->name }}"
+          class="absolute inset-0 w-full h-full object-cover">
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/50 to-slate-900/10"></div>
+
+        <div class="relative flex flex-col justify-end min-h-[250px] sm:min-h-[280px] lg:min-h-[300px] p-5 pt-10 sm:p-7">
+          <div class="mb-3">
+            <div class="inline-flex items-center gap-2 rounded-full px-3 py-1"
+              style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); backdrop-filter: blur(4px)">
+              <span class="w-1.5 h-1.5 rounded-full animate-pulse" style="background: #7DD3FC"></span>
+              <span
+                style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: white; text-transform: uppercase">
+                {{ $this->section->name }}
+              </span>
+            </div>
           </div>
 
-          <h1 class="leading-tight"
-            style="font-family: 'Calistoga', Georgia, serif; font-size: clamp(1.85rem, 4vw, 2.75rem); letter-spacing: -0.015em; color: #0F172A">
-            {{ $this->group->name }}
-          </h1>
-          <p class="mt-2 text-sm" style="color: #64748B">
-            {{ $this->section->name }} &bull; {{ $this->section->program->name }}
-          </p>
-        </div>
+          <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <h1 class="leading-tight"
+                style="font-family: 'Calistoga', Georgia, serif; font-size: clamp(1.5rem, 6vw, 2.75rem); letter-spacing: -0.015em; color: white; text-shadow: 0 2px 12px rgba(0,0,0,0.45)">
+                {{ $this->group->name }}
+              </h1>
+              <p class="mt-2 text-sm" style="color: rgba(255,255,255,0.85); text-shadow: 0 1px 4px rgba(0,0,0,0.4)">
+                {{ $this->section->name }} &bull; {{ $this->section->program->name }}
+              </p>
+            </div>
 
-        <div class="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap lg:w-auto">
+            {{-- Change Photo action --}}
+            <button wire:click="mountAction('changePhoto')"
+              class="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 self-start sm:self-auto"
+              style="background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.3); color: white; backdrop-filter: blur(4px)">
+              <x-heroicon-o-photo class="h-4 w-4" />
+              Change Photo
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {{-- Tabs bar (outside the photo) --}}
+      <div class="bg-white rounded-2xl border mt-4 px-3 py-2.5"
+        style="border-color: #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+        <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+
           {{-- Mobile tab dropdown --}}
           <div class="md:hidden w-full">
             <label class="sr-only" for="group-tabs">Select tab</label>
@@ -369,6 +417,17 @@ new #[Layout('layouts::rdo.app')] class extends Component implements HasActions,
                 class="flex items-center gap-4 p-4 rounded-xl border transition-all duration-200 {{ $selectingLeader ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md' : 'hover:-translate-y-0.5 hover:shadow-md' }}"
                 style="border-color: #F1F5F9; background: #FAFAFA" @if ($selectingLeader)
                 wire:click="selectLeader({{ $member->id }})" @endif>
+                <div class="h-11 w-11 shrink-0 overflow-hidden rounded-full"
+                  style="background: linear-gradient(135deg, #0052FF, #4D7CFF)">
+                  @if ($member->user)
+                    <img src="{{ $member->user->avatar_url }}" alt="{{ $member->first_name }} {{ $member->last_name }}"
+                      class="h-full w-full object-cover">
+                  @else
+                    <div class="flex h-full w-full items-center justify-center text-sm font-bold text-white">
+                      {{ strtoupper(mb_substr($member->first_name, 0, 1)) }}{{ strtoupper(mb_substr($member->last_name, 0, 1)) }}
+                    </div>
+                  @endif
+                </div>
                 <div class="min-w-0 flex-1">
                   <div class="flex items-center gap-2 flex-wrap">
                     <span class="font-semibold text-sm" style="color: #0F172A">

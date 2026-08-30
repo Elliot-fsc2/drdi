@@ -74,13 +74,22 @@ new #[Layout('layouts::student.app')] #[Title('Group Details')] class extends Co
         @else
             <!-- Group Core Information Card -->
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="h-40 w-full overflow-hidden">
+                    <img src="{{ $this->group()->photo_url }}" alt="{{ $this->group()->name }}"
+                        class="h-full w-full object-cover">
+                </div>
                 <div class="border-b border-slate-100 bg-slate-50/50 px-6 py-5 flex items-start justify-between">
                     <div class="flex items-center gap-4">
                         <div>
                             <h2 class="text-xl font-bold text-slate-900">{{ $this->group()->name }}</h2>
                             <div class="flex items-center gap-2 mt-1 text-sm text-slate-500">
-                                <span>{{ $this->group()->section->name ?? 'Unknown Section' }}</span>
-                                <span class="text-slate-300">&bull;</span>
+                                @if ($this->group()->section)
+                                    <span class="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700 ring-1 ring-inset ring-blue-600/20">
+                                        <x-heroicon-o-academic-cap class="h-3.5 w-3.5" />
+                                        {{ $this->group()->section->name }}
+                                    </span>
+                                    <span class="text-slate-300">&bull;</span>
+                                @endif
                                 <span>{{ count($this->group()->members) }} Members</span>
                             </div>
                         </div>

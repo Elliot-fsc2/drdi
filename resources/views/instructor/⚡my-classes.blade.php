@@ -7,6 +7,7 @@ use App\Models\Section;
 use App\Models\Semester;
 use Filament\Actions\Action;
 use Illuminate\Database\Eloquent\Collection;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Actions\Concerns\InteractsWithActions;
@@ -47,11 +48,21 @@ new #[Layout('layouts::instructor.app')] #[Title('My Classes')] class extends Co
                     ->options(Semester::active()->pluck('name', 'id'))
                     ->required()
                     ->searchable(),
+
+                FileUpload::make('photo')
+                    ->label('Class Photo (optional)')
+                    ->disk('public')
+                    ->directory('section-photos')
+                    ->visibility('public')
+                    ->image()
+                    ->imageEditor()
+                    ->maxSize(5120),
             ])
             ->successNotificationTitle('Section created successfully')
             ->action(function (array $data): void {
                 Section::create([
                     'name' => $data['name'],
+                    'photo' => $data['photo'] ?? null,
                     'program_id' => $data['program_id'],
                     'semester_id' => $data['semester_id'],
                     'instructor_id' => auth()->user()->profileable->id,
@@ -91,6 +102,7 @@ new #[Layout('layouts::instructor.app')] #[Title('My Classes')] class extends Co
                 'id' => $section->id,
                 'section' => $section->name,
                 'course' => $section->program->name,
+                'photo' => $section->photo_url,
                 'students_count' => $section->students_count,
                 'groups_count' => $section->groups_count,
             ];
@@ -285,17 +297,25 @@ new #[Layout('layouts::instructor.app')] #[Title('My Classes')] class extends Co
                                 style="background: linear-gradient(135deg, #0052FF, #4D7CFF)">
                                 <div class="bg-white rounded-[14px] overflow-hidden h-full flex flex-col">
 
-                                    <div class="px-5 pt-5 pb-4 flex-1">
-                                        {{-- Active badge --}}
-                                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-4"
-                                            style="background: rgba(0,82,255,0.08); border: 1px solid rgba(0,82,255,0.18)">
-                                            <span class="w-1.5 h-1.5 rounded-full"
-                                                style="background: #0052FF; animation: pulse 2s infinite"></span>
-                                            <span
-                                                style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #0052FF; text-transform: uppercase">
-                                                Active
-                                            </span>
+                                    {{-- Photo header --}}
+                                    <div class="relative h-36 overflow-hidden shrink-0">
+                                        <img src="{{ $class['photo'] }}" alt="{{ $class['section'] }}"
+                                            class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
+                                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                                        <div class="absolute top-3 left-3">
+                                            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full"
+                                                style="background: rgba(255,255,255,0.92); border: 1px solid rgba(0,82,255,0.18)">
+                                                <span class="w-1.5 h-1.5 rounded-full"
+                                                    style="background: #0052FF; animation: pulse 2s infinite"></span>
+                                                <span
+                                                    style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #0052FF; text-transform: uppercase">
+                                                    Active
+                                                </span>
+                                            </div>
                                         </div>
+                                    </div>
+
+                                    <div class="px-5 pt-5 pb-4 flex-1">
 
                                         <h3 class="font-bold text-base leading-snug mb-1 transition-colors duration-200 group-hover:text-blue-600"
                                             style="color: #0F172A">
@@ -349,6 +369,13 @@ new #[Layout('layouts::instructor.app')] #[Title('My Classes')] class extends Co
                                     style="background: linear-gradient(to right, #0052FF, #4D7CFF); opacity: 0.25"
                                     x-data x-init="$el.parentElement.addEventListener('mouseenter', () => $el.style.opacity = '1');
                                     $el.parentElement.addEventListener('mouseleave', () => $el.style.opacity = '0.25')">
+                                </div>
+
+                                {{-- Photo header --}}
+                                <div class="relative h-32 overflow-hidden shrink-0">
+                                    <img src="{{ $class['photo'] }}" alt="{{ $class['section'] }}"
+                                        class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
                                 </div>
 
                                 <div class="px-5 pt-4 pb-4 flex-1 relative overflow-hidden">

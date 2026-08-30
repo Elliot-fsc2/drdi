@@ -4,14 +4,47 @@ use App\Enums\ProposalStatus;
 use App\Models\Group;
 use App\Models\Proposal;
 use App\Models\Section;
+use Filament\Actions\Action;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
+use Filament\Forms\Components\FileUpload;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Support\Icons\Heroicon;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-new #[Layout('layouts::instructor.app')] 
-class extends Component
+new #[Layout('layouts::instructor.app')]
+class extends Component implements HasActions, HasSchemas
 {
+    use InteractsWithActions;
+    use InteractsWithSchemas;
+
     public Section $section;
+
+    public function changePhotoAction(): Action
+    {
+        return Action::make('changePhoto')
+            ->label('Change Photo')
+            ->icon(Heroicon::Photo)
+            ->color('primary')
+            ->schema([
+                FileUpload::make('photo')
+                    ->label('Class Photo')
+                    ->disk('public')
+                    ->directory('section-photos')
+                    ->visibility('public')
+                    ->image()
+                    ->imageEditor()
+                    ->maxSize(5120)
+                    ->required(),
+            ])
+            ->action(function (array $data): void {
+                $this->section->update(['photo' => $data['photo']]);
+                unset($this->classData);
+            });
+    }
 
     #[Computed]
     public function classData(): array
@@ -92,35 +125,60 @@ class extends Component
             <span style="color: #64748B">{{ $this->classData['section'] }}</span>
         </div>
 
-        {{-- ── Page Header ────────────────────────────────────────────────────────── --}}
-        <div class="mb-8 sm:mb-10">
+        {{-- ── Photo Banner Header ─────────────────────────────────────────────────── --}}
+        <div class="mb-5">
+            <div class="relative rounded-3xl overflow-hidden"
+                style="box-shadow: 0 8px 30px rgba(0,0,0,0.12)">
+                {{-- Banner photo fills the whole container; content drives the height --}}
+                <img src="{{ $this->section->photo_url }}" alt="{{ $this->classData['section'] }}"
+                    class="absolute inset-0 w-full h-full object-cover">
+                {{-- Readability overlay --}}
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/50 to-slate-900/10"></div>
 
-            {{-- Course badge --}}
-            <div class="inline-flex items-center gap-2 rounded-full border px-4 py-1.5 mb-5"
-                style="border-color: rgba(0,82,255,0.2); background: rgba(0,82,255,0.05)">
-                <span class="w-1.5 h-1.5 rounded-full animate-pulse" style="background: #0052FF"></span>
-                <span
-                    style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: #0052FF; text-transform: uppercase">
-                    {{ $this->classData['course'] }}
-                </span>
+                <div class="relative flex flex-col justify-end min-h-[250px] sm:min-h-[280px] lg:min-h-[300px] p-5 pt-10 sm:p-7">
+                    <div class="mb-3">
+                        <div class="inline-flex items-center gap-2 rounded-full px-3 py-1"
+                            style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); backdrop-filter: blur(4px)">
+                            <span class="w-1.5 h-1.5 rounded-full animate-pulse" style="background: #7DD3FC"></span>
+                            <span
+                                style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: white; text-transform: uppercase">
+                                {{ $this->classData['course'] }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                        <div>
+                            <h1 class="leading-tight"
+                                style="font-family: 'Calistoga', Georgia, serif; font-size: clamp(1.5rem, 6vw, 2.75rem); letter-spacing: -0.015em; color: white; text-shadow: 0 2px 12px rgba(0,0,0,0.45)">
+                                {{ $this->classData['section'] }}
+                            </h1>
+                            <p class="mt-2 text-sm" style="color: rgba(255,255,255,0.85); text-shadow: 0 1px 4px rgba(0,0,0,0.4)">
+                                {{ $this->classData['semester'] }}
+                            </p>
+                        </div>
+
+                        {{-- Change Photo action --}}
+                        <button wire:click="mountAction('changePhoto')"
+                            class="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 self-start sm:self-auto"
+                            style="background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.3); color: white; backdrop-filter: blur(4px)">
+                            <x-heroicon-o-photo class="h-4 w-4" />
+                            Change Photo
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-5">
-                <div>
-                    <h1 class="leading-tight"
-                        style="font-family: 'Calistoga', Georgia, serif; font-size: clamp(1.85rem, 4vw, 2.75rem); letter-spacing: -0.015em; color: #0F172A">
-                        {{ $this->classData['section'] }}
-                    </h1>
-                    <p class="mt-2 text-sm" style="color: #64748B">{{ $this->classData['semester'] }}</p>
-                </div>
-
-                <div class="flex flex-wrap items-center gap-3">
+            {{-- ── Tabs bar (outside the photo) ───────────────────────────────────────── --}}
+            <div class="bg-white rounded-2xl border mt-4 px-3 py-2.5"
+                style="border-color: #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     {{-- Pill tab switcher --}}
-                    <div class="inline-flex items-center gap-1 rounded-xl p-1"
+                    <div class="inline-flex items-center gap-1 rounded-xl p-1 overflow-x-auto"
                         style="background: #EEF2FF; border: 1px solid rgba(0,82,255,0.12)">
                         @foreach ([['key' => 'groups', 'label' => 'Groups', 'icon' => 'rectangle-group'], ['key' => 'students', 'label' => 'Students', 'icon' => 'users'], ['key' => 'schedule', 'label' => 'Schedule', 'icon' => 'calendar-days']] as $t)
                             <button type="button" @click="tab = '{{ $t['key'] }}'"
-                                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200"
+                                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 shrink-0"
                                 :style="tab === '{{ $t['key'] }}' ? 'background: linear-gradient(to right, #0052FF, #4D7CFF); color: white; box-shadow: 0 2px 8px rgba(0,82,255,0.3)' : 'color: #64748B'">
                                 <x-dynamic-component :component="'heroicon-o-' . $t['icon']" class="h-4 w-4" />
                                 {{ $t['label'] }}
@@ -132,7 +190,7 @@ class extends Component
                     <template x-if="tab === 'groups'">
                         <a href="{{ route('instructor.classes.group.create', ['section' => $section->id]) }}"
                             wire:navigate
-                            class="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5"
+                            class="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 shrink-0"
                             style="background: linear-gradient(to right, #0052FF, #4D7CFF); box-shadow: 0 4px 12px rgba(0,82,255,0.3)">
                             <x-heroicon-o-plus class="h-4 w-4" />
                             Add Group
@@ -203,16 +261,24 @@ class extends Component
                                                     style="background: linear-gradient(135deg, #0052FF, #4D7CFF)">
                                                     <div
                                                         class="bg-white rounded-[14px] overflow-hidden h-full flex flex-col">
-                                                        <div class="px-5 pt-5 pb-4 flex-1">
+                                                        {{-- Photo header --}}
+                                                        <div class="relative h-32 overflow-hidden shrink-0">
+                                                            <img src="{{ $group->photo_url }}" alt="{{ $group->name }}"
+                                                                class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
+                                                            <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                                                            <div class="absolute top-3 left-3">
+                                                                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full"
+                                                                    style="background: rgba(255,255,255,0.92); border: 1px solid rgba(0,82,255,0.18)">
+                                                                    <span class="w-1.5 h-1.5 rounded-full"
+                                                                        style="background: #0052FF; animation: pulse 2s infinite"></span>
+                                                                    <span
+                                                                        style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #0052FF; text-transform: uppercase">Featured</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="px-5 pt-4 pb-4 flex-1">
                                                             <div class="flex items-start justify-between gap-3 mb-3">
                                                                 <div class="flex-1 min-w-0">
-                                                                    <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-3"
-                                                                        style="background: rgba(0,82,255,0.08); border: 1px solid rgba(0,82,255,0.18)">
-                                                                        <span class="w-1.5 h-1.5 rounded-full"
-                                                                            style="background: #0052FF; animation: pulse 2s infinite"></span>
-                                                                        <span
-                                                                            style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #0052FF; text-transform: uppercase">Featured</span>
-                                                                    </div>
                                                                     <h3 class="font-bold text-base leading-snug mb-1 transition-colors duration-200 group-hover:text-blue-600"
                                                                         style="color: #0F172A">
                                                                         {{ $group->name }}
@@ -317,6 +383,23 @@ class extends Component
                                                         style="background: linear-gradient(to right, #0052FF, #4D7CFF); opacity: 0.25"
                                                         x-data x-init="$el.parentElement.addEventListener('mouseenter', () => $el.style.opacity = '1');
                                                         $el.parentElement.addEventListener('mouseleave', () => $el.style.opacity = '0.25')">
+                                                    </div>
+                                                    {{-- Photo header --}}
+                                                    <div class="relative h-28 overflow-hidden shrink-0">
+                                                        <img src="{{ $group->photo_url }}" alt="{{ $group->name }}"
+                                                            class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
+                                                        <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                                                        @if ($latestProposal)
+                                                            <div class="absolute top-3 right-3">
+                                                                <span
+                                                                    class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold"
+                                                                    style="background: rgba(255,255,255,0.92); border: 1px solid {{ $statusStyles['border'] }}; color: {{ $statusStyles['color'] }}">
+                                                                    <span class="w-1.5 h-1.5 rounded-full"
+                                                                        style="background: {{ $statusStyles['dot'] }}"></span>
+                                                                    {{ $statusStyles['label'] }}
+                                                                </span>
+                                                            </div>
+                                                        @endif
                                                     </div>
                                                     <div class="px-5 pt-4 pb-3 flex-1 relative overflow-hidden">
                                                         <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
@@ -496,4 +579,5 @@ class extends Component
 
         </div>
     </div>
+    <x-filament-actions::modals />
 </div>

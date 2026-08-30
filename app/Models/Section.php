@@ -8,10 +8,18 @@ class Section extends Model
 {
     protected $fillable = [
         'name',
+        'photo',
         'program_id',
         'instructor_id',
         'semester_id',
     ];
+
+    public function getPhotoUrlAttribute(): string
+    {
+        return $this->photo
+            ? asset('storage/'.$this->photo)
+            : asset('images/course_page.jpg');
+    }
 
     public function scopeActive($query)
     {

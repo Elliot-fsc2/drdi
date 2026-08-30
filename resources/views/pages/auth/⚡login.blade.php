@@ -50,29 +50,19 @@ new #[Layout('layouts::guest')]
      @endif>
 
   <!-- Left Side - Welcome Section -->
-  <div
-    class="hidden lg:flex lg:w-1/2 bg-linear-to-br from-blue-400 via-cyan-300 to-blue-600 relative overflow-hidden">
-    <div class="absolute inset-0 bg-linear-to-br from-blue-500/80 via-cyan-400/60 to-blue-600/80"></div>
-
-    <!-- Decorative Elements -->
-    <div class="absolute top-10 left-10 w-32 h-32 bg-white/20 rounded-full blur-3xl"></div>
-    <div class="absolute bottom-20 right-20 w-40 h-40 bg-blue-300/30 rounded-full blur-3xl"></div>
-    <div class="absolute top-1/2 left-1/4 w-24 h-24 bg-cyan-200/20 rounded-full blur-2xl"></div>
+  <div class="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+    <!-- Educational Background Photo -->
+    <img src="{{ asset('images/education.jpg') }}" alt="Students collaborating in a classroom"
+      class="absolute inset-0 w-full h-full object-cover">
+    <div class="absolute inset-0 bg-gradient-to-br from-blue-900/50 via-blue-800/35 to-blue-950/60"></div>
 
     <!-- Content -->
     <div class="relative z-10 flex flex-col justify-center items-center px-8 xl:px-16 text-white w-full py-8">
-      <!-- Illustration Placeholder -->
-      <div class="mb-6 text-center">
-        <div
-          class="w-64 h-64 xl:w-80 xl:h-80 bg-white/10 rounded-3xl backdrop-blur-sm flex items-center justify-center mb-6 shadow-2xl">
-          <img src="{{ asset('images/logo.png') }}" alt="">
-        </div>
-      </div>
 
-      <h1 class="text-2xl xl:text-4xl font-bold mb-3 text-center drop-shadow-lg">
+      <h1 class="text-2xl xl:text-4xl font-bold mb-3 text-center drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
         Welcome to DRDI NCST
       </h1>
-      <p class="text-base xl:text-lg text-center max-w-md text-white/90 drop-shadow">
+      <p class="text-base xl:text-lg text-center max-w-md text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
         Department of Research and Development Innovation - National College of Science and Technology
       </p>
 
@@ -90,8 +80,11 @@ new #[Layout('layouts::guest')]
     <div class="w-full max-w-md py-8">
       <div class="bg-white rounded-2xl shadow-xl p-8 xl:p-10">
         <div class="mb-8">
-          <h2 class="text-3xl font-bold text-gray-900 mb-2">Login</h2>
-          <p class="text-sm text-gray-500">Access your DRDI NCST account</p>
+          <div class="flex justify-center mb-4">
+            <img src="{{ asset('images/logo.png') }}" alt="DRDI NCST Logo" class="h-16 w-16 xl:h-20 xl:w-20 object-contain">
+          </div>
+          <h2 class="text-3xl font-bold text-gray-900 mb-2 text-center">Login</h2>
+          <p class="text-sm text-gray-500 text-center">Access your DRDI NCST account</p>
         </div>
 
         <form wire:submit="login" class="space-y-6">

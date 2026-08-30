@@ -129,14 +129,20 @@ new
             <div class="space-y-5 lg:sticky lg:top-8 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
                 @if ($section)
                     @island(defer: true)
-                    <div class="rounded-2xl border p-4 transition-all duration-200 hover:-translate-y-px hover:shadow-lg"
+                    <div class="rounded-2xl border p-0 overflow-hidden transition-all duration-200 hover:-translate-y-px hover:shadow-lg"
                         style="border-color: #E2E8F0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05)">
-                        <p
-                            style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
-                            My Section</p>
-                        <p class="text-xl font-bold mt-1" style="color: #0F172A">{{ $section->name }}</p>
-                        <p class="text-xs mt-0.5" style="color: #94A3B8">{{ $section->program?->name }} &bull;
-                            {{ $section->semester?->name }}</p>
+                        <div class="h-28 w-full overflow-hidden">
+                            <img src="{{ $section->photo_url }}" alt="{{ $section->name }}"
+                                class="h-full w-full object-cover">
+                        </div>
+                        <div class="p-4">
+                            <p
+                                style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #94A3B8; text-transform: uppercase">
+                                My Section</p>
+                            <p class="text-xl font-bold mt-1" style="color: #0F172A">{{ $section->name }}</p>
+                            <p class="text-xs mt-0.5" style="color: #94A3B8">{{ $section->program?->name }} &bull;
+                                {{ $section->semester?->name }}</p>
+                        </div>
                     </div>
 
                     <div class="rounded-2xl border p-4 transition-all duration-200 hover:-translate-y-px hover:shadow-lg"

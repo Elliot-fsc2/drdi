@@ -28,9 +28,25 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
+        'avatar',
+        'cover_photo',
         'is_admin',
         'notify_email',
     ];
+
+    public function getAvatarUrlAttribute(): string
+    {
+        return $this->avatar
+            ? asset('storage/'.$this->avatar)
+            : asset('images/default-avatar.png');
+    }
+
+    public function getCoverUrlAttribute(): string
+    {
+        return $this->cover_photo
+            ? asset('storage/'.$this->cover_photo)
+            : asset('images/cover_page.jpg');
+    }
 
     /**
      * The attributes that should be hidden for serialization.
