@@ -29,7 +29,8 @@ class Login
             if (! app()->environment('local')) {
                 RateLimiter::clear($key);
             }
-            request()->session()->regenerate();
+            session()->regenerate();
+            session()->forget('url.intended');
 
             $user = Auth::user();
 
@@ -37,19 +38,19 @@ class Login
 
             // Staff and RDO both go to RDO dashboard
             if ($role === \App\Enums\InstructorRole::RDO || $role === \App\Enums\InstructorRole::Staff) {
-                return redirect()->intended(route('rdo.home'));
+                return redirect()->to(route('rdo.home'));
             }
 
             // Redirect based on user role
             if ($user->profileable_type === \App\Models\Instructor::class) {
                 // Regular instructor
-                return redirect()->intended(route('instructor.home'));
+                return redirect()->to(route('instructor.home'));
             } elseif ($user->profileable_type === \App\Models\Student::class) {
-                return redirect()->intended(route('student.home'));
+                return redirect()->to(route('student.home'));
             }
 
             // Default fallback
-            return redirect()->intended('/');
+            return redirect()->to('/');
         }
 
         if (! app()->environment('local')) {

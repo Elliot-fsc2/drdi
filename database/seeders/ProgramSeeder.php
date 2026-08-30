@@ -12,22 +12,30 @@ class ProgramSeeder extends Seeder
     public function run(): void
     {
         $programs = [
-            ['name' => 'Computer Science', 'department_id' => 1],
-            ['name' => 'Information Technology', 'department_id' => 1],
-            ['name' => 'Business Administration', 'department_id' => 5],
-            ['name' => 'Marketing', 'department_id' => 5],
-            ['name' => 'Educational Psychology', 'department_id' => 2],
-            ['name' => 'Communication Studies', 'department_id' => 2],
-            ['name' => 'Criminal Justice', 'department_id' => 3],
-            ['name' => 'Hotel and Restaurant Management', 'department_id' => 4],
-            ['name' => 'Tourism Management', 'department_id' => 4],
-            ['name' => 'Psychology', 'department_id' => 2],
+            ['name' => 'Computer Science', 'department' => 'CSD'],
+            ['name' => 'Information Technology', 'department' => 'CSD'],
+            ['name' => 'Business Administration', 'department' => 'Business Administration'],
+            ['name' => 'Marketing', 'department' => 'Business Administration'],
+            ['name' => 'Educational Psychology', 'department' => 'EdPsycomm'],
+            ['name' => 'Communication Studies', 'department' => 'EdPsycomm'],
+            ['name' => 'Criminal Justice', 'department' => 'Criminal Justice'],
+            ['name' => 'Hotel and Restaurant Management', 'department' => 'HRTM'],
+            ['name' => 'Tourism Management', 'department' => 'HRTM'],
+            ['name' => 'Psychology', 'department' => 'EdPsycomm'],
         ];
 
+        $departments = \App\Models\Department::pluck('id', 'name');
+
         foreach ($programs as $program) {
+            $departmentId = $departments[$program['department']] ?? null;
+
+            if ($departmentId === null) {
+                throw new \RuntimeException("Department '{$program['department']}' not found for program '{$program['name']}'.");
+            }
+
             \App\Models\Program::firstOrCreate(
                 ['name' => $program['name']],
-                ['department_id' => $program['department_id']],
+                ['department_id' => $departmentId],
             );
         }
     }
