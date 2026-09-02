@@ -32,7 +32,12 @@ jobs:
             # Always bring the app back up when the script ends, even on failure
             trap 'php artisan up 2>/dev/null || true' EXIT
 
-            # Pull the latest changes from the repository
+            # Pull the latest changes from the repository.
+            # The previous deploy's `npm install` may have left a modified
+            # package-lock.json behind; discard that drift so the pull can
+            # always apply cleanly (the lockfile is committed and npm ci is
+            # used below, so nothing legitimate is lost here).
+            git checkout -- package-lock.json 2>/dev/null || true
             git pull origin main
 
             # Install/update PHP dependencies (full install matching the lock file:
@@ -55,8 +60,10 @@ jobs:
             # Sanity check: abort if the app cannot boot (broken vendor/autoloader)
             php artisan --version
 
-            # Install/update Node dependencies and build assets
-            npm install
+            # Install/update Node dependencies and build assets.
+            # npm ci installs exactly from the committed package-lock.json and
+            # never rewrites it, so the working tree stays clean for next time.
+            npm ci --no-audit --no-fund
             npm run build
 
             # Run database migrations
