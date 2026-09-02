@@ -11,7 +11,7 @@
 
   <title>{{ $title ? $title . ' • DRDI NCST' : 'DRDI NCST • Research Portal' }}</title>
 
-  @vite(['resources/css/app.css', 'resources/js/app.js'])
+  @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/schedule-calendar.js'])
 
   <style>
     [title] {
@@ -79,6 +79,8 @@
   ['label' => 'Consultations', 'url' => route('student.consultations'), 'active' => 'student.consultations', 'icon' =>
   'chat'],
   ['label' => 'Fees', 'url' => route('student.fees'), 'active' => 'student.fees', 'icon' => 'currency-dollar'],
+  ['label' => 'Schedules', 'url' => route('student.schedule-calendar'), 'active' => 'student.schedule-calendar',
+  'icon' => 'calendar'],
   ];
   @endphp
 
@@ -133,6 +135,9 @@
               @break
               @case('currency-dollar')
               <x-heroicon-o-currency-dollar class="h-5 w-5 shrink-0" />
+              @break
+              @case('calendar')
+              <x-heroicon-o-calendar class="h-5 w-5 shrink-0" />
               @break
               @endswitch
               <span>{{ $item['label'] }}</span>
@@ -243,6 +248,9 @@
                 @break
                 @case('currency-dollar')
                 <x-heroicon-o-currency-dollar class="h-5 w-5 shrink-0" />
+                @break
+                @case('calendar')
+                <x-heroicon-o-calendar class="h-5 w-5 shrink-0" />
                 @break
                 @endswitch
                 <span>{{ $item['label'] }}</span>

@@ -38,6 +38,15 @@ This project has domain-specific skills available. You MUST activate the relevan
 - Use descriptive names for variables and methods. For example, `isRegisteredForDiscounts`, not `discount()`.
 - Check for existing components to reuse before writing a new one.
 
+## Testing — ABSOLUTE PROHIBITIONS
+
+- NEVER create or run tests (Pest, PHPUnit, Livewire, `php artisan test`, etc.) in this project. Testing is banned here.
+  - `tests/Feature/*` uses `RefreshDatabase`, which runs `migrate:fresh` and DESTROYS the real MySQL database (`drdi`) when the phpunit.xml sqlite override does not apply. This already happened once and wiped all data.
+- NEVER create temporary test files for verification. Delete any existing ones.
+- Do NOT run `php artisan test`, `vendor/bin/pest`, or `vendor/bin/phpunit`.
+- For verification, use read-only tools only: Boost `database-query`, Boost `tinker` (read-only usage), `php artisan route:list`, `php -l`, `view:cache`, or manual HTTP checks against the running app.
+- The `pest-testing` skill and Pest/PHPUnit guidance below DO NOT apply to this project — ignore them.
+
 ## Verification Scripts
 
 - Do not create verification scripts or tinker when tests cover that functionality and prove they work. Unit and feature tests are more important.

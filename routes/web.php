@@ -85,6 +85,8 @@ Route::middleware(['auth', 'instructor'])
         Route::livewire('/groups', 'instructor::groups')->name('groups');
         Route::livewire('/groups/{group}', 'instructor::groups.assigned.view')->name('groups.assigned.view');
 
+        Route::livewire('/schedule-calendar', 'instructor::schedule-calendar')->name('schedule-calendar');
+
         Route::livewire('/library-submissions', 'instructor::library-submissions')->name('library-submissions');
     });
 
@@ -97,6 +99,7 @@ Route::middleware(['auth', 'student'])
         Route::livewire('/proposal-title', 'student::proposal-title')->name('proposal-title');
         Route::livewire('/consultations', 'student::consultations')->name('consultations');
         Route::livewire('/fees', 'student::fees')->name('fees');
+        Route::livewire('/schedule-calendar', 'student::schedule-calendar')->name('schedule-calendar');
     });
 
 Route::middleware(['auth', 'rdo'])

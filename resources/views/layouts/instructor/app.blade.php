@@ -11,7 +11,7 @@
 
     <title>{{ $title ? $title . ' • DRDI NCST' : 'DRDI NCST • Research Portal' }}</title>
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/schedule-calendar.js'])
 
     <style>
         [title] {
@@ -129,14 +129,14 @@
                     <x-heroicon-o-user-group class="h-6 w-6 shrink-0" />
                     <span class="font-medium">My Groups</span>
                 </a>
-                {{-- <a href="{{ route('instructor.schedule-management') }}" wire:navigate @class([
+                <a href="{{ route('instructor.schedule-calendar') }}" wire:navigate @class([
                     'flex items-center gap-3 rounded-xl px-4 py-2 transition-all',
-                    'bg-white/15 text-white border border-white/25' => request()->routeIs('instructor.schedule-management'),
-                    'text-blue-200 hover:bg-blue-700/50 hover:text-white' => !request()->routeIs('instructor.schedule-management'),
+                    'bg-white/15 text-white border border-white/25' => request()->routeIs('instructor.schedule-calendar'),
+                    'text-blue-200 hover:bg-blue-700/50 hover:text-white' => !request()->routeIs('instructor.schedule-calendar'),
                 ])>
                     <x-heroicon-o-calendar class="h-6 w-6 shrink-0" />
                     <span class="font-medium">Schedules</span>
-                </a> --}}
+                </a>
                 <a href="{{ route('instructor.library-submissions') }}" wire:navigate @class([
                     'flex items-center gap-3 rounded-xl px-4 py-2 transition-all',
                     'bg-white/15 text-white border border-white/25' => request()->routeIs('instructor.library-submissions*'),
@@ -203,6 +203,15 @@
                     ]) :title="!sidebarOpen ? 'My Groups' : null">
                     <x-heroicon-o-user-group class="h-6 w-6 shrink-0" />
                     <span x-show="sidebarOpen" x-transition class="whitespace-nowrap font-medium">My Groups</span>
+                </a>
+                <a href="{{ route('instructor.schedule-calendar') }}" wire:navigate
+                    :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'" @class([
+                        'group flex items-center gap-3 rounded-xl py-2 transition-all',
+                        'bg-white/15 text-white border border-white/25' => request()->routeIs('instructor.schedule-calendar'),
+                        'text-blue-200 hover:bg-blue-700/50 hover:text-white' => !request()->routeIs('instructor.schedule-calendar'),
+                    ]) :title="!sidebarOpen ? 'Schedules' : null">
+                    <x-heroicon-o-calendar class="h-6 w-6 shrink-0" />
+                    <span x-show="sidebarOpen" x-transition class="whitespace-nowrap font-medium">Schedules</span>
                 </a>
                 <a href="{{ route('instructor.library-submissions') }}" wire:navigate
                     :class="sidebarOpen ? 'px-4' : 'px-3 justify-center'" @class([

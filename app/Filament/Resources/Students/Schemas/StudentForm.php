@@ -24,7 +24,13 @@ class StudentForm
                     ->email()
                     ->nullable()
                     ->placeholder('Auto-filled from name if empty')
-                    ->unique(table: 'users', column: 'email', ignoreRecord: true),
+                    ->unique(table: 'users', column: 'email', ignoreRecord: true,
+                        modifyRuleUsing: function (\Illuminate\Validation\Rules\Unique $rule, $livewire) {
+                            $user = $livewire?->record?->user;
+
+                            return $rule->ignore($user?->getKey() ?? $livewire?->record?->getKey(), 'id');
+                        },
+                    ),
                 Select::make('program_id')
                     ->relationship('program', 'name')
                     ->required(),
